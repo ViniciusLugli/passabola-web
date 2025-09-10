@@ -1,29 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import AuthLayout from "@/app/components/AuthLayout";
-import Link from "next/link";
-
-const formVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.6,
-      ease: "easeOut",
-      staggerChildren: 0.2,
-      delayChildren: 0.3,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1 },
-};
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import AuthLayout from '@/app/components/AuthLayout';
+import Link from 'next/link';
 
 export default function RegisterPage() {
   const [selectedRole, setSelectedRole] = useState(null);
@@ -34,15 +14,15 @@ export default function RegisterPage() {
     if (selectedRole) {
       router.push(`/register/info?role=${selectedRole.toLowerCase()}`);
     } else {
-      alert("Por favor, selecione uma opção!");
+      alert('Por favor, selecione uma opção!');
     }
   };
 
-  const roles = ["Organização", "Jogadora", "Espectador"];
+  const roles = ['Organização', 'Jogadora', 'Espectador'];
 
   return (
     <AuthLayout>
-      <motion.div
+      <div
         className="
           bg-white 
           rounded-3xl 
@@ -53,12 +33,10 @@ export default function RegisterPage() {
           flex-col 
           gap-6 sm:gap-8 md:gap-10
           w-full
+          transition-transform duration-300 ease-in-out
         "
-        variants={formVariants}
-        initial="hidden"
-        animate="visible"
       >
-        <motion.h1
+        <h1
           className="
             text-4xl sm:text-5xl md:text-6xl 
             font-extrabold 
@@ -66,26 +44,24 @@ export default function RegisterPage() {
             leading-tight
             mb-4 sm:mb-6
           "
-          variants={itemVariants}
         >
           Bem-vindo ao <span className="text-purple-700">Passa a Bola</span>
-        </motion.h1>
+        </h1>
 
-        <motion.p
+        <p
           className="
             text-lg sm:text-xl md:text-2xl 
             text-gray-700 
             font-semibold 
             mb-4 sm:mb-6
           "
-          variants={itemVariants}
         >
           Quero me cadastrar como...
-        </motion.p>
+        </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
           {roles.map((role) => (
-            <motion.div key={role} variants={itemVariants}>
+            <div key={role}>
               <label
                 className={`
                   flex 
@@ -98,10 +74,11 @@ export default function RegisterPage() {
                   transition-all 
                   duration-200 
                   shadow-sm
+                  hover:scale-105 active:scale-95
                   ${
                     selectedRole === role
-                      ? "border-purple-600 bg-purple-50 text-purple-800 font-semibold"
-                      : "border-gray-200 bg-white text-gray-800 hover:border-purple-300 hover:bg-purple-10"
+                      ? 'border-purple-600 bg-purple-50 text-purple-800 font-semibold'
+                      : 'border-gray-200 bg-white text-gray-800 hover:border-purple-300 hover:bg-purple-10'
                   }
                 `}
               >
@@ -140,10 +117,10 @@ export default function RegisterPage() {
                 ></span>
                 <span className="text-lg sm:text-xl">{role}</span>
               </label>
-            </motion.div>
+            </div>
           ))}
 
-          <motion.div variants={itemVariants} className="mt-4 sm:mt-6">
+          <div className="mt-4 sm:mt-6">
             <button
               type="submit"
               className="
@@ -155,18 +132,18 @@ export default function RegisterPage() {
                 py-4 sm:py-5 
                 rounded-xl 
                 text-xl sm:text-2xl 
-                transition-colors 
+                transition-all 
                 duration-300 
                 shadow-lg
+                hover:scale-105 active:scale-95
               "
             >
               CONTINUAR
             </button>
-          </motion.div>
+          </div>
         </form>
 
-        <motion.div
-          variants={itemVariants}
+        <div
           className="
             mt-6 sm:mt-8 md:mt-10 
             pt-6 
@@ -188,9 +165,10 @@ export default function RegisterPage() {
               hover:text-purple-800 
               font-bold 
               text-lg sm:text-xl
-              transition-colors 
+              transition-all 
               duration-200
               flex items-center gap-2
+              hover:scale-105 active:scale-95
             "
           >
             Faça seu login!
@@ -209,8 +187,8 @@ export default function RegisterPage() {
               />
             </svg>
           </Link>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </AuthLayout>
   );
 }

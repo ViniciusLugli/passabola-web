@@ -1,73 +1,52 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { motion } from "framer-motion";
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.3,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 100 },
-  },
-};
+import Link from 'next/link';
 
 const decorations = [
   {
-    src: "/DecoB (tatica 1).svg",
+    src: '/DecoB (tatica 1).svg',
     className:
-      "absolute top-[5%] left-[5%] w-24 h-24 transform rotate-[-15deg]",
+      'absolute top-[5%] left-[5%] w-24 h-24 transform rotate-[-15deg]',
   },
   {
-    src: "/DecoB (tatica 2).svg",
+    src: '/DecoB (tatica 2).svg',
     className:
-      "absolute bottom-[8%] left-[12%] w-28 h-28 transform rotate-[30deg]",
+      'absolute bottom-[8%] left-[12%] w-28 h-28 transform rotate-[30deg]',
   },
   {
-    src: "/TrianguloM-BV.svg",
+    src: '/TrianguloM-BV.svg',
     className:
-      "absolute top-[50%] left-[2%] w-16 h-16 transform rotate-[60deg] -translate-y-1/2",
+      'absolute top-[50%] left-[2%] w-16 h-16 transform rotate-[60deg] -translate-y-1/2',
   },
   {
-    src: "/TrianguloP-BV.svg",
+    src: '/TrianguloP-BV.svg',
     className:
-      "absolute top-[2%] right-[30%] w-10 h-10 transform rotate-[180deg]",
+      'absolute top-[2%] right-[30%] w-10 h-10 transform rotate-[180deg]',
   },
   {
-    src: "/Deco (linha).svg",
+    src: '/Deco (linha).svg',
     className:
-      "absolute top-1/2 left-1/2 w-48 h-48 transform -translate-x-1/2 -translate-y-1/2 opacity-20",
+      'absolute top-1/2 left-1/2 w-48 h-48 transform -translate-x-1/2 -translate-y-1/2 opacity-20',
   },
   {
-    src: "/DecoB (tatica 1).svg",
+    src: '/DecoB (tatica 1).svg',
     className:
-      "absolute bottom-[5%] right-[5%] w-16 h-16 transform rotate-[45deg]",
+      'absolute bottom-[5%] right-[5%] w-16 h-16 transform rotate-[45deg]',
   },
   {
-    src: "/DecoB (tatica 2).svg",
+    src: '/DecoB (tatica 2).svg',
     className:
-      "absolute top-[60%] right-[15%] w-20 h-20 transform rotate-[-50deg]",
+      'absolute top-[60%] right-[15%] w-20 h-20 transform rotate-[-50deg]',
   },
   {
-    src: "/TrianguloM-BV.svg",
+    src: '/TrianguloM-BV.svg',
     className:
-      "absolute top-[15%] right-[8%] w-20 h-20 transform rotate-[25deg]",
+      'absolute top-[15%] right-[8%] w-20 h-20 transform rotate-[25deg]',
   },
   {
-    src: "/TrianguloP-BV.svg",
+    src: '/TrianguloP-BV.svg',
     className:
-      "absolute bottom-[15%] right-[25%] w-32 h-32 transform rotate-[-20deg]",
+      'absolute bottom-[15%] right-[25%] w-32 h-32 transform rotate-[-20deg]',
   },
 ];
 
@@ -110,7 +89,7 @@ export default function HomePage() {
           gap-8
         "
       >
-        <motion.div
+        <div
           className="
             relative 
             z-10 
@@ -123,12 +102,10 @@ export default function HomePage() {
             flex-col 
             items-center 
             text-center
+            transition-transform duration-300 ease-in-out
           "
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
         >
-          <motion.h1
+          <h1
             className="
               text-4xl 
               font-extrabold 
@@ -139,12 +116,11 @@ export default function HomePage() {
               text-gray-900
               mb-4 sm:mb-6
             "
-            variants={itemVariants}
           >
             A plataforma que eleva o futebol feminino.
-          </motion.h1>
+          </h1>
 
-          <motion.p
+          <p
             className="
               text-base 
               sm:text-lg 
@@ -154,17 +130,13 @@ export default function HomePage() {
               leading-relaxed
               mb-6 sm:mb-8
             "
-            variants={itemVariants}
           >
             Uma rede social robusta para conectar jogadoras, clubes e fãs.
             Junte-se ao Passa a Bola e ajude a fortalecer a comunidade do
             esporte que amamos.
-          </motion.p>
+          </p>
 
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 sm:gap-6"
-            variants={itemVariants}
-          >
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
             <Link
               href="/register"
               className="
@@ -175,9 +147,10 @@ export default function HomePage() {
                 text-lg 
                 font-bold 
                 rounded-full 
-                transition-colors 
+                transition-all 
                 duration-300
                 shadow-lg
+                hover:scale-105 active:scale-95
               "
             >
               Faça seu cadastro
@@ -196,14 +169,15 @@ export default function HomePage() {
                 text-lg 
                 font-bold 
                 rounded-full 
-                transition-colors 
+                transition-all 
                 duration-300
+                hover:scale-105 active:scale-95
               "
             >
               Já sou um membro
             </Link>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </main>
     </div>
   );
