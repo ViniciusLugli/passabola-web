@@ -1,30 +1,10 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { motion } from 'framer-motion';
 import { useSearchParams, useRouter } from 'next/navigation';
 import AuthLayout from '@/app/components/AuthLayout';
 import Input from '@/app/components/Input';
 import Link from 'next/link';
-
-const formVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.6,
-      ease: 'easeOut',
-      staggerChildren: 0.2,
-      delayChildren: 0.3,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1 },
-};
 
 function RegisterForm() {
   const router = useRouter();
@@ -102,7 +82,7 @@ function RegisterForm() {
     }
 
     return fields.map((field) => (
-      <motion.div key={field.name} variants={itemVariants}>
+      <div key={field.name}>
         <Input
           type={field.type}
           placeholder={field.placeholder}
@@ -110,7 +90,7 @@ function RegisterForm() {
           value={formData[field.name]}
           onChange={handleInputChange}
         />
-      </motion.div>
+      </div>
     ));
   };
 
@@ -120,41 +100,35 @@ function RegisterForm() {
 
   return (
     <AuthLayout>
-      <motion.div
-        className="bg-white rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12 shadow-2xl text-center flex flex-col gap-6 sm:gap-8 md:gap-10 w-full"
-        variants={formVariants}
-        initial="hidden"
-        animate="visible"
+      <div
+        className="bg-white rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12 shadow-2xl text-center flex flex-col gap-6 sm:gap-8 md:gap-10 w-full transition-transform duration-300 ease-in-out"
       >
-        <motion.h1
+        <h1
           className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-4 sm:mb-6"
-          variants={itemVariants}
         >
           Bem-vindo ao <span className="text-purple-700">Passa a Bola</span>
-        </motion.h1>
+        </h1>
 
-        <motion.p
+        <p
           className="text-lg sm:text-xl md:text-2xl text-gray-700 font-semibold mb-4 sm:mb-6"
-          variants={itemVariants}
         >
           Insira suas informações...
-        </motion.p>
+        </p>
 
         <form onSubmit={handleNextStep} className="flex flex-col gap-4 sm:gap-6">
           {renderFields()}
 
-          <motion.div variants={itemVariants} className="mt-4 sm:mt-6">
+          <div className="mt-4 sm:mt-6">
             <button
               type="submit"
-              className="w-full bg-purple-800 hover:bg-purple-900 text-white font-bold py-4 sm:py-5 rounded-xl text-xl sm:text-2xl transition-colors duration-300 shadow-lg"
+              className="w-full bg-purple-800 hover:bg-purple-900 text-white font-bold py-4 sm:py-5 rounded-xl text-xl sm:text-2xl transition-all duration-300 shadow-lg hover:scale-105 active:scale-95"
             >
               {currentStep === 1 ? 'CONTINUAR' : 'CRIAR CONTA'}
             </button>
-          </motion.div>
+          </div>
         </form>
 
-        <motion.div
-          variants={itemVariants}
+        <div
           className="mt-6 sm:mt-8 md:mt-10 pt-6 border-t border-gray-200 flex flex-col items-center gap-3"
         >
           <p className="text-lg sm:text-xl font-semibold text-gray-700">
@@ -162,7 +136,7 @@ function RegisterForm() {
           </p>
           <Link
             href="/login"
-            className="text-purple-600 hover:text-purple-800 font-bold text-lg sm:text-xl transition-colors duration-200 flex items-center gap-2"
+            className="text-purple-600 hover:text-purple-800 font-bold text-lg sm:text-xl transition-all duration-200 flex items-center gap-2 hover:scale-105 active:scale-95"
           >
             Faça seu login!
             <svg
@@ -180,8 +154,8 @@ function RegisterForm() {
               />
             </svg>
           </Link>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </AuthLayout>
   );
 }

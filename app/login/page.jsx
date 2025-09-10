@@ -1,31 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import AuthLayout from "../components/AuthLayout";
-import Input from "../components/Input";
+import AuthLayout from "@/app/components/AuthLayout";
+import Input from "@/app/components/Input";
 import Link from "next/link";
-
-// Variantes de animação para o container do formulário
-const formVariants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.6,
-      ease: "easeOut",
-      staggerChildren: 0.2,
-      delayChildren: 0.3,
-    },
-  },
-};
-
-// Variantes de animação para os itens do formulário
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1 },
-};
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -39,7 +17,7 @@ export default function LoginPage() {
 
   return (
     <AuthLayout>
-      <motion.div
+      <div
         className="
           bg-white 
           rounded-3xl 
@@ -50,12 +28,10 @@ export default function LoginPage() {
           flex-col 
           gap-6 sm:gap-8 md:gap-10
           w-full
+          transition-transform duration-300 ease-in-out
         "
-        variants={formVariants}
-        initial="hidden"
-        animate="visible"
       >
-        <motion.h1
+        <h1
           className="
             text-4xl sm:text-5xl md:text-6xl 
             font-extrabold 
@@ -63,12 +39,11 @@ export default function LoginPage() {
             leading-tight
             mb-4 sm:mb-6
           "
-          variants={itemVariants}
         >
           Login
-        </motion.h1>
+        </h1>
 
-        <motion.p
+        <p
           className="
             text-lg sm:text-xl md:text-2xl 
             text-gray-700 
@@ -76,13 +51,12 @@ export default function LoginPage() {
             mt-[-10px] // Ajuste para aproximar do título
             mb-4 sm:mb-6
           "
-          variants={itemVariants}
         >
           Bem-vindo de volta!
-        </motion.p>
+        </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
-          <motion.div variants={itemVariants}>
+          <div>
             <Input
               label="Email"
               type="email"
@@ -91,9 +65,9 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-          </motion.div>
+          </div>
 
-          <motion.div variants={itemVariants}>
+          <div>
             <Input
               label="Senha"
               type="password"
@@ -102,27 +76,28 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-          </motion.div>
+          </div>
 
-          <motion.div variants={itemVariants}>
+          <div>
             <Link
               href="#"
               className="
                 text-sm sm:text-base 
                 text-purple-600 
                 hover:text-purple-800 
-                transition-colors 
+                transition-all 
                 duration-200 
                 self-end
                 block
                 mt-[-10px] sm:mt-[-12px]
+                hover:scale-105 active:scale-95
               "
             >
               Esqueceu sua senha?
             </Link>
-          </motion.div>
+          </div>
 
-          <motion.div variants={itemVariants} className="mt-4 sm:mt-6">
+          <div className="mt-4 sm:mt-6">
             <button
               type="submit"
               className="
@@ -134,18 +109,18 @@ export default function LoginPage() {
                 py-4 sm:py-5 
                 rounded-xl 
                 text-xl sm:text-2xl 
-                transition-colors 
+                transition-all 
                 duration-300 
                 shadow-lg
+                hover:scale-105 active:scale-95
               "
             >
               CONTINUAR
             </button>
-          </motion.div>
+          </div>
         </form>
 
-        <motion.div
-          variants={itemVariants}
+        <div
           className="
             mt-6 sm:mt-8 md:mt-10 
             pt-6 
@@ -161,15 +136,16 @@ export default function LoginPage() {
             Ainda não tem login?
           </p>
           <Link
-            href="/cadastro"
+            href="/register"
             className="
               text-purple-600 
               hover:text-purple-800 
               font-bold 
               text-lg sm:text-xl
-              transition-colors 
+              transition-all 
               duration-200
               flex items-center gap-2
+              hover:scale-105 active:scale-95
             "
           >
             Faça seu cadastro!
@@ -188,8 +164,8 @@ export default function LoginPage() {
               />
             </svg>
           </Link>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </AuthLayout>
   );
 }

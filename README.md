@@ -31,7 +31,7 @@ Este projeto foi construído utilizando tecnologias web modernas para criar uma 
 - **Framework**: [**Next.js**](https://nextjs.org/) - O framework React para produção.
 - **Biblioteca UI**: [**React**](https://reactjs.org/) - Para construir interfaces de usuário.
 - **Estilização**: [**Tailwind CSS**](https://tailwindcss.com/) - Um framework CSS utility-first.
-- **Animações**: [**Framer Motion**](https://www.framer.com/motion/) - Para animações complexas e fluidas.
+- **Animações**: [**Tailwind CSS**](https://tailwindcss.com/docs/animation) - Para animações e transições.
 
 ## 🚀 Como Executar o Projeto
 
