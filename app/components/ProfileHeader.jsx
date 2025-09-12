@@ -1,6 +1,11 @@
 import Image from "next/image";
+import Player from "@/app/models/player";
+import Organization from "@/app/models/organization";
 
 export default function ProfileHeader({ user }) {
+  const isPlayer = user instanceof Player;
+  const isOrganization = user instanceof Organization;
+
   return (
     <div className="w-full bg-white rounded-b-2xl shadow-xl overflow-hidden relative">
       {/* Banner/Capa - Imagem do Vasco */}
@@ -30,7 +35,7 @@ export default function ProfileHeader({ user }) {
           "
           >
             <Image
-              src={user.avatarUrl}
+              src={user.profilePhotoUrl}
               alt="Avatar do perfil"
               fill
               className="object-cover"
@@ -86,12 +91,22 @@ export default function ProfileHeader({ user }) {
               </p>
               <p className="text-sm text-gray-500">Seguindo</p>
             </div>
-            <div className="text-center">
-              <p className="text-lg md:text-xl font-bold text-gray-900">
-                {user.games}
-              </p>
-              <p className="text-sm text-gray-500">Jogos</p>
-            </div>
+            {(isPlayer || isOrganization) && (
+              <div className="text-center">
+                <p className="text-lg md:text-xl font-bold text-gray-900">
+                  {user.subscribedGames}
+                </p>
+                <p className="text-sm text-gray-500">Jogos</p>
+              </div>
+            )}
+            {isPlayer && (
+              <div className="text-center">
+                <p className="text-lg md:text-xl font-bold text-gray-900">
+                  {user.pastOrganization.length}
+                </p>
+                <p className="text-sm text-gray-500">Organizações</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
