@@ -17,7 +17,7 @@ export default function PostCard({ post }) {
       <div className="flex items-center gap-4">
         <div className="relative w-12 h-12 rounded-full overflow-hidden">
           <Image
-            src={post.avatarUrl}
+            src={post.profilePhotoUrl}
             alt="Avatar do perfil"
             fill
             className="object-cover"
