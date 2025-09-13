@@ -3,16 +3,25 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 
+const iconMap = {
+  Feed: "/icons/feed.svg",
+  Jogos: "/icons/games.svg",
+  Calendário: "/icons/calendario.svg",
+  Equipes: "/icons/equipe.svg",
+  Mapa: "/icons/mapa.svg",
+  Perfil: "/icons/perfil.svg",
+};
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navLinks = [
-    { name: "Feed", href: "#" },
-    { name: "Jogos", href: "#" },
-    { name: "Calendário", href: "#" },
-    { name: "Equipes", href: "#" },
-    { name: "Mapa", href: "#" },
-    { name: "Perfil", href: "#" },
+    { name: "Feed", href: "/feed" },
+    { name: "Jogos", href: "/jogos" },
+    { name: "Calendário", href: "/calendario" },
+    { name: "Equipes", href: "/equipes" },
+    { name: "Mapa", href: "/mapa" },
+    { name: "Perfil", href: "/perfil/formiga" }, // Hardcoded for now
   ];
 
   return (
@@ -43,20 +52,33 @@ export default function Header() {
           "
       />
 
-      <nav className="hidden md:flex gap-6 lg:gap-8 items-center">
+      <nav className="hidden md:flex gap-2 lg:gap-4 items-center">
         {navLinks.map((link) => (
           <Link
             key={link.name}
             href={link.href}
             className="
+              flex
+              flex-col
+              items-center
+              justify-center
+              gap-1
               text-white
               hover:text-purple-400 
               transition-colors 
               duration-200 
               font-semibold
+              w-20
             "
           >
-            {link.name}
+            <Image
+              src={iconMap[link.name]}
+              alt={link.name}
+              width={24}
+              height={24}
+              className="w-6 h-6"
+            />
+            <span className="text-xs">{link.name}</span>
           </Link>
         ))}
       </nav>
@@ -88,8 +110,8 @@ export default function Header() {
           md:hidden
           absolute
           top-full
-          left-0
-          w-full
+          left-100%
+          w-50
           bg-purple-700
           shadow-lg
           p-4
@@ -101,15 +123,27 @@ export default function Header() {
                 key={link.name}
                 href={link.href}
                 className="
+                flex
+                items-center
+                gap-3
                 text-white
                 hover:text-purple-400 
                 transition-colors 
                 duration-200 
                 font-semibold
+                p-2
+                rounded-lg
               "
                 onClick={() => setIsMenuOpen(false)}
               >
-                {link.name}
+                <Image
+                  src={iconMap[link.name]}
+                  alt={link.name}
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+                <span>{link.name}</span>
               </Link>
             ))}
           </nav>
