@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import Link from "next/link";
 import Player from "@/app/models/player";
@@ -65,13 +64,12 @@ export default function ProfileHeader({ user }) {
         </div>
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-4">
-          <div className="flex-1 text-gray-900">
-            <h1 className="text-2xl md:text-3xl font-bold leading-tight">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold leading-tight text-gray-900">
               {user.name}
             </h1>
             <p className="text-md text-gray-500">@{user.username}</p>
           </div>
-
           <div
             className="
             mt-4 md:mt-0 
@@ -112,6 +110,10 @@ export default function ProfileHeader({ user }) {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="mt-4">
+          <p className="text-gray-700">{user.bio}</p>
         </div>
       </div>
     </div>
