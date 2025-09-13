@@ -17,11 +17,11 @@ export default function Header() {
 
   const navLinks = [
     { name: "Feed", href: "/feed" },
-    { name: "Jogos", href: "/jogos" },
-    { name: "Calendário", href: "/calendario" },
-    { name: "Equipes", href: "/equipes" },
-    { name: "Mapa", href: "/mapa" },
-    { name: "Perfil", href: "/perfil/formiga" }, // Hardcoded for now
+    { name: "Jogos", href: "/games" },
+    { name: "Calendário", href: "/calendar" },
+    { name: "Equipes", href: "/teams" },
+    { name: "Mapa", href: "/map" },
+    { name: "Perfil", href: "/user/formiga" }, // Hardcoded for now
   ];
 
   return (
