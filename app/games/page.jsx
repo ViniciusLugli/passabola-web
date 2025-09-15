@@ -1,43 +1,32 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Header from "@/app/components/Header";
 import GameCard from "@/app/components/GameCard";
-import SearchBar from "@/app/components/SearchBar";
-import Image from "next/image";
 import Link from "next/link";
+import { api } from "@/app/lib/api";
 
-const mockGames = [
-  {
-    id: 1,
-    name: "Nome do Jogo 1",
-    address: "Endereço do jogo",
-    date: "14/09/2025",
-    organizer: "Nome organizador",
-    type: "Campeonato",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis blandit arcu nec ligula aliquet tristique. Cras facilisis libero enim, nec vestibulum ipsum vestibulum a. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse pharetra sapien nisl, eget cursus massa consectetur non. Integer scelerisque sagittis posuere. Ut vitae ullamcorper dui, id pulvinar sem. Ut ac aliquet mi. Morbi elementum urna eget tempus ornare.",
-  },
-  {
-    id: 2,
-    name: "Nome do Jogo 2",
-    address: "Endereço do jogo",
-    date: "15/09/2025",
-    organizer: "Nome organizador",
-    type: "Amistoso",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis blandit arcu nec ligula aliquet tristique. Cras facilisis libero enim, nec vestibulum ipsum vestibulum a. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse pharetra sapien nisl, eget cursus massa consectetur non. Integer scelerisque sagittis posuere. Ut vitae ullamcorper dui, id pulvinar sem. Ut ac aliquet mi. Morbi elementum urna eget tempus ornare.",
-  },
-  {
-    id: 3,
-    name: "Nome do Jogo 3",
-    address: "Endereço do jogo",
-    date: "16/09/2025",
-    organizer: "Nome organizador",
-    type: "Campeonato",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis blandit arcu nec ligula aliquet tristique. Cras facilisis libero enim, nec vestibulum ipsum vestibulum a. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse pharetra sapien nisl, eget cursus massa consectetur non. Integer scelerisque sagittis posuere. Ut vitae ullamcorper dui, id pulvinar sem. Ut ac aliquet mi. Morbi elementum urna eget tempus ornare.",
-  },
-];
+function Games() {
+  const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-export default function GamesPage() {
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        setLoading(true);
+        const response = await api.games.getAll();
+        setGames(response.content || []);
+      } catch (err) {
+        setError(err.message || "Falha ao carregar os jogos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGames();
+  }, []);
+
   return (
     <div className="bg-gray-100 min-h-screen">
       <Header />
@@ -45,7 +34,7 @@ export default function GamesPage() {
         className="
         container 
         mx-auto 
-        p-4 md:p-8 lg:p-12
+        p-4 md:p-8 lg:p-12 
         max-w-4xl
       "
       >
@@ -54,39 +43,66 @@ export default function GamesPage() {
           text-4xl 
           font-extrabold 
           text-gray-900 
-          leading-tight 
-          mb-8 
+          leading-tight
+          mb-8
           text-center
         "
         >
           Jogos
         </h1>
 
-        {/* Barra de pesquisa e filtro */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="flex-grow">
-            <SearchBar />
-          </div>
-          <Link href="/games/newGame">
-            <div className="flex items-center">
-              <Image
-                src="/icons/adicionar.svg"
-                alt="criar jogo"
-                width={48}
-                height={48}
-                className="cursor-pointer hover:opacity-80 transition-opacity"
-              />
-            </div>
-          </Link>
-        </div>
+        {loading && <p className="text-center">Carregando jogos...</p>}
+        {error && <p className="text-center text-red-500">{error}</p>}
 
-        {/* Lista de jogos */}
-        <div className="flex flex-col gap-6">
-          {mockGames.map((game) => (
-            <GameCard key={game.id} game={game} />
-          ))}
-        </div>
+        {!loading && !error && (
+          <section className="flex flex-col gap-6">
+            {games.length > 0 ? (
+              games.map((game) => <GameCard key={game.id} game={game} />)
+            ) : (
+              <p className="text-center text-gray-500">
+                Nenhum jogo encontrado.
+              </p>
+            )}
+          </section>
+        )}
       </main>
+
+      <Link
+        href="/games/newGame"
+        className="
+        fixed 
+        bottom-6 
+        right-6 
+        p-4 
+        rounded-full 
+        bg-purple-600 
+        text-white 
+        shadow-lg
+        hover:bg-purple-700
+        transition-colors
+        duration-200
+        z-40
+      "
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
+          className="w-8 h-8"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 4.5v15m7.5-7.5h-15"
+          />
+        </svg>
+      </Link>
     </div>
   );
+}
+
+export default function GamesPage() {
+  return <Games />;
 }

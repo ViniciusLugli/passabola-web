@@ -1,41 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Input from "@/app/components/Input";
-import Modal from "@/app/components/Modal";
+import ConfirmSaveModal from "./ConfirmSaveModal";
+import { useConfigForm } from "./useConfigForm";
 
-export default function ConfigForm({ user }) {
-  const router = useRouter();
-  const [formData, setFormData] = useState({
-    name: user.name || "",
-    username: user.username || "",
-    email: user.email || "",
-    phone: user.phone || "",
-    bio: user.bio || "",
-  });
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [passwordConfirm, setPasswordConfirm] = useState("");
+export default function ConfigForm({ userId }) {
+  const {
+    router,
+    formData,
+    loading,
+    error,
+    isModalOpen,
+    passwordConfirm,
+    newPassword,
+    setIsModalOpen,
+    setPasswordConfirm,
+    setNewPassword,
+    handleInputChange,
+    handleSubmit,
+    handleConfirmSave,
+  } = useConfigForm(userId);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
+  if (loading) {
+    return <p>Carregando configurações...</p>;
+  }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsModalOpen(true);
-  };
-
-  const handleConfirmSave = () => {
-    if (passwordConfirm) {
-      console.log("Saving form data:", formData);
-      alert("Informações salvas com sucesso!");
-      setIsModalOpen(false);
-    } else {
-      alert("Por favor, insira sua senha para confirmar.");
-    }
-  };
+  if (error) {
+    return <p className="text-red-500">{error}</p>;
+  }
 
   return (
     <>
@@ -52,14 +44,25 @@ export default function ConfigForm({ user }) {
             stroke="currentColor"
             className="w-7 h-7"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Configurações do Perfil</h1>
-        <p className="text-gray-500 mb-8">Atualize suas informações pessoais.</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          Configurações do Perfil
+        </h1>
+        <p className="text-gray-500 mb-8">
+          Atualize suas informações pessoais.
+        </p>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
           <div className="md:col-span-2">
             <Input
               label="Nome de Exibição"
@@ -75,7 +78,7 @@ export default function ConfigForm({ user }) {
             name="username"
             value={formData.username}
             onChange={handleInputChange}
-            disabled // Usually username is not changeable
+            disabled
           />
           <Input
             label="Email"
@@ -94,38 +97,47 @@ export default function ConfigForm({ user }) {
             />
           </div>
           <div className="md:col-span-2">
-              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
-              <textarea
-                  id="bio"
-                  name="bio"
-                  rows={4}
-                  className="w-full px-4 py-3 bg-gray-100 border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition"
-                  value={formData.bio}
-                  onChange={handleInputChange}
-              ></textarea>
+            <label
+              htmlFor="bio"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Bio
+            </label>
+            <textarea
+              id="bio"
+              name="bio"
+              rows={4}
+              className="w-full px-4 py-3 bg-gray-100 border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition"
+              value={formData.bio}
+              onChange={handleInputChange}
+            ></textarea>
           </div>
 
           <div className="md:col-span-2 border-t border-gray-200 pt-6 mt-4">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Segurança</h2>
-              <Input
-                  label="Nova Senha"
-                  type="password"
-                  name="password"
-                  placeholder="Deixe em branco para não alterar"
-              />
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              Segurança
+            </h2>
+            <Input
+              label="Nova Senha"
+              type="password"
+              name="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Deixe em branco para não alterar"
+            />
           </div>
 
           <div className="md:col-span-2 flex justify-end gap-4 mt-6">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+              className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-8 py-3 bg-purple-800 text-white font-bold rounded-lg hover:bg-purple-900 transition-colors shadow-md"
+              className="px-8 py-3 bg-purple-800 text-white font-bold rounded-lg hover:bg-purple-900 transition-colors shadow-md cursor-pointer"
             >
               Salvar Alterações
             </button>
@@ -133,33 +145,13 @@ export default function ConfigForm({ user }) {
         </form>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Confirmar Alterações</h2>
-        <p className="text-gray-600 mb-6">Para sua segurança, por favor, insira sua senha para confirmar as alterações.</p>
-        <Input
-          label="Senha"
-          type="password"
-          name="passwordConfirm"
-          value={passwordConfirm}
-          onChange={(e) => setPasswordConfirm(e.target.value)}
-        />
-        <div className="flex justify-end gap-4 mt-8">
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(false)}
-            className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirmSave}
-            className="px-8 py-3 bg-purple-800 text-white font-bold rounded-lg hover:bg-purple-900 transition-colors shadow-md"
-          >
-            Confirmar
-          </button>
-        </div>
-      </Modal>
+      <ConfirmSaveModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        passwordConfirm={passwordConfirm}
+        setPasswordConfirm={setPasswordConfirm}
+        onConfirm={handleConfirmSave}
+      />
     </>
   );
 }

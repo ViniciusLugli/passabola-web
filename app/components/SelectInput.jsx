@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 
-export default function SelectInput({ label, options, value, onChange }) {
+const SelectInput = ({ label, name, options, value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const selectedOption = options.find((opt) => opt.value === value) || {
@@ -11,7 +11,7 @@ export default function SelectInput({ label, options, value, onChange }) {
   };
 
   const handleSelect = (option) => {
-    onChange({ target: { name: label, value: option.value } });
+    onChange({ target: { name: name, value: option.value } });
     setIsOpen(false);
   };
 
@@ -76,7 +76,8 @@ export default function SelectInput({ label, options, value, onChange }) {
           rounded-xl 
           shadow-lg 
           z-20
-          overflow-hidden
+          overflow-y-auto
+          max-h-60
         "
         >
           {options.map((option) => (
@@ -100,4 +101,6 @@ export default function SelectInput({ label, options, value, onChange }) {
       )}
     </div>
   );
-}
+};
+
+export default memo(SelectInput);

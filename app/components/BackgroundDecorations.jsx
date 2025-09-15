@@ -30,7 +30,6 @@ export default function BackgroundDecorations({
       className:
         "absolute top-1/2 left-1/2 w-48 h-48 transform -translate-x-1/2 -translate-y-1/2 opacity-20",
     },
-    // More decorations for better effect
     {
       src: "/DecoR (tatica 1).svg",
       className:
@@ -84,8 +83,8 @@ export default function BackgroundDecorations({
             src={deco.src}
             alt="decoration"
             className={deco.className}
-            width={100} // Default width, will be overridden by className if specified
-            height={100} // Default height, will be overridden by className if specified
+            width={100}
+            height={100}
           />
         ))}
       </div>

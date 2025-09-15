@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { memo } from "react";
 
-export default function Input({
+const Input = ({
   label,
   type,
   placeholder,
@@ -10,7 +10,7 @@ export default function Input({
   value,
   onChange,
   className = "",
-}) {
+}) => {
   const inputId = name || `input-${Math.random().toString(36).substring(2, 9)}`;
 
   return (
@@ -47,4 +47,6 @@ export default function Input({
       />
     </div>
   );
-}
+};
+
+export default memo(Input);

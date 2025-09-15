@@ -54,7 +54,6 @@ export default function NewGamePage() {
           gap-6
         "
         >
-          {/* Botão de Fechar */}
           <button
             onClick={() => router.back()}
             className="

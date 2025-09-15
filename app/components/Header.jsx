@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, memo } from "react";
+import { useAuth } from "@/app/context/AuthContext";
 
 const iconMap = {
   Feed: "/icons/feed.svg",
@@ -12,8 +13,9 @@ const iconMap = {
   Perfil: "/icons/perfil.svg",
 };
 
-export default function Header() {
+const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const navLinks = [
     { name: "Feed", href: "/feed" },
@@ -21,7 +23,7 @@ export default function Header() {
     { name: "Calendário", href: "/calendar" },
     { name: "Equipes", href: "/teams" },
     { name: "Mapa", href: "/map" },
-    { name: "Perfil", href: "/user/formiga" }, // Hardcoded for now
+    { name: "Perfil", href: user ? `/user/${user.profileId}` : "/login" },
   ];
 
   return (
@@ -81,6 +83,34 @@ export default function Header() {
             <span className="text-xs">{link.name}</span>
           </Link>
         ))}
+        {user && (
+          <button
+            onClick={logout}
+            className="
+              flex
+              flex-col
+              items-center
+              justify-center
+              gap-1
+              text-white
+              hover:text-purple-400 
+              transition-colors 
+              duration-200 
+              font-semibold
+              w-20
+              bg-transparent border-none cursor-pointer
+            "
+          >
+            <Image
+              src="/icons/log-out.svg"
+              alt="Sair"
+              width={24}
+              height={24}
+              className="w-6 h-6"
+            />
+            <span className="text-xs">Sair</span>
+          </button>
+        )}
       </nav>
 
       {/* Menu Hamburger para mobile */}
@@ -99,7 +129,7 @@ export default function Header() {
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" // Código para o icone do menu hamburger
+            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
           />
         </svg>
       </button>
@@ -146,9 +176,41 @@ export default function Header() {
                 <span>{link.name}</span>
               </Link>
             ))}
+            {user && (
+              <button
+                onClick={() => {
+                  logout();
+                  setIsMenuOpen(false);
+                }}
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  text-white
+                  hover:text-purple-400 
+                  transition-colors 
+                  duration-200 
+                  font-semibold
+                  p-2
+                  rounded-lg
+                  bg-transparent border-none cursor-pointer
+                "
+              >
+                <Image
+                  src="/icons/config.svg"
+                  alt="Sair"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+                <span>Sair</span>
+              </button>
+            )}
           </nav>
         </div>
       )}
     </header>
   );
-}
+};
+
+export default memo(Header);

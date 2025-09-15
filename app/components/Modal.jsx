@@ -1,7 +1,8 @@
-
 "use client";
 
-export default function Modal({ isOpen, onClose, children }) {
+import { memo } from "react";
+
+const Modal = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
 
   return (
@@ -19,11 +20,17 @@ export default function Modal({ isOpen, onClose, children }) {
             stroke="currentColor"
             className="w-7 h-7"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
         {children}
       </div>
     </div>
   );
-}
+};
+
+export default memo(Modal);

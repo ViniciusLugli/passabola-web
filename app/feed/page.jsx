@@ -1,47 +1,58 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Header from "@/app/components/Header";
 import PostCard from "@/app/components/PostCard";
+import SearchBar from "@/app/components/SearchBar";
 import Link from "next/link";
+import { api } from "@/app/lib/api";
+import { useAuth } from "@/app/context/AuthContext";
 
-// Dados mock para simular posts
-const mockPosts = [
-  {
-    id: 1,
-    profilePhotoUrl: "/images/vasco-logo.png", // Substitua pelo caminho real
-    name: "Vasco da Gama",
-    username: "vascoDaGama",
-    content:
-      "Grande vitória hoje! O time mostrou muita garra e determinação em campo. #Vasco #Futebol",
-    likes: 1245,
-  },
-  {
-    id: 2,
-    profilePhotoUrl: "/images/player-avatar.png", // Substitua pelo caminho real
-    name: "Maria Jogadora",
-    username: "maria_joga",
-    content: "Treino pesado para o próximo campeonato! Foco total! 💪⚽",
-    likes: 876,
-  },
-  {
-    id: 3,
-    profilePhotoUrl: "/images/organization-logo.png", // Substitua pelo caminho real
-    name: "Liga Futebol Amador",
-    username: "liga_amadora",
-    content:
-      "Inscrições abertas para a nova temporada! Monte sua equipe e venha competir! #FutebolAmador",
-    likes: 321,
-  },
-  {
-    id: 4,
-    profilePhotoUrl: "/images/vasco-logo.png", // Substitua pelo caminho real
-    name: "Vasco da Gama",
-    username: "vascoDaGama",
-    content:
-      "Nosso craque marcou um golaço de bicicleta! Veja o replay e deixe seu like! 🔥",
-    likes: 2100,
-  },
-];
+function Feed() {
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-export default function FeedPage() {
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        let response;
+        if (searchTerm) {
+          response = await api.posts.search(searchTerm);
+        } else {
+          response = await api.posts.getAll();
+        }
+        setPosts(response.content || []);
+      } catch (err) {
+        console.error("Erro ao carregar posts:", err);
+        setError(err.message || "Falha ao carregar os posts.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!authLoading && isAuthenticated) {
+      // Chamar fetchPosts apenas quando não estiver carregando e autenticado
+      const handler = setTimeout(() => {
+        fetchPosts();
+      }, 1000);
+
+      return () => {
+        clearTimeout(handler);
+      };
+    } else if (!authLoading && !isAuthenticated) {
+      setError("Você precisa estar logado para ver o feed.");
+      setLoading(false);
+    }
+  }, [searchTerm, isAuthenticated, authLoading]);
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen">
       <Header />
@@ -66,14 +77,26 @@ export default function FeedPage() {
           Feed
         </h1>
 
-        <section className="flex flex-col gap-6">
-          {mockPosts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </section>
+        <div className="mb-8">
+          <SearchBar value={searchTerm} onChange={handleSearchChange} />
+        </div>
+
+        {loading && <p className="text-center">Carregando posts...</p>}
+        {error && <p className="text-center text-red-500">{error}</p>}
+
+        {!loading && !error && (
+          <section className="flex flex-col gap-6">
+            {posts.length > 0 ? (
+              posts.map((post) => <PostCard key={post.id} post={post} />)
+            ) : (
+              <p className="text-center text-gray-500">
+                Nenhum post encontrado.
+              </p>
+            )}
+          </section>
+        )}
       </main>
 
-      {/* Botão de "Novo Post" no canto inferior direito (FAB) */}
       <Link
         href="/feed/newPost"
         className="
@@ -108,4 +131,8 @@ export default function FeedPage() {
       </Link>
     </div>
   );
+}
+
+export default function FeedPage() {
+  return <Feed />;
 }

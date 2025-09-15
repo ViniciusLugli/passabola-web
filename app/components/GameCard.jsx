@@ -6,13 +6,11 @@ import Image from "next/image";
 export default function GameCard({ game }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Mapeamento de tipos de jogo para cores
   const typeColors = {
     Campeonato: "bg-purple-800",
     Amistoso: "bg-green-600",
   };
 
-  // Ícones de status do jogo
   const statusIcons = {
     Campeonato: "/icons/campeonato.svg",
     Amistoso: "/icons/amistoso.svg",
@@ -38,7 +36,6 @@ export default function GameCard({ game }) {
         ${isExpanded ? "shadow-2xl" : ""}
       `}
     >
-      {/* Marcador de Tipo de Jogo (Flag/Banner) */}
       <div
         className={`
         absolute 
@@ -88,7 +85,6 @@ export default function GameCard({ game }) {
         </div>
       )}
 
-      {/* Ícone de Adicionar/Check no canto inferior direito */}
       <div
         className="
         absolute 

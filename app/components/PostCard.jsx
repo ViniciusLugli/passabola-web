@@ -1,6 +1,11 @@
 import Image from "next/image";
+import Link from "next/link";
+import { memo } from "react";
 
-export default function PostCard({ post }) {
+function PostCard({ post }) {
+  const profilePhotoUrl =
+    post.authorProfilePhotoUrl || "/icons/user-default.png";
+
   return (
     <div
       className="
@@ -15,22 +20,38 @@ export default function PostCard({ post }) {
       "
     >
       <div className="flex items-center gap-4">
-        <div className="relative w-12 h-12 rounded-full overflow-hidden">
+        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-gray-200">
           <Image
-            src={post.profilePhotoUrl}
-            alt="Avatar do perfil"
+            src={profilePhotoUrl}
+            alt={`Avatar de ${post.authorUsername}`}
             fill
+            sizes="(max-width: 768px) 100vw, 48px"
             className="object-cover"
           />
         </div>
         <div>
-          <h4 className="font-bold text-lg text-gray-900 leading-tight">
-            {post.name}
-          </h4>
-          <p className="text-sm text-gray-500">@{post.username}</p>
+          <Link href={`/user/${post.authorId}`}>
+            <h4 className="font-bold text-lg text-gray-900 leading-tight hover:underline cursor-pointer">
+              {post.authorUsername}{" "}
+            </h4>
+          </Link>
+          <p className="text-sm text-gray-500">{post.authorRole}</p>
         </div>
       </div>
       <p className="text-gray-700 leading-relaxed text-md">{post.content}</p>
+
+      {post.imageUrl && (
+        <div className="relative w-full h-64 mt-2 rounded-lg overflow-hidden">
+          <Image
+            src={post.imageUrl || "/icons/banner-default.jpeg"}
+            alt="Imagem do post"
+            fill
+            sizes="(max-width: 768px) 100vw, 768px"
+            className="object-cover"
+          />
+        </div>
+      )}
+
       <div
         className="
         flex 
@@ -42,6 +63,7 @@ export default function PostCard({ post }) {
         duration-200 
         hover:text-red-500 
         hover:scale-100
+        mt-2 pt-4 border-t border-gray-100
       "
       >
         <svg
@@ -63,3 +85,5 @@ export default function PostCard({ post }) {
     </div>
   );
 }
+
+export default memo(PostCard);

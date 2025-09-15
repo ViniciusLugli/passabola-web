@@ -1,7 +1,8 @@
 "use client";
 import Image from "next/image";
+import { memo } from "react";
 
-export default function SearchBar() {
+const SearchBar = ({ value, onChange }) => {
   return (
     <div className="flex items-center gap-4">
       <div
@@ -12,7 +13,9 @@ export default function SearchBar() {
       >
         <input
           type="text"
-          placeholder="Pesquise os jogos"
+          placeholder="Pesquise..."
+          value={value}
+          onChange={onChange}
           className="
                 w-full 
                 py-4 
@@ -31,4 +34,6 @@ export default function SearchBar() {
       </div>
     </div>
   );
-}
+};
+
+export default memo(SearchBar);

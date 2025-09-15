@@ -1,69 +1,105 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import ProfileHeader from "@/app/components/ProfileHeader";
 import PostCard from "@/app/components/PostCard";
-import { notFound } from "next/navigation";
-import Player from "@/app/models/player";
-import Organization from "@/app/models/organization";
-import Spectator from "@/app/models/spectator";
+import { api } from "@/app/lib/api";
+import { useAuth } from "@/app/context/AuthContext";
 
-async function getUserData(id) {
-  const res = await fetch(`http://localhost:3000/api/users/${id}`, {
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    return notFound();
+export default function ProfilePage() {
+  const {
+    user: loggedInUser,
+    isAuthenticated,
+    loading: authLoading,
+  } = useAuth();
+  const router = useRouter();
+
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      return;
+    }
+
+    const fetchProfileData = async () => {
+      if (!loggedInUser || !loggedInUser.profileId) {
+        setLoading(false);
+        setError("User data not available.");
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const postsResponse = await api.posts.getByAuthor(
+          loggedInUser.profileId
+        );
+        setPosts(postsResponse.posts || []);
+      } catch (err) {
+        console.error("Error fetching posts:", err);
+        setError("Failed to load posts. Please try again.");
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchProfileData();
+    }
+  }, [loggedInUser, isAuthenticated, authLoading, router]);
+
+  if (authLoading || loading) {
+    return (
+      <div>
+        <Header />
+        <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
+          <p>Carregando conta...</p>
+        </main>
+      </div>
+    );
   }
-  return res.json();
-}
 
-// Helper to create user instance from plain object
-function createUserInstance(userData) {
-  if (!userData) return null;
-  switch (userData.type) {
-    case "player":
-      return new Player(...Object.values(userData));
-    case "organization":
-      return new Organization(...Object.values(userData));
-    case "spectator":
-      return new Spectator(...Object.values(userData));
-    default:
-      return null;
-  }
-}
-
-export default async function ProfilePage({ params }) {
-  const id = params.id;
-  const { user: userData, posts } = await getUserData(id);
-
-  const user = createUserInstance(userData);
-
-  if (!user) {
-    return notFound();
+  if (error) {
+    return (
+      <div>
+        <Header />
+        <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
+          <h1 className="text-red-500 text-2xl">Error: {error}</h1>
+        </main>
+      </div>
+    );
   }
 
   const userPosts = posts.map((post) => ({
     ...post,
-    name: user.name,
-    username: user.username,
-    profilePhotoUrl: user.profilePhotoUrl,
+    name: loggedInUser.name,
+    username: loggedInUser.username,
+    profilePhotoUrl: loggedInUser.profilePhotoUrl || "/icons/user-default.png",
   }));
-
-  const loggedInUserId = "formiga"; // Simulate logged-in user
 
   return (
     <div>
       <Header />
       <main
         className="
-        container 
-        mx-auto 
-        p-4 
-        md:p-8 
-        lg:p-12  
+        container
+        mx-auto
+        p-4
+        md:p-8
+        lg:p-12
         max-w-4xl
       "
       >
-        <ProfileHeader user={user} loggedInUserId={loggedInUserId} />
+        <ProfileHeader
+          user={loggedInUser}
+          loggedInUserId={loggedInUser.profileId}
+        />
 
         <section className="mt-8">
           <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">
@@ -71,7 +107,10 @@ export default async function ProfilePage({ params }) {
           </h3>
           <div className="flex flex-col gap-6">
             {userPosts.map((post) => (
-              <PostCard key={`${user.username}-${post.id}`} post={post} />
+              <PostCard
+                key={`${loggedInUser.username}-${post.id}`}
+                post={post}
+              />
             ))}
           </div>
         </section>
