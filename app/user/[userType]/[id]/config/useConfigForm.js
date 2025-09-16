@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { api } from "@/app/lib/api";
 
-export const useConfigForm = (userId) => {
+export const useConfigForm = (userId, userType) => {
   const router = useRouter();
   const {
     user: loggedInUser,
@@ -30,7 +30,8 @@ export const useConfigForm = (userId) => {
       if (
         !isAuthenticated ||
         !loggedInUser ||
-        String(loggedInUser.profileId) !== String(userId)
+        String(loggedInUser.id) !== String(userId) ||
+        loggedInUser.userType.toLowerCase() !== userType.toLowerCase()
       ) {
         setError("Você não tem permissão para acessar esta página.");
         setLoading(false);
@@ -42,22 +43,18 @@ export const useConfigForm = (userId) => {
 
       try {
         let fullProfileData;
-        switch (loggedInUser.role.toLowerCase()) {
+        switch (userType.toLowerCase()) {
           case "player":
-            fullProfileData = await api.players.getById(loggedInUser.profileId);
+            fullProfileData = await api.players.getById(userId);
             break;
           case "organization":
-            fullProfileData = await api.organizations.getById(
-              loggedInUser.profileId
-            );
+            fullProfileData = await api.organizations.getById(userId);
             break;
           case "spectator":
-            fullProfileData = await api.spectators.getById(
-              loggedInUser.profileId
-            );
+            fullProfileData = await api.spectators.getById(userId);
             break;
           default:
-            throw new Error("Unknown user role");
+            throw new Error("Unknown user type");
         }
 
         setFormData({
@@ -80,7 +77,7 @@ export const useConfigForm = (userId) => {
     if (!authLoading) {
       fetchUserData();
     }
-  }, [userId, loggedInUser, isAuthenticated, authLoading]);
+  }, [userId, userType, loggedInUser, isAuthenticated, authLoading]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -108,18 +105,18 @@ export const useConfigForm = (userId) => {
       }
       dataToUpdate.currentPassword = passwordConfirm; // Adiciona a senha atual para validação
 
-      switch (loggedInUser.role.toLowerCase()) {
+      switch (userType.toLowerCase()) {
         case "player":
-          await api.players.update(loggedInUser.profileId, dataToUpdate);
+          await api.players.update(userId, dataToUpdate);
           break;
         case "organization":
-          await api.organizations.update(loggedInUser.profileId, dataToUpdate);
+          await api.organizations.update(userId, dataToUpdate);
           break;
         case "spectator":
-          await api.spectators.update(loggedInUser.profileId, dataToUpdate);
+          await api.spectators.update(userId, dataToUpdate);
           break;
         default:
-          throw new Error("Unknown user role");
+          throw new Error("Unknown user type");
       }
 
       alert("Informações salvas com sucesso!");

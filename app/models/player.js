@@ -2,6 +2,7 @@ import User from "./user.js";
 
 export default class Player extends User {
   constructor(
+    id,
     username,
     name,
     email,
@@ -22,6 +23,8 @@ export default class Player extends User {
     createdGames
   ) {
     super(
+      id,
+      "player", // Define o userType como 'player'
       username,
       name,
       email,
@@ -39,7 +42,7 @@ export default class Player extends User {
     this.birthDate = birthDate;
     this.organizationId = organizationId;
     this.pastOrganization = pastOrganization;
-    this.teams = teams; // Array de IDs de times
+    this.teams = teams;
     this.createdGames = createdGames;
   }
 }

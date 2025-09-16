@@ -4,7 +4,7 @@ import Input from "@/app/components/Input";
 import ConfirmSaveModal from "./ConfirmSaveModal";
 import { useConfigForm } from "./useConfigForm";
 
-export default function ConfigForm({ userId }) {
+export default function ConfigForm({ userId, userType }) {
   const {
     router,
     formData,
@@ -19,7 +19,7 @@ export default function ConfigForm({ userId }) {
     handleInputChange,
     handleSubmit,
     handleConfirmSave,
-  } = useConfigForm(userId);
+  } = useConfigForm(userId, userType);
 
   if (loading) {
     return <p>Carregando configurações...</p>;

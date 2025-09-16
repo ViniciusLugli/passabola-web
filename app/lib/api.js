@@ -64,12 +64,6 @@ export const api = {
       fetchApi(`/players/organization/${orgId}?page=${page}&size=${size}`),
     update: (id, data) =>
       fetchApi(`/players/${id}`, { method: "PUT", body: data }),
-    follow: (id) => fetchApi(`/players/${id}/follow`, { method: "POST" }),
-    unfollow: (id) => fetchApi(`/players/${id}/follow`, { method: "DELETE" }),
-    getFollowers: (id, { page = 0, size = 20 } = {}) =>
-      fetchApi(`/players/${id}/followers?page=${page}&size=${size}`),
-    getFollowing: (id, { page = 0, size = 20 } = {}) =>
-      fetchApi(`/players/${id}/following?page=${page}&size=${size}`),
   },
 
   organizations: {
@@ -80,7 +74,28 @@ export const api = {
       fetchApi(`/organizations/search?name=${name}&page=${page}&size=${size}`),
     update: (id, data) =>
       fetchApi(`/organizations/${id}`, { method: "PUT", body: data }),
-    follow: (id) => fetchApi(`/organizations/${id}/follow`, { method: "POST" }),
+  },
+
+  spectators: {
+    getAll: ({ page = 0, size = 20 } = {}) =>
+      fetchApi(`/spectators?page=${page}&size=${size}`),
+    getById: (id) => fetchApi(`/spectators/${id}`),
+    getByFavoriteTeam: (teamId, { page = 0, size = 10 } = {}) =>
+      fetchApi(`/spectators/favorite-team/${teamId}?page=${page}&size=${size}`),
+    update: (id, data) =>
+      fetchApi(`/spectators/${id}`, { method: "PUT", body: data }),
+  },
+
+  // Novo objeto para operações genéricas de usuário
+  users: {
+    follow: (userType, id) =>
+      fetchApi(`/${userType}s/${id}/follow`, { method: "POST" }),
+    unfollow: (userType, id) =>
+      fetchApi(`/${userType}s/${id}/follow`, { method: "DELETE" }),
+    getFollowers: (userType, id, { page = 0, size = 20 } = {}) =>
+      fetchApi(`/${userType}s/${id}/followers?page=${page}&size=${size}`),
+    getFollowing: (userType, id, { page = 0, size = 20 } = {}) =>
+      fetchApi(`/${userType}s/${id}/following?page=${page}&size=${size}`),
   },
 
   games: {
@@ -134,16 +149,6 @@ export const api = {
     comment: (id, comment) =>
       fetchApi(`/posts/${id}/comment`, { body: { comment } }),
     share: (id) => fetchApi(`/posts/${id}/share`, { method: "POST" }),
-  },
-
-  spectators: {
-    getAll: ({ page = 0, size = 20 } = {}) =>
-      fetchApi(`/spectators?page=${page}&size=${size}`),
-    getById: (id) => fetchApi(`/spectators/${id}`),
-    getByFavoriteTeam: (teamId, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/spectators/favorite-team/${teamId}?page=${page}&size=${size}`),
-    update: (id, data) =>
-      fetchApi(`/spectators/${id}`, { method: "PUT", body: data }),
   },
 
   teams: {
@@ -177,58 +182,5 @@ export const api = {
       fetchApi(`/teams/${teamId}/leave`, { method: "POST" }),
     removePlayer: (teamId, playerId) =>
       fetchApi(`/teams/${teamId}/players/${playerId}`, { method: "DELETE" }),
-  },
-
-  games: {
-    getAll: ({ page = 0, size = 20 } = {}) =>
-      fetchApi(`/games?page=${page}&size=${size}`),
-    getById: (id) => fetchApi(`/games/${id}`),
-    getByOrganization: (orgId, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/games/organization/${orgId}?page=${page}&size=${size}`),
-    getByStatus: (status, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/games/status/${status}?page=${page}&size=${size}`),
-    getByChampionship: (championship, { page = 0, size = 10 } = {}) =>
-      fetchApi(
-        `/games/championship?championship=${championship}&page=${page}&size=${size}`
-      ),
-    create: (data) => fetchApi("/games", { body: data }),
-    update: (id, data) =>
-      fetchApi(`/games/${id}`, { method: "PUT", body: data }),
-    delete: (id) => fetchApi(`/games/${id}`, { method: "DELETE" }),
-    updateScore: (id, { homeGoals, awayGoals }) =>
-      fetchApi(
-        `/games/${id}/score?homeGoals=${homeGoals}&awayGoals=${awayGoals}`,
-        { method: "PATCH" }
-      ),
-    subscribe: (id) => fetchApi(`/games/${id}/subscribe`, { method: "POST" }),
-  },
-
-  posts: {
-    getAll: ({ page = 0, size = 20 } = {}) =>
-      fetchApi(`/posts?page=${page}&size=${size}`),
-    getById: (id) => fetchApi(`/posts/${id}`),
-    getByAuthor: (authorId, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/author/${authorId}?page=${page}&size=${size}`),
-    getMyPosts: ({ page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/my-posts?page=${page}&size=${size}`),
-    getByRole: (role, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/role/${role}?page=${page}&size=${size}`),
-    getByType: (type, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/type/${type}?page=${page}&size=${size}`),
-    getMostLiked: ({ page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/most-liked?page=${page}&size=${size}`),
-    getWithImages: ({ page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/with-images?page=${page}&size=${size}`),
-    search: (content, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/search?content=${content}&page=${page}&size=${size}`),
-    create: (data) => fetchApi("/posts", { body: data }),
-    update: (id, data) =>
-      fetchApi(`/posts/${id}`, { method: "PUT", body: data }),
-    delete: (id) => fetchApi(`/posts/${id}`, { method: "DELETE" }),
-    like: (id) => fetchApi(`/posts/${id}/like`, { method: "POST" }),
-    unlike: (id) => fetchApi(`/posts/${id}/unlike`, { method: "POST" }),
-    comment: (id, comment) =>
-      fetchApi(`/posts/${id}/comment`, { body: { comment } }),
-    share: (id) => fetchApi(`/posts/${id}/share`, { method: "POST" }),
   },
 };

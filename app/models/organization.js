@@ -2,6 +2,7 @@ import User from "./user.js";
 
 export default class Organization extends User {
   constructor(
+    id,
     username,
     name,
     email,
@@ -20,6 +21,8 @@ export default class Organization extends User {
     createdGames
   ) {
     super(
+      id,
+      "organization", // Define o userType como 'organization'
       username,
       name,
       email,

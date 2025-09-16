@@ -30,7 +30,9 @@ function PostCard({ post }) {
           />
         </div>
         <div>
-          <Link href={`/user/${post.authorId}`}>
+          <Link
+            href={`/user/${post.authorRole.toLowerCase()}/${post.authorId}`}
+          >
             <h4 className="font-bold text-lg text-gray-900 leading-tight hover:underline cursor-pointer">
               {post.authorUsername}{" "}
             </h4>

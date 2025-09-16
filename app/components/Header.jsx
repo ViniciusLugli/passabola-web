@@ -25,7 +25,10 @@ const Header = () => {
     { name: "Calendário", href: "/calendar" },
     { name: "Equipes", href: "/teams" },
     { name: "Mapa", href: "/map" },
-    { name: "Perfil", href: user ? `/user/${user.profileId}` : "/login" },
+    {
+      name: "Perfil",
+      href: user ? `/user/${user.userType.toLowerCase()}/${user.id}` : "/login",
+    },
   ];
 
   return (

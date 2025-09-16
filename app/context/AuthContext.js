@@ -22,22 +22,20 @@ export const AuthProvider = ({ children }) => {
 
   const fetchFullProfileData = useCallback(async (basicUserData) => {
     let fullProfileData;
-    switch (basicUserData.role.toLowerCase()) {
+    switch (basicUserData.userType.toLowerCase()) {
       case "player":
-        fullProfileData = await api.players.getById(basicUserData.profileId);
+        fullProfileData = await api.players.getById(basicUserData.id);
         break;
       case "organization":
-        fullProfileData = await api.organizations.getById(
-          basicUserData.profileId
-        );
+        fullProfileData = await api.organizations.getById(basicUserData.id);
         break;
       case "spectator":
-        fullProfileData = await api.spectators.getById(basicUserData.profileId);
+        fullProfileData = await api.spectators.getById(basicUserData.id);
         break;
       default:
         console.warn(
-          "Unknown user role from localStorage:",
-          basicUserData.role
+          "Unknown user type from localStorage:",
+          basicUserData.userType
         );
         fullProfileData = {};
     }
@@ -81,14 +79,24 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await api.auth.login(credentials);
-      const { token, ...basicUserData } = response;
+      // A resposta do login agora deve incluir 'id' e 'userType' diretamente
+      const { token, profileId, userType, ...basicUserData } = response;
 
       setAuthToken(token);
 
-      const fullProfileData = await fetchFullProfileData(basicUserData);
+      // Usar 'id' e 'userType' da resposta do login
+      const userBasicDataWithIdAndType = {
+        ...basicUserData,
+        id: profileId, // Mapeia profileId para id
+        userType: userType,
+      };
+
+      const fullProfileData = await fetchFullProfileData(
+        userBasicDataWithIdAndType
+      );
 
       const userDataToStore = {
-        ...basicUserData,
+        ...userBasicDataWithIdAndType,
         ...fullProfileData,
       };
 
