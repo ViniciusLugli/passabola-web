@@ -1,5 +1,7 @@
 export default class User {
   constructor(
+    id, // Novo: ID único do usuário
+    userType, // Novo: Tipo de usuário (ex: 'player', 'organization', 'spectator')
     username,
     name,
     email,
@@ -13,6 +15,8 @@ export default class User {
     posts,
     subscribedGames
   ) {
+    this.id = id;
+    this.userType = userType;
     this.username = username;
     this.name = name;
     this.email = email;
