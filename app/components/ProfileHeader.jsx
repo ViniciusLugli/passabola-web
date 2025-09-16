@@ -1,11 +1,66 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import Player from "@/app/models/player";
 import Organization from "@/app/models/organization";
+import { api } from "@/app/lib/api";
 
-export default function ProfileHeader({ user, loggedInUserId }) {
+export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(
+    user.followers ? user.followers : 0
+  );
+  const [followingCount, setFollowingCount] = useState(
+    user.following ? user.following : 0
+  );
+
   const isPlayer = user instanceof Player;
   const isOrganization = user instanceof Organization;
+
+  useEffect(() => {
+    console.log("ProfileHeader useEffect - user:", user);
+    console.log("ProfileHeader useEffect - loggedInUser:", loggedInUser);
+
+    if (loggedInUser && user.followersList) {
+      setIsFollowing(
+        user.followersList.some((follower) => follower.id === loggedInUser.id)
+      );
+    } else {
+      setIsFollowing(false);
+    }
+    setFollowersCount(user.followers ? user.followers : 0); // Usar a contagem numérica do backend
+    setFollowingCount(user.following ? user.following : 0); // Usar a contagem numérica do backend
+  }, [user, loggedInUser]);
+
+  const handleFollow = async () => {
+    try {
+      await api.users.follow(user.userType.toLowerCase(), user.id);
+      setIsFollowing(true);
+      setFollowersCount((prev) => prev + 1);
+      if (onFollowChange) {
+        onFollowChange();
+      }
+    } catch (error) {
+      console.error("Erro ao seguir usuário:", error);
+      // Não reverter o estado aqui, pois a API já rejeitou a promessa
+      // A página pai (page.jsx) deve re-buscar os dados para sincronizar
+    }
+  };
+
+  const handleUnfollow = async () => {
+    try {
+      await api.users.unfollow(user.userType.toLowerCase(), user.id);
+      setIsFollowing(false);
+      setFollowersCount((prev) => prev - 1);
+      if (onFollowChange) {
+        onFollowChange();
+      }
+    } catch (error) {
+      console.error("Erro ao deixar de seguir usuário:", error);
+      // Não reverter o estado aqui, pois a API já rejeitou a promessa
+      // A página pai (page.jsx) deve re-buscar os dados para sincronizar
+    }
+  };
 
   return (
     <div className="w-full bg-white rounded-b-2xl shadow-xl overflow-hidden relative">
@@ -41,8 +96,11 @@ export default function ProfileHeader({ user, loggedInUserId }) {
               sizes="(max-width: 768px) 24vw, 15vw"
             />
           </div>
-          {loggedInUserId && loggedInUserId === user.profileId && (
-            <Link href={`/user/${user.profileId}/config`} passHref>
+          {loggedInUser && loggedInUser.id === user.id ? (
+            <Link
+              href={`/user/${user.userType.toLowerCase()}/${user.id}/config`}
+              passHref
+            >
               <button className="text-gray-500 hover:text-gray-800 transition-colors cursor-pointer">
                 <img
                   src="/icons/config.svg"
@@ -51,6 +109,23 @@ export default function ProfileHeader({ user, loggedInUserId }) {
                 />
               </button>
             </Link>
+          ) : (
+            loggedInUser && ( // Só mostra o botão se houver um usuário logado e não for o próprio perfil
+              <button
+                onClick={isFollowing ? handleUnfollow : handleFollow}
+                className={`
+                  px-4 py-2 rounded-full text-sm font-semibold
+                  ${
+                    isFollowing
+                      ? "bg-red-500 text-white hover:bg-red-600"
+                      : "bg-green-500 text-white hover:bg-green-600"
+                  }
+                  transition-colors duration-200
+                `}
+              >
+                {isFollowing ? "Deixar de Seguir" : "Seguir"}
+              </button>
+            )
           )}
         </div>
 
@@ -74,20 +149,20 @@ export default function ProfileHeader({ user, loggedInUserId }) {
           >
             <div className="text-center">
               <p className="text-lg md:text-xl font-bold text-gray-900">
-                {user.followers || 0}
+                {followersCount}
               </p>
               <p className="text-sm text-gray-500">Seguidores</p>
             </div>
             <div className="text-center">
               <p className="text-lg md:text-xl font-bold text-gray-900">
-                {user.following || 0}
+                {followingCount}
               </p>
               <p className="text-sm text-gray-500">Seguindo</p>
             </div>
             {(isPlayer || isOrganization) && (
               <div className="text-center">
                 <p className="text-lg md:text-xl font-bold text-gray-900">
-                  {user.subscribedGames}
+                  {user.subscribedGames ? user.subscribedGames.length : 0}
                 </p>
                 <p className="text-sm text-gray-500">Jogos</p>
               </div>
