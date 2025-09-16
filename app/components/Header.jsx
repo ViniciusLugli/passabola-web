@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, memo } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import TeamInviteList from "./TeamInviteList";
 
 const iconMap = {
   Feed: "/icons/feed.svg",
@@ -15,6 +16,7 @@ const iconMap = {
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showInvitesModal, setShowInvitesModal] = useState(false);
   const { user, logout } = useAuth();
 
   const navLinks = [
@@ -83,6 +85,34 @@ const Header = () => {
             <span className="text-xs">{link.name}</span>
           </Link>
         ))}
+        {user?.userType === "PLAYER" && (
+          <button
+            onClick={() => setShowInvitesModal(true)}
+            className="
+              flex
+              flex-col
+              items-center
+              justify-center
+              gap-1
+              text-white
+              hover:text-purple-400 
+              transition-colors 
+              duration-200 
+              font-semibold
+              w-20
+              bg-transparent border-none cursor-pointer
+            "
+          >
+            <Image
+              src="/icons/equipe.svg"
+              alt="Convites"
+              width={24}
+              height={24}
+              className="w-6 h-6"
+            />
+            <span className="text-xs">Convites</span>
+          </button>
+        )}
         {user && (
           <button
             onClick={logout}
@@ -176,6 +206,36 @@ const Header = () => {
                 <span>{link.name}</span>
               </Link>
             ))}
+            {user?.userType === "PLAYER" && (
+              <button
+                onClick={() => {
+                  setShowInvitesModal(true);
+                  setIsMenuOpen(false);
+                }}
+                className="
+                  flex
+                  items-center
+                  gap-3
+                  text-white
+                  hover:text-purple-400 
+                  transition-colors 
+                  duration-200 
+                  font-semibold
+                  p-2
+                  rounded-lg
+                  bg-transparent border-none cursor-pointer
+                "
+              >
+                <Image
+                  src="/icons/equipe.svg"
+                  alt="Convites"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+                <span>Convites</span>
+              </button>
+            )}
             {user && (
               <button
                 onClick={() => {
@@ -207,6 +267,33 @@ const Header = () => {
               </button>
             )}
           </nav>
+        </div>
+      )}
+
+      {showInvitesModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative">
+            <button
+              onClick={() => setShowInvitesModal(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <TeamInviteList />
+          </div>
         </div>
       )}
     </header>
