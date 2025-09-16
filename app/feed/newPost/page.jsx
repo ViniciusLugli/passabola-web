@@ -6,6 +6,7 @@ import Header from "@/app/components/Header";
 import Image from "next/image";
 import { useAuth } from "@/app/context/AuthContext";
 import { api } from "@/app/lib/api";
+import Input from "@/app/components/Input"; // Importar o componente Input
 
 function NewPost() {
   const router = useRouter();
@@ -93,14 +94,14 @@ function NewPost() {
               </div>
             </div>
 
-            <textarea
-              className="w-full p-3 sm:p-4 rounded-xl border-2 border-gray-200 bg-white text-base sm:text-lg text-gray-800 focus:outline-none focus:border-purple-500 resize-y min-h-[120px]"
+            <Input
+              type="textarea"
               placeholder="O que você tem em mente?"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              rows={5}
               disabled={loading}
-            ></textarea>
+              className="min-h-[120px]"
+            />
 
             <button
               type="submit"

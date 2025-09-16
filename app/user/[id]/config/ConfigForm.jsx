@@ -97,20 +97,14 @@ export default function ConfigForm({ userId }) {
             />
           </div>
           <div className="md:col-span-2">
-            <label
-              htmlFor="bio"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Bio
-            </label>
-            <textarea
-              id="bio"
+            <Input
+              label="Bio"
+              type="textarea"
               name="bio"
-              rows={4}
-              className="w-full px-4 py-3 bg-gray-100 border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition"
               value={formData.bio}
               onChange={handleInputChange}
-            ></textarea>
+              rows={4}
+            />
           </div>
 
           <div className="md:col-span-2 border-t border-gray-200 pt-6 mt-4">

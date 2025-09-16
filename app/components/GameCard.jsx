@@ -7,13 +7,13 @@ export default function GameCard({ game }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const typeColors = {
-    Campeonato: "bg-purple-800",
-    Amistoso: "bg-green-600",
+    CAMPEONATO: "bg-purple-800",
+    AMISTOSO: "bg-green-600",
   };
 
   const statusIcons = {
-    Campeonato: "/icons/campeonato.svg",
-    Amistoso: "/icons/amistoso.svg",
+    CAMPEONATO: "/icons/campeonato.svg",
+    AMISTOSO: "/icons/amistoso.svg",
   };
 
   return (
@@ -56,34 +56,27 @@ export default function GameCard({ game }) {
         {isExpanded ? (
           <div className="flex justify-center items-center gap-2">
             <Image
-              src={statusIcons[game.type]}
-              alt={game.type}
+              src={statusIcons[game.gameType]}
+              alt={game.gameType}
               width={50}
               height={50}
             />
           </div>
         ) : (
-          <span>{game.type}</span>
+          <span>{game.gameType}</span>
         )}
       </div>
 
       <div className="flex justify-between items-start gap-4 z-10">
         <div className="flex-grow">
           <h3 className="font-bold text-lg md:text-xl text-gray-900 leading-tight">
-            {game.name}
+            {game.title}
           </h3>
           <p className="text-sm text-gray-500 mt-1">
             {game.address} - {game.date}
           </p>
-          <p className="text-sm text-gray-500">{game.organizer}</p>
         </div>
       </div>
-
-      {isExpanded && (
-        <div className="mt-4 mb-4 border-t border-gray-200 pt-4 z-10">
-          <p className="text-gray-700 leading-relaxed">{game.description}</p>
-        </div>
-      )}
 
       <div
         className="
