@@ -1,7 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react"; // Importar useState
 
 function PostCard({ post }) {
+  const [hasLiked, setHasLiked] = useState(false); // Estado para controlar se o usuário curtiu
+  const [currentLikes, setCurrentLikes] = useState(post.likes); // Estado para o número de curtidas
+
+  const handleLikeToggle = () => {
+    if (hasLiked) {
+      setCurrentLikes((prev) => prev - 1);
+    } else {
+      setCurrentLikes((prev) => prev + 1);
+    }
+    setHasLiked(!hasLiked);
+    // Aqui você implementaria a chamada à API para registrar a curtida/descurtida
+    console.log("Toggle like for post:", post.id, "New state:", !hasLiked);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-4">
       <div className="flex items-center mb-4">
@@ -42,14 +57,25 @@ function PostCard({ post }) {
         </div>
       )}
 
-      <div className="flex justify-between text-gray-600 text-sm">
-        <div className="flex items-center">
-          <span>{post.likes} Curtidas</span>
-        </div>
-        <div className="flex items-center space-x-4">
-          <span>{post.comments} Comentários</span>
-          <span>{post.shares} Compartilhamentos</span>
-        </div>
+      <div className="flex items-center mt-4">
+        <button
+          onClick={handleLikeToggle}
+          className="flex items-center space-x-1 text-gray-600 hover:text-red-500 transition-colors duration-200 focus:outline-none"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className={`h-5 w-5 ${hasLiked ? "text-red-500" : "text-gray-400"}`}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span>{currentLikes} Curtidas</span>
+        </button>
       </div>
     </div>
   );
