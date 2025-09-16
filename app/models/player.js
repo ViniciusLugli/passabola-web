@@ -39,7 +39,7 @@ export default class Player extends User {
     this.birthDate = birthDate;
     this.organizationId = organizationId;
     this.pastOrganization = pastOrganization;
-    this.teams = teams;
+    this.teams = teams; // Array de IDs de times
     this.createdGames = createdGames;
   }
 }
