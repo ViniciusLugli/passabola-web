@@ -58,6 +58,7 @@ export default function Header() {
             w-10 h-10 
             rounded-full 
           "
+        priority // Adicionar priority
       />
 
       <nav className="hidden md:flex gap-2 lg:gap-4 items-center">

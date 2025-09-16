@@ -1,20 +1,41 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react"; // Importar useState
+import { useState, useEffect } from "react"; // Importar useState e useEffect
+import { api } from "@/app/lib/api"; // Importar a API
+import { useAuth } from "@/app/context/AuthContext"; // Importar useAuth
 
 function PostCard({ post }) {
-  const [hasLiked, setHasLiked] = useState(false); // Estado para controlar se o usuário curtiu
-  const [currentLikes, setCurrentLikes] = useState(post.likes); // Estado para o número de curtidas
+  const { isAuthenticated } = useAuth(); // Obter estado de autenticação
+  const [hasLiked, setHasLiked] = useState(post.isLikedByCurrentUser || false); // Inicializar com dados da API
+  const [currentLikes, setCurrentLikes] = useState(
+    post.totalLikes || post.likes || 0
+  ); // Inicializar com dados da API
 
-  const handleLikeToggle = () => {
-    if (hasLiked) {
-      setCurrentLikes((prev) => prev - 1);
-    } else {
-      setCurrentLikes((prev) => prev + 1);
+  // Sincronizar estado local com props do post se o post mudar
+  useEffect(() => {
+    setHasLiked(post.isLikedByCurrentUser || false);
+    setCurrentLikes(post.totalLikes || post.likes || 0);
+  }, [post]);
+
+  const handleLikeToggle = async () => {
+    if (!isAuthenticated) {
+      alert("Você precisa estar logado para curtir posts!");
+      return;
     }
-    setHasLiked(!hasLiked);
-    // Aqui você implementaria a chamada à API para registrar a curtida/descurtida
-    console.log("Toggle like for post:", post.id, "New state:", !hasLiked);
+
+    try {
+      if (hasLiked) {
+        await api.posts.unlike(post.id);
+        setCurrentLikes((prev) => prev - 1);
+      } else {
+        await api.posts.like(post.id);
+        setCurrentLikes((prev) => prev + 1);
+      }
+      setHasLiked(!hasLiked);
+    } catch (error) {
+      console.error("Erro ao curtir/descurtir post:", error);
+      alert("Falha ao processar sua curtida. Tente novamente.");
+    }
   };
 
   return (
@@ -31,7 +52,7 @@ function PostCard({ post }) {
         </div>
         <div>
           <Link
-            href={`/user/${post.authorRole.toLowerCase()}/${post.authorId}`}
+            href={`/user/${post.authorType.toLowerCase()}/${post.authorId}`}
           >
             <h4 className="font-bold text-lg text-gray-900 leading-tight hover:underline cursor-pointer">
               {post.authorUsername}{" "}

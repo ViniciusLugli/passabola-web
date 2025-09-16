@@ -57,13 +57,13 @@ export default function ProfilePage() {
 
       console.log("ProfilePage - fetchedUser (before lists):", fetchedUser); // Depuração
 
-      const followersResponse = await api.users.getFollowers(
-        lowerCaseUserType,
-        id
+      const followersResponse = await api.follow.getFollowers(
+        id,
+        userType.toUpperCase() // Corrigido para maiúsculas
       );
-      const followingResponse = await api.users.getFollowing(
-        lowerCaseUserType,
-        id
+      const followingResponse = await api.follow.getFollowing(
+        id,
+        userType.toUpperCase() // Corrigido para maiúsculas
       );
 
       const updatedProfileUser = {
@@ -95,7 +95,7 @@ export default function ProfilePage() {
       // Filtrar posts se o backend não garantir a unicidade do ID por tipo
       const filteredPosts = (postsResponse.content || []).filter(
         // Alterado de postsResponse.posts para postsResponse.content
-        (post) => post.authorRole.toLowerCase() === lowerCaseUserType
+        (post) => post.authorType.toLowerCase() === lowerCaseUserType // Corrigido de authorRole para authorType
       );
       setPosts(filteredPosts); // Usar posts filtrados
     } catch (err) {

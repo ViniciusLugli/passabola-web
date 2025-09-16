@@ -29,7 +29,13 @@ const SearchBar = ({ value, onChange }) => {
               "
         />
         <button className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-          <Image src="/icons/lupa.svg" alt="lupa" width={24} height={24} />
+          <Image
+            src="/icons/lupa.svg"
+            alt="lupa"
+            width={24}
+            height={24}
+            priority
+          />
         </button>
       </div>
     </div>

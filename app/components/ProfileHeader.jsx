@@ -18,23 +18,31 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
   const isOrganization = user instanceof Organization;
 
   useEffect(() => {
-    console.log("ProfileHeader useEffect - user:", user);
-    console.log("ProfileHeader useEffect - loggedInUser:", loggedInUser);
+    const checkFollowingStatus = async () => {
+      if (loggedInUser && loggedInUser.id !== user.id) {
+        try {
+          const response = await api.follow.checkFollowing(
+            user.id,
+            user.userType
+          );
+          setIsFollowing(response); // A API retorna true/false diretamente
+        } catch (error) {
+          console.error("Erro ao verificar status de seguimento:", error);
+          setIsFollowing(false);
+        }
+      } else {
+        setIsFollowing(false);
+      }
+    };
 
-    if (loggedInUser && user.followersList) {
-      setIsFollowing(
-        user.followersList.some((follower) => follower.id === loggedInUser.id)
-      );
-    } else {
-      setIsFollowing(false);
-    }
-    setFollowersCount(user.followers ? user.followers : 0); // Usar a contagem numérica do backend
-    setFollowingCount(user.following ? user.following : 0); // Usar a contagem numérica do backend
+    checkFollowingStatus();
+    setFollowersCount(user.followers ? user.followers : 0);
+    setFollowingCount(user.following ? user.following : 0);
   }, [user, loggedInUser]);
 
   const handleFollow = async () => {
     try {
-      await api.users.follow(user.userType.toLowerCase(), user.id);
+      await api.follow.follow(user.id, user.userType.toUpperCase()); // Corrigido para maiúsculas
       setIsFollowing(true);
       setFollowersCount((prev) => prev + 1);
       if (onFollowChange) {
@@ -49,7 +57,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
 
   const handleUnfollow = async () => {
     try {
-      await api.users.unfollow(user.userType.toLowerCase(), user.id);
+      await api.follow.unfollow(user.id, user.userType.toUpperCase()); // Corrigido para maiúsculas
       setIsFollowing(false);
       setFollowersCount((prev) => prev - 1);
       if (onFollowChange) {
@@ -147,18 +155,28 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
             md:w-auto
           "
           >
-            <div className="text-center">
-              <p className="text-lg md:text-xl font-bold text-gray-900">
-                {followersCount}
-              </p>
-              <p className="text-sm text-gray-500">Seguidores</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg md:text-xl font-bold text-gray-900">
-                {followingCount}
-              </p>
-              <p className="text-sm text-gray-500">Seguindo</p>
-            </div>
+            <Link
+              href={`/user/${user.userType.toLowerCase()}/${user.id}/followers`}
+              passHref
+            >
+              <div className="text-center cursor-pointer hover:underline">
+                <p className="text-lg md:text-xl font-bold text-gray-900">
+                  {followersCount}
+                </p>
+                <p className="text-sm text-gray-500">Seguidores</p>
+              </div>
+            </Link>
+            <Link
+              href={`/user/${user.userType.toLowerCase()}/${user.id}/following`}
+              passHref
+            >
+              <div className="text-center cursor-pointer hover:underline">
+                <p className="text-lg md:text-xl font-bold text-gray-900">
+                  {followingCount}
+                </p>
+                <p className="text-sm text-gray-500">Seguindo</p>
+              </div>
+            </Link>
             {(isPlayer || isOrganization) && (
               <div className="text-center">
                 <p className="text-lg md:text-xl font-bold text-gray-900">

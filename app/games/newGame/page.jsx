@@ -12,12 +12,16 @@ import { useAuth } from "@/app/context/AuthContext";
 export default function NewGamePage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
+    gameType: "", // Novo campo para selecionar o tipo de jogo
+    gameName: "", // Novo campo para nome do jogo (Friendly/Championship)
     venue: "",
-    championship: "",
+    championship: "", // Este campo será usado para o nome do campeonato em CHAMPIONSHIP/CUP
     round: "",
     gameDate: "",
     gameTime: "",
+    homeTeamId: "", // Adicionado para jogos CUP
     awayTeamId: "",
+    description: "", // Adicionado para Friendly/Championship
   });
 
   const handleInputChange = (e) => {
@@ -34,55 +38,106 @@ export default function NewGamePage() {
     setLoading(true);
     setAlert(null);
 
-    if (!user || user.userType.toLowerCase() === "spectator") {
-      setAlert({
-        type: "error",
-        message: "Espectadores não podem criar jogos.",
-      });
+    if (!user) {
+      setAlert({ type: "error", message: "Usuário não autenticado." });
       setLoading(false);
       return;
     }
 
-    if (user.userType.toLowerCase() === "player" && !user.organizationId) {
-      setAlert({
-        type: "error",
-        message:
-          "Jogadores precisam estar associados a uma organização para criar jogos.",
-      });
-      setLoading(false);
-      return;
+    const {
+      gameType,
+      gameName,
+      venue,
+      championship,
+      round,
+      gameDate,
+      gameTime,
+      homeTeamId,
+      awayTeamId,
+      description,
+    } = formData;
+    const fullGameDate = `${gameDate}T${gameTime}:00`;
+
+    let gamePayload = {};
+    let apiCall;
+
+    switch (gameType) {
+      case "FRIENDLY":
+        if (user.userType.toLowerCase() !== "player") {
+          setAlert({
+            type: "error",
+            message: "Apenas jogadores podem criar jogos amistosos.",
+          });
+          setLoading(false);
+          return;
+        }
+        gamePayload = {
+          gameName,
+          venue,
+          gameDate: fullGameDate,
+          description,
+          hostId: user.userId,
+          hostUsername: user.username,
+        };
+        apiCall = api.games.createFriendly;
+        break;
+      case "CHAMPIONSHIP":
+        if (user.userType.toLowerCase() !== "player") {
+          setAlert({
+            type: "error",
+            message: "Apenas jogadores podem criar jogos de campeonato.",
+          });
+          setLoading(false);
+          return;
+        }
+        gamePayload = {
+          gameName,
+          venue,
+          gameDate: fullGameDate,
+          description,
+          hostId: user.userId,
+          hostUsername: user.username,
+        };
+        apiCall = api.games.createChampionship;
+        break;
+      case "CUP":
+        if (user.userType.toLowerCase() !== "organization") {
+          setAlert({
+            type: "error",
+            message: "Apenas organizações podem criar jogos de copa.",
+          });
+          setLoading(false);
+          return;
+        }
+        gamePayload = {
+          homeTeamId: parseInt(homeTeamId),
+          awayTeamId: parseInt(awayTeamId),
+          gameDate: fullGameDate,
+          venue,
+          championship,
+          round,
+        };
+        apiCall = api.games.createCup;
+        break;
+      default:
+        setAlert({
+          type: "error",
+          message: "Selecione um tipo de jogo válido.",
+        });
+        setLoading(false);
+        return;
     }
 
-    console.log("Usuário logado:", user); // Adicionado para depuração
-    console.log("Estado atual do formData antes da submissão:", formData);
-
-    const fullGameDate = `${formData.gameDate}T${formData.gameTime}:00`;
-
-    const gameData = {
-      venue: formData.venue,
-      championship: formData.championship,
-      round: formData.round,
-      gameDate: fullGameDate,
-      awayTeamId: parseInt(formData.awayTeamId), // Converter para número
-    };
-
-    if (user.userType.toLowerCase() === "organization") {
-      gameData.homeTeamId = user.profileId;
-    } else if (user.userType.toLowerCase() === "player") {
-      gameData.homeTeamId = user.organizationId;
-    }
-
-    console.log("Dados do jogo a serem enviados:", gameData);
+    console.log("Usuário logado:", user);
+    console.log("Dados do jogo a serem enviados:", gamePayload);
 
     try {
-      await api.games.create(gameData);
-      setAlert({
-        type: "success",
-        message: "Jogo publicado com sucesso!",
-      });
+      await apiCall(gamePayload);
+      setAlert({ type: "success", message: "Jogo publicado com sucesso!" });
       router.push("/games");
     } catch (err) {
       console.error("Erro ao publicar o jogo:", err);
+      console.error("Detalhes do erro:", err.details); // Adicionado para depuração
       setAlert({
         type: "error",
         message: err.message || "Erro ao publicar o jogo.",
@@ -92,11 +147,10 @@ export default function NewGamePage() {
     }
   };
 
-  const championshipOptions = [
-    { label: "Amistoso", value: "Amistoso" },
-    { label: "Campeonato", value: "Campeonato" },
-    { label: "Copa", value: "Copa" },
-    { label: "Liga", value: "Liga" },
+  const gameTypeOptions = [
+    { label: "Amistoso", value: "FRIENDLY" },
+    { label: "Campeonato", value: "CHAMPIONSHIP" },
+    { label: "Copa", value: "CUP" },
   ];
 
   return (
@@ -166,41 +220,89 @@ export default function NewGamePage() {
           {alert && <Alert type={alert.type} message={alert.message} />}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <Input
-              label="Local do Jogo"
-              type="text"
-              name="venue"
-              value={formData.venue}
-              onChange={handleInputChange}
-              required
-            />
-
             <SelectInput
-              label="Campeonato"
-              name="championship"
-              options={championshipOptions}
-              value={formData.championship}
+              label="Tipo de Jogo"
+              name="gameType"
+              options={gameTypeOptions}
+              value={formData.gameType}
               onChange={handleInputChange}
               required
             />
 
-            <Input
-              label="Rodada"
-              type="text"
-              name="round"
-              value={formData.round}
-              onChange={handleInputChange}
-              required
-            />
+            {formData.gameType === "FRIENDLY" ||
+            formData.gameType === "CHAMPIONSHIP" ? (
+              <>
+                <Input
+                  label="Nome do Jogo"
+                  type="text"
+                  name="gameName"
+                  value={formData.gameName}
+                  onChange={handleInputChange}
+                  required
+                />
+                <Input
+                  label="Local do Jogo"
+                  type="text"
+                  name="venue"
+                  value={formData.venue}
+                  onChange={handleInputChange}
+                  required
+                />
+                <Input
+                  label="Descrição"
+                  type="text"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                />
+              </>
+            ) : null}
 
-            <Input
-              label="ID do Time Adversário"
-              type="number"
-              name="awayTeamId"
-              value={formData.awayTeamId}
-              onChange={handleInputChange}
-              required
-            />
+            {formData.gameType === "CUP" ? (
+              <>
+                <Input
+                  label="Local do Jogo"
+                  type="text"
+                  name="venue"
+                  value={formData.venue}
+                  onChange={handleInputChange}
+                  required
+                />
+                <Input
+                  label="Campeonato"
+                  type="text"
+                  name="championship"
+                  value={formData.championship}
+                  onChange={handleInputChange}
+                  required
+                />
+                <Input
+                  label="Rodada"
+                  type="text"
+                  name="round"
+                  value={formData.round}
+                  onChange={handleInputChange}
+                  required
+                />
+                <Input
+                  label="ID do Time da Casa"
+                  type="number"
+                  name="homeTeamId"
+                  value={formData.homeTeamId}
+                  onChange={handleInputChange}
+                  required
+                />
+                <Input
+                  label="ID do Time Adversário"
+                  type="number"
+                  name="awayTeamId"
+                  value={formData.awayTeamId}
+                  onChange={handleInputChange}
+                  required
+                />
+              </>
+            ) : null}
 
             <div className="flex items-center gap-4">
               <div className="flex-1">

@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loginErrorMessage, setLoginErrorMessage] = useState(null); // Novo estado para mensagens de erro de login
   const router = useRouter();
 
   const fetchFullProfileData = useCallback(async (basicUserData) => {
@@ -50,6 +51,15 @@ export const AuthProvider = ({ children }) => {
           setAuthToken(storedToken);
           const basicUserData = JSON.parse(storedUser);
 
+          // Adicionar validação aqui
+          if (!basicUserData || !basicUserData.id || !basicUserData.userType) {
+            console.error(
+              "Dados de usuário incompletos no localStorage. Deslogando."
+            );
+            logout(); // Limpa o estado inconsistente
+            return;
+          }
+
           // Re-fetch full profile data to ensure it's up-to-date
           const fullProfileData = await fetchFullProfileData(basicUserData);
 
@@ -70,16 +80,16 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const response = await api.auth.login(credentials);
-      // A resposta do login agora deve incluir 'id' e 'userType' diretamente
-      const { token, profileId, userType, ...basicUserData } = response;
+      // A resposta do login agora deve incluir 'id' e 'role'
+      const { token, profileId, role, ...restOfResponse } = response; // Desestruturar 'role' em vez de 'userType'
 
       setAuthToken(token);
 
-      // Usar 'id' e 'userType' da resposta do login
+      // Usar 'id' e 'role' da resposta do login, mapeando 'role' para 'userType'
       const userBasicDataWithIdAndType = {
-        ...basicUserData,
+        ...restOfResponse,
         id: profileId, // Mapeia profileId para id
-        userType: userType,
+        userType: role, // Usar 'role' como 'userType'
       };
 
       const fullProfileData = await fetchFullProfileData(
@@ -96,10 +106,14 @@ export const AuthProvider = ({ children }) => {
 
       setUser(userDataToStore);
       setIsAuthenticated(true);
+      setLoginErrorMessage(null); // Limpa qualquer erro anterior ao fazer login com sucesso
       router.push("/feed"); // Redireciona para o feed após o login
     } catch (error) {
       console.error("Login failed:", error);
-      throw error;
+      setLoginErrorMessage(
+        error.message || "Falha no login. Verifique suas credenciais."
+      );
+      throw error; // Re-lança o erro para que o componente de login possa lidar com ele
     }
   };
 
@@ -112,9 +126,48 @@ export const AuthProvider = ({ children }) => {
     router.push("/login"); // Redireciona para a página de login após o logout
   };
 
+  const register = async (payload, apiRole) => {
+    try {
+      let response;
+      switch (apiRole) {
+        case "player":
+          response = await api.auth.registerPlayer(payload);
+          break;
+        case "organization":
+          response = await api.auth.registerOrganization(payload);
+          break;
+        case "spectator":
+          response = await api.auth.registerSpectator(payload);
+          break;
+        default:
+          throw new Error("Tipo de registro inválido.");
+      }
+      // Após o registro, o usuário precisará fazer login para obter o token
+      // ou a API pode retornar o token diretamente, dependendo da implementação do backend.
+      // Por enquanto, apenas retornamos a resposta.
+      return response;
+    } catch (error) {
+      console.error("Registration failed:", error);
+      throw error; // Re-lança o erro para que o componente de registro possa lidar com ele
+    }
+  };
+
+  const clearLoginError = useCallback(() => {
+    setLoginErrorMessage(null);
+  }, []);
+
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, loading, login, logout }}
+      value={{
+        user,
+        isAuthenticated,
+        loading,
+        login,
+        logout,
+        register, // Adicionar a função register ao contexto
+        loginErrorMessage,
+        clearLoginError,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -37,150 +37,76 @@ async function fetchApi(endpoint, options = {}) {
     if (response.status === 204) {
       return null; // No Content
     }
+
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return response.json();
+    } else {
+      // Se não for JSON, tenta ler como texto. Se for vazio, retorna null.
+      const text = await response.text();
+      return text ? text : null;
+    }
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
+async function fetchApiFormData(endpoint, formData, options = {}) {
+  const { ...customConfig } = options;
+  const headers = {}; // FormData sets its own Content-Type header
+
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+
+  const config = {
+    method: "PUT", // Assumindo PUT para uploads de foto
+    ...customConfig,
+    headers: {
+      ...headers,
+      ...customConfig.headers,
+    },
+    body: formData,
+  };
+
+  try {
+    const response = await fetch(`${API_URL}${endpoint}`, config);
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: response.statusText }));
+      return Promise.reject(errorData);
+    }
+    if (response.status === 204) {
+      return null; // No Content
+    }
     return response.json();
   } catch (error) {
     return Promise.reject(error);
   }
 }
 
+// Importar as funções de criação de rotas
+import createAuthRoutes from "./routes/authRoutes";
+import createPlayerRoutes from "./routes/playerRoutes";
+import createOrganizationRoutes from "./routes/organizationRoutes";
+import createSpectatorRoutes from "./routes/spectatorRoutes";
+import createFollowRoutes from "./routes/followRoutes";
+import createGameRoutes from "./routes/gameRoutes";
+import createGameParticipantsRoutes from "./routes/gameParticipantsRoutes";
+import createGameInvitesRoutes from "./routes/gameInvitesRoutes";
+import createPostRoutes from "./routes/postRoutes";
+import createTeamRoutes from "./routes/teamRoutes";
+
 export const api = {
-  auth: {
-    registerPlayer: (data) => fetchApi("/auth/register/player", { body: data }),
-    registerOrganization: (data) =>
-      fetchApi("/auth/register/organization", { body: data }),
-    registerSpectator: (data) =>
-      fetchApi("/auth/register/spectator", { body: data }),
-    login: (credentials) => fetchApi("/auth/login", { body: credentials }),
-  },
-
-  players: {
-    getAll: ({ page = 0, size = 20 } = {}) =>
-      fetchApi(`/players?page=${page}&size=${size}`),
-    getById: (id) => fetchApi(`/players/${id}`),
-    getByUsername: (username) => fetchApi(`/players/username/${username}`),
-    search: (name, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/players/search?name=${name}&page=${page}&size=${size}`),
-    getByOrganization: (orgId, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/players/organization/${orgId}?page=${page}&size=${size}`),
-    update: (id, data) =>
-      fetchApi(`/players/${id}`, { method: "PUT", body: data }),
-  },
-
-  organizations: {
-    getAll: ({ page = 0, size = 20 } = {}) =>
-      fetchApi(`/organizations?page=${page}&size=${size}`),
-    getById: (id) => fetchApi(`/organizations/${id}`),
-    search: (name, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/organizations/search?name=${name}&page=${page}&size=${size}`),
-    update: (id, data) =>
-      fetchApi(`/organizations/${id}`, { method: "PUT", body: data }),
-  },
-
-  spectators: {
-    getAll: ({ page = 0, size = 20 } = {}) =>
-      fetchApi(`/spectators?page=${page}&size=${size}`),
-    getById: (id) => fetchApi(`/spectators/${id}`),
-    getByFavoriteTeam: (teamId, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/spectators/favorite-team/${teamId}?page=${page}&size=${size}`),
-    update: (id, data) =>
-      fetchApi(`/spectators/${id}`, { method: "PUT", body: data }),
-  },
-
-  // Novo objeto para operações genéricas de usuário
-  users: {
-    follow: (userType, id) =>
-      fetchApi(`/${userType}s/${id}/follow`, { method: "POST" }),
-    unfollow: (userType, id) =>
-      fetchApi(`/${userType}s/${id}/follow`, { method: "DELETE" }),
-    getFollowers: (userType, id, { page = 0, size = 20 } = {}) =>
-      fetchApi(`/${userType}s/${id}/followers?page=${page}&size=${size}`),
-    getFollowing: (userType, id, { page = 0, size = 20 } = {}) =>
-      fetchApi(`/${userType}s/${id}/following?page=${page}&size=${size}`),
-  },
-
-  games: {
-    getAll: ({ page = 0, size = 20 } = {}) =>
-      fetchApi(`/games?page=${page}&size=${size}`),
-    getById: (id) => fetchApi(`/games/${id}`),
-    getByOrganization: (orgId, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/games/organization/${orgId}?page=${page}&size=${size}`),
-    getByStatus: (status, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/games/status/${status}?page=${page}&size=${size}`),
-    getByChampionship: (championship, { page = 0, size = 10 } = {}) =>
-      fetchApi(
-        `/games/championship?championship=${championship}&page=${page}&size=${size}`
-      ),
-    create: (data) => fetchApi("/games", { body: data }),
-    update: (id, data) =>
-      fetchApi(`/games/${id}`, { method: "PUT", body: data }),
-    delete: (id) => fetchApi(`/games/${id}`, { method: "DELETE" }),
-    updateScore: (id, { homeGoals, awayGoals }) =>
-      fetchApi(
-        `/games/${id}/score?homeGoals=${homeGoals}&awayGoals=${awayGoals}`,
-        { method: "PATCH" }
-      ),
-    subscribe: (id) => fetchApi(`/games/${id}/subscribe`, { method: "POST" }),
-  },
-
-  posts: {
-    getAll: ({ page = 0, size = 20 } = {}) =>
-      fetchApi(`/posts?page=${page}&size=${size}`),
-    getById: (id) => fetchApi(`/posts/${id}`),
-    getByAuthor: (authorId, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/author/${authorId}?page=${page}&size=${size}`),
-    getMyPosts: ({ page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/my-posts?page=${page}&size=${size}`),
-    getByRole: (role, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/role/${role}?page=${page}&size=${size}`),
-    getByType: (type, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/type/${type}?page=${page}&size=${size}`),
-    getMostLiked: ({ page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/most-liked?page=${page}&size=${size}`),
-    getWithImages: ({ page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/with-images?page=${page}&size=${size}`),
-    search: (content, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/posts/search?content=${content}&page=${page}&size=${size}`),
-    create: (data) => fetchApi("/posts", { body: data }),
-    update: (id, data) =>
-      fetchApi(`/posts/${id}`, { method: "PUT", body: data }),
-    delete: (id) => fetchApi(`/posts/${id}`, { method: "DELETE" }),
-    like: (id) => fetchApi(`/posts/${id}/like`, { method: "POST" }),
-    unlike: (id) => fetchApi(`/posts/${id}/unlike`, { method: "POST" }),
-    comment: (id, comment) =>
-      fetchApi(`/posts/${id}/comment`, { body: { comment } }),
-    share: (id) => fetchApi(`/posts/${id}/share`, { method: "POST" }),
-  },
-
-  teams: {
-    create: (data) => fetchApi("/teams", { body: data }),
-    getAll: ({
-      page = 0,
-      size = 10,
-      sortBy = "createdAt",
-      sortDir = "desc",
-    } = {}) =>
-      fetchApi(
-        `/teams?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`
-      ),
-    getById: (id) => fetchApi(`/teams/${id}`),
-    search: (name, { page = 0, size = 10 } = {}) =>
-      fetchApi(`/teams/search?name=${name}&page=${page}&size=${size}`),
-    sendInvite: (teamId, invitedPlayerId) =>
-      fetchApi(`/teams/${teamId}/invites`, {
-        method: "POST",
-        body: { invitedPlayerId },
-      }),
-    getTeamInvites: (teamId) => fetchApi(`/teams/${teamId}/invites`),
-    getMyPendingInvites: () => fetchApi(`/teams/my-invites`),
-    acceptInvite: (inviteId) =>
-      fetchApi(`/teams/invites/${inviteId}/accept`, { method: "POST" }),
-    rejectInvite: (inviteId) =>
-      fetchApi(`/teams/invites/${inviteId}/reject`, { method: "POST" }),
-    cancelInvite: (inviteId) =>
-      fetchApi(`/teams/invites/${inviteId}`, { method: "DELETE" }),
-    leaveTeam: (teamId) =>
-      fetchApi(`/teams/${teamId}/leave`, { method: "POST" }),
-    removePlayer: (teamId, playerId) =>
-      fetchApi(`/teams/${teamId}/players/${playerId}`, { method: "DELETE" }),
-  },
+  auth: createAuthRoutes(fetchApi),
+  players: createPlayerRoutes(fetchApi, fetchApiFormData),
+  organizations: createOrganizationRoutes(fetchApi, fetchApiFormData),
+  spectators: createSpectatorRoutes(fetchApi),
+  follow: createFollowRoutes(fetchApi),
+  games: createGameRoutes(fetchApi),
+  gameParticipants: createGameParticipantsRoutes(fetchApi),
+  gameInvites: createGameInvitesRoutes(fetchApi),
+  posts: createPostRoutes(fetchApi),
+  teams: createTeamRoutes(fetchApi),
 };
