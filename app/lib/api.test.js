@@ -175,7 +175,7 @@ describe("api.js", () => {
 
       const formData = new FormData();
       formData.append("file", "dummy-file");
-
+      
       // Usando uma rota que aceita FormData, como players.uploadProfilePhoto
       const result = await api.players.uploadProfilePhoto("123", formData);
 
