@@ -1,4 +1,4 @@
-import { setAuthToken, api } from "./api";
+import { setAuthToken, clearAuthToken, api } from "./api";
 
 // Mock da função fetch global
 global.fetch = jest.fn();
@@ -7,6 +7,7 @@ describe("api.js", () => {
   beforeEach(() => {
     // Limpa todos os mocks antes de cada teste
     fetch.mockClear();
+    clearAuthToken(); // Limpa o token de autenticação antes de cada teste
   });
 
   describe("setAuthToken", () => {
@@ -25,21 +26,24 @@ describe("api.js", () => {
         },
       });
 
-      api.auth.login(); // Chama uma rota que usa fetchApi
+      const credentials = { email: "test@example.com", password: "password" };
+      api.auth.login(credentials); // Chama uma rota que usa fetchApi
 
       expect(fetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
+          method: "POST",
           headers: expect.objectContaining({
             Authorization: `Bearer ${token}`,
           }),
+          body: JSON.stringify(credentials),
         })
       );
     });
   });
 
   describe("fetchApi", () => {
-    it("deve fazer uma requisição GET sem token de autenticação", async () => {
+    it("deve fazer uma requisição POST sem token de autenticação (para rota de login)", async () => {
       fetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -49,12 +53,14 @@ describe("api.js", () => {
         },
       });
 
-      const result = await api.auth.login(); // Usando uma rota existente para testar fetchApi
+      const credentials = { email: "test@example.com", password: "password" };
+      const result = await api.auth.login(credentials); // Usando uma rota existente para testar fetchApi
       expect(fetch).toHaveBeenCalledWith(
         "http://localhost:8080/api/auth/login",
         expect.objectContaining({
-          method: "GET",
+          method: "POST",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(credentials),
         })
       );
       expect(result).toEqual({ data: "test" });
@@ -169,12 +175,12 @@ describe("api.js", () => {
 
       const formData = new FormData();
       formData.append("file", "dummy-file");
-
-      // Usando uma rota que aceita FormData, como players.updatePhoto
-      const result = await api.players.updatePhoto("123", formData);
+      
+      // Usando uma rota que aceita FormData, como players.uploadProfilePhoto
+      const result = await api.players.uploadProfilePhoto("123", formData);
 
       expect(fetch).toHaveBeenCalledWith(
-        "http://localhost:8080/api/players/123/photo",
+        "http://localhost:8080/api/players/123/profile-photo",
         expect.objectContaining({
           method: "PUT",
           headers: {
@@ -200,9 +206,9 @@ describe("api.js", () => {
       const formData = new FormData();
       formData.append("file", "dummy-file");
 
-      await expect(api.players.updatePhoto("123", formData)).rejects.toEqual(
-        errorResponse
-      );
+      await expect(
+        api.players.uploadProfilePhoto("123", formData)
+      ).rejects.toEqual(errorResponse);
     });
   });
 });
