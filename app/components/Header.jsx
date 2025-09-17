@@ -10,7 +10,6 @@ const iconMap = {
   Jogos: "/icons/games.svg",
   Calendário: "/icons/calendario.svg",
   Equipes: "/icons/equipe.svg",
-  Mapa: "/icons/mapa.svg",
   Perfil: "/icons/perfil.svg",
   Convites: "/icons/mail.svg",
   Chatbot: "/icons/chatbot.svg",
@@ -25,7 +24,6 @@ export default function Header() {
     { name: "Jogos", href: "/games" },
     { name: "Calendário", href: "/calendar" },
     { name: "Equipes", href: "/teams" },
-    { name: "Mapa", href: "/map" },
     { name: "Convites", href: "/mail" },
     { name: "Chatbot", href: "/chatbot" }, // Nova rota para o chatbot
     {
