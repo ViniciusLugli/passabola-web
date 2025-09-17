@@ -2,6 +2,7 @@ import User from "./user.js";
 
 export default class Spectator extends User {
   constructor(
+    id,
     username,
     name,
     email,
@@ -18,6 +19,8 @@ export default class Spectator extends User {
     favoriteTeamId
   ) {
     super(
+      id,
+      "spectator", // Define o userType como 'spectator'
       username,
       name,
       email,

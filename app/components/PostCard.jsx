@@ -1,65 +1,105 @@
 import Image from "next/image";
+import Link from "next/link";
+import { useState, useEffect } from "react"; // Importar useState e useEffect
+import { api } from "@/app/lib/api"; // Importar a API
+import { useAuth } from "@/app/context/AuthContext"; // Importar useAuth
 
-export default function PostCard({ post }) {
+function PostCard({ post }) {
+  const { isAuthenticated } = useAuth(); // Obter estado de autenticação
+  const [hasLiked, setHasLiked] = useState(post.isLikedByCurrentUser || false); // Inicializar com dados da API
+  const [currentLikes, setCurrentLikes] = useState(
+    post.totalLikes || post.likes || 0
+  ); // Inicializar com dados da API
+
+  // Sincronizar estado local com props do post se o post mudar
+  useEffect(() => {
+    setHasLiked(post.isLikedByCurrentUser || false);
+    setCurrentLikes(post.totalLikes || post.likes || 0);
+  }, [post]);
+
+  const handleLikeToggle = async () => {
+    if (!isAuthenticated) {
+      alert("Você precisa estar logado para curtir posts!");
+      return;
+    }
+
+    try {
+      if (hasLiked) {
+        await api.posts.unlike(post.id);
+        setCurrentLikes((prev) => prev - 1);
+      } else {
+        await api.posts.like(post.id);
+        setCurrentLikes((prev) => prev + 1);
+      }
+      setHasLiked(!hasLiked);
+    } catch (error) {
+      console.error("Erro ao curtir/descurtir post:", error);
+      alert("Falha ao processar sua curtida. Tente novamente.");
+    }
+  };
+
   return (
-    <div
-      className="
-        w-full 
-        bg-white 
-        rounded-2xl 
-        shadow-lg 
-        p-6 
-        flex 
-        flex-col 
-        gap-4
-      "
-    >
-      <div className="flex items-center gap-4">
-        <div className="relative w-12 h-12 rounded-full overflow-hidden">
+    <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="flex items-center mb-4">
+        <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3">
           <Image
-            src={post.profilePhotoUrl}
-            alt="Avatar do perfil"
+            src={post.authorProfilePhotoUrl || "/icons/user-default.png"}
+            alt="Avatar do autor"
             fill
             className="object-cover"
+            sizes="40px"
           />
         </div>
         <div>
-          <h4 className="font-bold text-lg text-gray-900 leading-tight">
-            {post.name}
-          </h4>
-          <p className="text-sm text-gray-500">@{post.username}</p>
+          <Link
+            href={`/user/${post.authorType.toLowerCase()}/${post.authorId}`}
+          >
+            <h4 className="font-bold text-lg text-gray-900 leading-tight hover:underline cursor-pointer">
+              {post.authorUsername}{" "}
+            </h4>
+          </Link>
+          <p className="text-gray-500 text-sm">
+            {new Date(post.createdAt).toLocaleString()}
+          </p>
         </div>
       </div>
-      <p className="text-gray-700 leading-relaxed text-md">{post.content}</p>
-      <div
-        className="
-        flex 
-        items-center 
-        gap-2 
-        text-gray-500 
-        cursor-pointer
-        transition-all 
-        duration-200 
-        hover:text-red-500 
-        hover:scale-100
-      "
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-6 h-6"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+
+      <p className="text-gray-800 mb-4">{post.content}</p>
+
+      {post.imageUrl && (
+        <div className="relative w-full h-60 rounded-lg overflow-hidden mb-4">
+          <Image
+            src={post.imageUrl}
+            alt="Imagem da publicação"
+            fill
+            className="object-cover"
+            sizes="100vw"
           />
-        </svg>
-        <span>{post.likes}</span>
+        </div>
+      )}
+
+      <div className="flex items-center mt-4">
+        <button
+          onClick={handleLikeToggle}
+          className="flex items-center space-x-1 text-gray-600 hover:text-red-500 transition-colors duration-200 focus:outline-none"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className={`h-5 w-5 ${hasLiked ? "text-red-500" : "text-gray-400"}`}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span>{currentLikes} Curtidas</span>
+        </button>
       </div>
     </div>
   );
 }
+
+export default PostCard;

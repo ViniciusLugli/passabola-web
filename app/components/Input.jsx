@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { memo, useEffect, useRef } from "react";
 
-export default function Input({
+const Input = ({
   label,
   type,
   placeholder,
@@ -10,8 +10,33 @@ export default function Input({
   value,
   onChange,
   className = "",
-}) {
-  const inputId = name || `input-${Math.random().toString(36).substring(2, 9)}`;
+  ...props
+}) => {
+  const inputId = name; // Usar o name como ID se disponível
+
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (type === "textarea" && textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [value, type]);
+
+  const baseClasses = `
+    w-full 
+    p-4 sm:p-5 
+    rounded-xl 
+    border-2 
+    border-gray-200 
+    focus:outline-none 
+    focus:ring-2 
+    focus:ring-purple-500 
+    text-lg sm:text-xl 
+    text-gray-800 
+    transition-colors duration-200
+    ${className}
+  `;
 
   return (
     <div className="flex flex-col w-full">
@@ -23,28 +48,32 @@ export default function Input({
           {label}
         </label>
       )}
-      <input
-        id={inputId}
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        className={`
-          w-full 
-          p-4 sm:p-5 
-          rounded-xl 
-          border-2 
-          border-gray-200 
-          focus:outline-none 
-          focus:ring-2 
-          focus:ring-purple-500 
-          text-lg sm:text-xl 
-          text-gray-800 
-          transition-colors duration-200
-          ${className}
-        `}
-      />
+      {type === "textarea" ? (
+        <textarea
+          id={inputId}
+          name={name}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          ref={textareaRef}
+          className={`${baseClasses} resize-none overflow-hidden`}
+          rows="1"
+          {...props}
+        />
+      ) : (
+        <input
+          id={inputId}
+          type={type}
+          name={name}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          className={baseClasses}
+          {...props}
+        />
+      )}
     </div>
   );
-}
+};
+
+export default memo(Input);

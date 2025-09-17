@@ -1,18 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
 import AuthLayout from "@/app/components/AuthLayout";
 import Input from "@/app/components/Input";
 import Link from "next/link";
+import Alert from "@/app/components/Alert";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login, loginErrorMessage, clearLoginError } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login attempt with:", { email, password });
-    // Lógica de autenticação aqui
+    clearLoginError();
+    setLoading(true);
+    try {
+      await login({ email, password });
+    } catch (err) {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,7 +57,7 @@ export default function LoginPage() {
             text-lg sm:text-xl md:text-2xl 
             text-gray-700 
             font-semibold 
-            mt-[-10px] // Ajuste para aproximar do título
+            mt-[-10px]
             mb-4 sm:mb-6
           "
         >
@@ -56,6 +65,12 @@ export default function LoginPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
+          <Alert
+            isOpen={!!loginErrorMessage}
+            onClose={clearLoginError}
+            message={loginErrorMessage}
+            type="error"
+          />
           <div>
             <Input
               label="Email"
@@ -64,6 +79,7 @@ export default function LoginPage() {
               name="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
             />
           </div>
 
@@ -75,6 +91,7 @@ export default function LoginPage() {
               name="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
             />
           </div>
 
@@ -100,6 +117,7 @@ export default function LoginPage() {
           <div className="mt-4 sm:mt-6">
             <button
               type="submit"
+              disabled={loading}
               className="
                 w-full 
                 bg-purple-800 
@@ -113,9 +131,11 @@ export default function LoginPage() {
                 duration-300 
                 shadow-lg
                 hover:scale-105 active:scale-95
+                disabled:bg-purple-400
+                disabled:cursor-not-allowed
               "
             >
-              CONTINUAR
+              {loading ? "CARREGANDO..." : "CONTINUAR"}
             </button>
           </div>
         </form>

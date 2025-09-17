@@ -1,18 +1,35 @@
 "use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
+
+const iconMap = {
+  Feed: "/icons/feed.svg",
+  Jogos: "/icons/games.svg",
+  Calendário: "/icons/calendario.svg",
+  Equipes: "/icons/equipe.svg",
+  Perfil: "/icons/perfil.svg",
+  Convites: "/icons/mail.svg",
+  Chatbot: "/icons/chatbot.svg",
+};
 
 export default function Header() {
+  const { user, isAuthenticated, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navLinks = [
-    { name: "Feed", href: "#" },
-    { name: "Jogos", href: "#" },
-    { name: "Calendário", href: "#" },
-    { name: "Equipes", href: "#" },
-    { name: "Mapa", href: "#" },
-    { name: "Perfil", href: "#" },
+    { name: "Feed", href: "/feed" },
+    { name: "Jogos", href: "/games" },
+    { name: "Calendário", href: "/calendar" },
+    { name: "Equipes", href: "/teams" },
+    { name: "Convites", href: "/mail" },
+    { name: "Chatbot", href: "/chatbot" }, // Nova rota para o chatbot
+    {
+      name: "Perfil",
+      href: user ? `/user/${user.userType.toLowerCase()}/${user.id}` : "/login",
+    },
   ];
 
   return (
@@ -41,24 +58,71 @@ export default function Header() {
             w-10 h-10 
             rounded-full 
           "
+        priority
       />
 
-      <nav className="hidden md:flex gap-6 lg:gap-8 items-center">
+      <nav className="hidden md:flex gap-2 lg:gap-4 items-center">
         {navLinks.map((link) => (
           <Link
             key={link.name}
             href={link.href}
             className="
+              flex
+              flex-col
+              items-center
+              justify-center
+              gap-1
               text-white
               hover:text-purple-400 
               transition-colors 
               duration-200 
               font-semibold
+              w-20
             "
           >
-            {link.name}
+            <Image
+              src={iconMap[link.name]}
+              alt={link.name}
+              width={24}
+              height={24}
+              className="w-6 h-6"
+            />
+            <span className="text-xs">{link.name}</span>
           </Link>
         ))}
+        {isAuthenticated ? (
+          <button
+            onClick={logout}
+            className="
+              flex
+              flex-col
+              items-center
+              justify-center
+              gap-1
+              text-white
+              hover:text-purple-400 
+              transition-colors 
+              duration-200 
+              font-semibold
+              w-20
+            "
+          >
+            <Image
+              src="/icons/log-out.svg"
+              alt="Sair"
+              width={24}
+              height={24}
+              className="w-6 h-6"
+            />
+            <span className="text-xs">Sair</span>
+          </button>
+        ) : (
+          <Link href="/login" passHref>
+            <button className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-semibold">
+              Entrar
+            </button>
+          </Link>
+        )}
       </nav>
 
       {/* Menu Hamburger para mobile */}
@@ -88,8 +152,8 @@ export default function Header() {
           md:hidden
           absolute
           top-full
-          left-0
-          w-full
+          left-100%
+          w-50
           bg-purple-700
           shadow-lg
           p-4
@@ -101,17 +165,76 @@ export default function Header() {
                 key={link.name}
                 href={link.href}
                 className="
+                flex
+                items-center
+                gap-3
                 text-white
                 hover:text-purple-400 
                 transition-colors 
                 duration-200 
                 font-semibold
+                p-2
+                rounded-lg
               "
                 onClick={() => setIsMenuOpen(false)}
               >
-                {link.name}
+                <Image
+                  src={iconMap[link.name]}
+                  alt={link.name}
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+                <span>{link.name}</span>
               </Link>
             ))}
+            {isAuthenticated ? (
+              <button
+                onClick={() => {
+                  logout();
+                  setIsMenuOpen(false);
+                }}
+                className="
+                flex
+                items-center
+                gap-3
+                text-white
+                hover:text-purple-400 
+                transition-colors 
+                duration-200 
+                font-semibold
+                p-2
+                rounded-lg
+                w-full
+                text-left
+              "
+              >
+                <Image
+                  src="/icons/log-out.svg"
+                  alt="Sair"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6"
+                />
+                <span>Sair</span>
+              </button>
+            ) : (
+              <Link href="/login" passHref>
+                <span
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 text-white hover:text-purple-400 transition-colors duration-200 font-semibold p-2 rounded-lg"
+                >
+                  <Image
+                    src="/icons/log-out.svg"
+                    alt="Entrar"
+                    width={24}
+                    height={24}
+                    className="w-6 h-6"
+                  />
+                  <span>Entrar</span>
+                </span>
+              </Link>
+            )}
           </nav>
         </div>
       )}

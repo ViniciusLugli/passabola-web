@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import AuthLayout from '@/app/components/AuthLayout';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import AuthLayout from "@/app/components/AuthLayout";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const [selectedRole, setSelectedRole] = useState(null);
@@ -12,13 +12,17 @@ export default function RegisterPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (selectedRole) {
-      router.push(`/register/info?role=${selectedRole.toLowerCase()}`);
+      const roleParam =
+        selectedRole === "Organização"
+          ? "organizacao"
+          : selectedRole.toLowerCase();
+      router.push(`/register/info?role=${roleParam}`);
     } else {
-      alert('Por favor, selecione uma opção!');
+      alert("Por favor, selecione uma opção!");
     }
   };
 
-  const roles = ['Organização', 'Jogadora', 'Espectador'];
+  const roles = ["Organização", "Jogadora", "Espectador"];
 
   return (
     <AuthLayout>
@@ -77,8 +81,8 @@ export default function RegisterPage() {
                   hover:scale-105 active:scale-95
                   ${
                     selectedRole === role
-                      ? 'border-purple-600 bg-purple-50 text-purple-800 font-semibold'
-                      : 'border-gray-200 bg-white text-gray-800 hover:border-purple-300 hover:bg-purple-10'
+                      ? "border-purple-600 bg-purple-50 text-purple-800 font-semibold"
+                      : "border-gray-200 bg-white text-gray-800 hover:border-purple-300 hover:bg-purple-10"
                   }
                 `}
               >

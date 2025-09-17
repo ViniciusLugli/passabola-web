@@ -1,52 +1,71 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
+import Image from "next/image"; // Importar o componente Image do Next.js
 
 const decorations = [
   {
-    src: '/DecoB (tatica 1).svg',
+    src: "/DecoB (tatica 1).svg",
     className:
-      'absolute top-[5%] left-[5%] w-24 h-24 transform rotate-[-15deg]',
+      "absolute top-[5%] left-[5%] w-24 h-24 transform rotate-[-15deg]",
+    width: 96, // Adicionar width e height para o componente Image
+    height: 96,
   },
   {
-    src: '/DecoB (tatica 2).svg',
+    src: "/DecoB (tatica 2).svg",
     className:
-      'absolute bottom-[8%] left-[12%] w-28 h-28 transform rotate-[30deg]',
+      "absolute bottom-[8%] left-[12%] w-28 h-28 transform rotate-[30deg]",
+    width: 112,
+    height: 112,
   },
   {
-    src: '/TrianguloM-BV.svg',
+    src: "/TrianguloM-BV.svg",
     className:
-      'absolute top-[50%] left-[2%] w-16 h-16 transform rotate-[60deg] -translate-y-1/2',
+      "absolute top-[50%] left-[2%] w-16 h-16 transform rotate-[60deg] -translate-y-1/2",
+    width: 64,
+    height: 64,
   },
   {
-    src: '/TrianguloP-BV.svg',
+    src: "/TrianguloP-BV.svg",
     className:
-      'absolute top-[2%] right-[30%] w-10 h-10 transform rotate-[180deg]',
+      "absolute top-[2%] right-[30%] w-10 h-10 transform rotate-[180deg]",
+    width: 40,
+    height: 40,
   },
   {
-    src: '/Deco (linha).svg',
+    src: "/Deco (linha).svg",
     className:
-      'absolute top-1/2 left-1/2 w-48 h-48 transform -translate-x-1/2 -translate-y-1/2 opacity-20',
+      "absolute top-1/2 left-1/2 w-48 h-48 transform -translate-x-1/2 -translate-y-1/2 opacity-20",
+    width: 192,
+    height: 192,
   },
   {
-    src: '/DecoB (tatica 1).svg',
+    src: "/DecoB (tatica 1).svg",
     className:
-      'absolute bottom-[5%] right-[5%] w-16 h-16 transform rotate-[45deg]',
+      "absolute bottom-[5%] right-[5%] w-16 h-16 transform rotate-[45deg]",
+    width: 64,
+    height: 64,
   },
   {
-    src: '/DecoB (tatica 2).svg',
+    src: "/DecoB (tatica 2).svg",
     className:
-      'absolute top-[60%] right-[15%] w-20 h-20 transform rotate-[-50deg]',
+      "absolute top-[60%] right-[15%] w-20 h-20 transform rotate-[-50deg]",
+    width: 80,
+    height: 80,
   },
   {
-    src: '/TrianguloM-BV.svg',
+    src: "/TrianguloM-BV.svg",
     className:
-      'absolute top-[15%] right-[8%] w-20 h-20 transform rotate-[25deg]',
+      "absolute top-[15%] right-[8%] w-20 h-20 transform rotate-[25deg]",
+    width: 80,
+    height: 80,
   },
   {
-    src: '/TrianguloP-BV.svg',
+    src: "/TrianguloP-BV.svg",
     className:
-      'absolute bottom-[15%] right-[25%] w-32 h-32 transform rotate-[-20deg]',
+      "absolute bottom-[15%] right-[25%] w-32 h-32 transform rotate-[-20deg]",
+    width: 128,
+    height: 128,
   },
 ];
 
@@ -67,11 +86,14 @@ export default function HomePage() {
     >
       <div className="absolute inset-0 z-0">
         {decorations.map((deco, index) => (
-          <img
+          <Image
             key={index}
             src={deco.src}
             alt="decoration"
             className={deco.className}
+            width={deco.width}
+            height={deco.height}
+            loading="lazy" // Adicionar lazy loading
           />
         ))}
       </div>
