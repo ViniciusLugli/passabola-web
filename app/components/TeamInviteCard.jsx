@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { api } from "@/app/lib/api";
-import Button from "@/app/components/Button"; // Assumindo que você tem um componente Button
+import Button from "@/app/components/Button";
 
 export default function TeamInviteCard({ invite, onUpdate }) {
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,6 @@ export default function TeamInviteCard({ invite, onUpdate }) {
       await api.teams.acceptInvite(invite.id);
       onUpdate(); // Notifica o componente pai para recarregar os convites
     } catch (err) {
-      console.error("Erro ao aceitar convite:", err);
       setError(err.message || "Falha ao aceitar convite.");
     } finally {
       setLoading(false);
@@ -27,9 +26,8 @@ export default function TeamInviteCard({ invite, onUpdate }) {
     setError(null);
     try {
       await api.teams.rejectInvite(invite.id);
-      onUpdate(); // Notifica o componente pai para recarregar os convites
+      onUpdate();
     } catch (err) {
-      console.error("Erro ao rejeitar convite:", err);
       setError(err.message || "Falha ao rejeitar convite.");
     } finally {
       setLoading(false);

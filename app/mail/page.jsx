@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import Alert from "@/app/components/Alert";
 import { useAuth } from "@/app/context/AuthContext";
-import { api } from "@/app/lib/api"; // Importar a API
+import { api } from "@/app/lib/api";
+import TeamInviteList from "@/app/components/TeamInviteList";
 
 export default function MailPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [alert, setAlert] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [teamInvites, setTeamInvites] = useState([]);
   const [gameInvites, setGameInvites] = useState([]);
 
   useEffect(() => {
@@ -24,12 +24,6 @@ export default function MailPage() {
     const fetchInvites = async () => {
       setLoading(true);
       try {
-        // Buscar convites de times (se o usuário for um PLAYER)
-        if (user.userType === "PLAYER") {
-          const teamInvitesResponse = await api.teams.getMyPendingInvites();
-          setTeamInvites(teamInvitesResponse.content || []);
-        }
-
         // Buscar convites de jogos (se o usuário for uma ORGANIZATION)
         if (user.userType === "ORGANIZATION") {
           const gameInvitesResponse = await api.gameInvites.getPending();
@@ -48,42 +42,6 @@ export default function MailPage() {
 
     fetchInvites();
   }, [user, router]);
-
-  const handleAcceptTeamInvite = async (inviteId) => {
-    setLoading(true);
-    try {
-      await api.teams.acceptInvite(inviteId);
-      setAlert({ type: "success", message: "Convite de time aceito!" });
-      // Atualizar a lista de convites
-      setTeamInvites((prev) => prev.filter((invite) => invite.id !== inviteId));
-    } catch (err) {
-      console.error("Erro ao aceitar convite de time:", err);
-      setAlert({
-        type: "error",
-        message: err.message || "Erro ao aceitar convite de time.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRejectTeamInvite = async (inviteId) => {
-    setLoading(true);
-    try {
-      await api.teams.rejectInvite(inviteId);
-      setAlert({ type: "success", message: "Convite de time rejeitado!" });
-      // Atualizar a lista de convites
-      setTeamInvites((prev) => prev.filter((invite) => invite.id !== inviteId));
-    } catch (err) {
-      console.error("Erro ao rejeitar convite de time:", err);
-      setAlert({
-        type: "error",
-        message: err.message || "Erro ao rejeitar convite de time.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAcceptGameInvite = async (inviteId) => {
     setLoading(true);
@@ -137,7 +95,7 @@ export default function MailPage() {
     );
   }
 
-  const hasInvites = teamInvites.length > 0 || gameInvites.length > 0;
+  const hasInvites = gameInvites.length > 0;
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -176,46 +134,7 @@ export default function MailPage() {
             </p>
           )}
 
-          {teamInvites.length > 0 && (
-            <div className="flex flex-col gap-4">
-              <h2 className="text-2xl font-semibold text-gray-800">
-                Convites de Times
-              </h2>
-              {teamInvites.map((invite) => (
-                <div
-                  key={invite.id}
-                  className="bg-gray-50 p-4 rounded-lg shadow-sm flex justify-between items-center"
-                >
-                  <div>
-                    <p className="font-medium">
-                      Você foi convidado para o time{" "}
-                      <span className="font-bold">{invite.teamName}</span> por{" "}
-                      <span className="font-bold">{invite.leaderUsername}</span>
-                      .
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Enviado em:{" "}
-                      {new Date(invite.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleAcceptTeamInvite(invite.id)}
-                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
-                    >
-                      Aceitar
-                    </button>
-                    <button
-                      onClick={() => handleRejectTeamInvite(invite.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
-                    >
-                      Rejeitar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          {user?.userType === "PLAYER" && <TeamInviteList />}
 
           {gameInvites.length > 0 && (
             <div className="flex flex-col gap-4">

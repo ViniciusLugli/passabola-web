@@ -12,7 +12,8 @@ const iconMap = {
   Equipes: "/icons/equipe.svg",
   Mapa: "/icons/mapa.svg",
   Perfil: "/icons/perfil.svg",
-  Convites: "/icons/mail.svg", // Usando ícone de equipe como placeholder para convites
+  Convites: "/icons/mail.svg",
+  Chatbot: "/icons/chatbot.svg",
 };
 
 export default function Header() {
@@ -25,7 +26,8 @@ export default function Header() {
     { name: "Calendário", href: "/calendar" },
     { name: "Equipes", href: "/teams" },
     { name: "Mapa", href: "/map" },
-    { name: "Convites", href: "/teams/invites" },
+    { name: "Convites", href: "/mail" },
+    { name: "Chatbot", href: "/chatbot" }, // Nova rota para o chatbot
     {
       name: "Perfil",
       href: user ? `/user/${user.userType.toLowerCase()}/${user.id}` : "/login",
@@ -58,7 +60,7 @@ export default function Header() {
             w-10 h-10 
             rounded-full 
           "
-        priority // Adicionar priority
+        priority
       />
 
       <nav className="hidden md:flex gap-2 lg:gap-4 items-center">

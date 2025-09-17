@@ -55,49 +55,64 @@ export default function ProfilePage() {
         throw new Error("Usuário não encontrado.");
       }
 
-      console.log("ProfilePage - fetchedUser (before lists):", fetchedUser); // Depuração
+      const isOwnProfile =
+        loggedInUser &&
+        loggedInUser.id === Number(id) &&
+        loggedInUser.userType.toLowerCase() === lowerCaseUserType;
 
-      const followersResponse = await api.follow.getFollowers(
-        id,
-        userType.toUpperCase() // Corrigido para maiúsculas
-      );
-      const followingResponse = await api.follow.getFollowing(
-        id,
-        userType.toUpperCase() // Corrigido para maiúsculas
-      );
-
+      // A API agora retorna os contadores de seguidores/seguindo diretamente na entidade do usuário.
+      // Se não estiverem presentes, calculamos a partir das listas.
       const updatedProfileUser = {
         ...fetchedUser,
         userType: lowerCaseUserType.toUpperCase(),
-        followersList: followersResponse.content || [],
-        followingList: followingResponse.content || [],
-        followers: followersResponse.content
-          ? followersResponse.content.length
-          : 0, // Adicionar contagem de seguidores
-        following: followingResponse.content
-          ? followingResponse.content.length
-          : 0, // Adicionar contagem de seguindo
+        followers: fetchedUser.followers || 0, // Garante que o contador exista
+        following: fetchedUser.following || 0, // Garante que o contador exista
       };
+
+      let followersListResponse;
+      let followingListResponse;
+
+      if (isOwnProfile) {
+        followersListResponse = await api.follow.getMyFollowers();
+        followingListResponse = await api.follow.getMyFollowing();
+      } else {
+        followersListResponse = await api.follow.getFollowers(
+          id,
+          userType.toUpperCase()
+        );
+        followingListResponse = await api.follow.getFollowing(
+          id,
+          userType.toUpperCase()
+        );
+      }
+
+      updatedProfileUser.followersList = followersListResponse.content || [];
+      updatedProfileUser.followingList = followingListResponse.content || [];
+
+      // Se os contadores não vieram do fetchedUser (são null ou undefined), use o tamanho das listas
+      if (
+        fetchedUser.followers === null ||
+        fetchedUser.followers === undefined
+      ) {
+        updatedProfileUser.followers = updatedProfileUser.followersList.length;
+      }
+      if (
+        fetchedUser.following === null ||
+        fetchedUser.following === undefined
+      ) {
+        updatedProfileUser.following = updatedProfileUser.followingList.length;
+      }
+
       setProfileUser(updatedProfileUser);
 
-      console.log(
-        "ProfilePage - Updated Profile User Data:",
-        updatedProfileUser
-      ); // Depuração
-
       const postsResponse = await api.posts.getByAuthor(id);
-      console.log("Posts API Response:", postsResponse); // Adicionar para depuração
-      console.log("User Type from URL:", userType); // Adicionar para depuração
-      console.log("Profile User Data (original fetched):", fetchedUser); // Adicionar para depuração
-      console.log("Followers List:", followersResponse.content); // Depuração
-      console.log("Following List:", followingResponse.content); // Depuração
 
-      // Filtrar posts se o backend não garantir a unicidade do ID por tipo
+      // A filtragem de posts pode ser removida se o backend garantir que os posts são do autor correto.
+      // Por enquanto, manteremos para segurança.
       const filteredPosts = (postsResponse.content || []).filter(
-        // Alterado de postsResponse.posts para postsResponse.content
-        (post) => post.authorType.toLowerCase() === lowerCaseUserType // Corrigido de authorRole para authorType
+        (post) => post.authorType.toLowerCase() === lowerCaseUserType
       );
-      setPosts(filteredPosts); // Usar posts filtrados
+      setPosts(filteredPosts);
     } catch (err) {
       console.error("Error fetching profile data:", err);
       setError(err.message || "Falha ao carregar o perfil. Tente novamente.");

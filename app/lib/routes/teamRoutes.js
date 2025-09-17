@@ -1,4 +1,3 @@
-// app/lib/routes/teamRoutes.js
 const createTeamRoutes = (fetchApi) => ({
   create: (data) => fetchApi("/teams", { body: data }),
   getAll: ({

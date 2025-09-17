@@ -7,12 +7,8 @@ import { api } from "@/app/lib/api";
 
 export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
   const [isFollowing, setIsFollowing] = useState(false);
-  const [followersCount, setFollowersCount] = useState(
-    user.followers ? user.followers : 0
-  );
-  const [followingCount, setFollowingCount] = useState(
-    user.following ? user.following : 0
-  );
+  const [followersCount, setFollowersCount] = useState(user.followers || 0);
+  const [followingCount, setFollowingCount] = useState(user.following || 0);
 
   const isPlayer = user instanceof Player;
   const isOrganization = user instanceof Organization;
@@ -36,8 +32,8 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
     };
 
     checkFollowingStatus();
-    setFollowersCount(user.followers ? user.followers : 0);
-    setFollowingCount(user.following ? user.following : 0);
+    setFollowersCount(user.followers || 0);
+    setFollowingCount(user.following || 0);
   }, [user, loggedInUser]);
 
   const handleFollow = async () => {

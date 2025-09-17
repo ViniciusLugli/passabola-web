@@ -21,14 +21,15 @@ export const AuthProvider = ({ children }) => {
 
   const fetchFullProfileData = useCallback(async (basicUserData) => {
     let fullProfileData;
-    switch (basicUserData.userType.toLowerCase()) {
-      case "player":
+    const userTypeUpperCase = basicUserData.userType.toUpperCase(); // Converter para maiúsculas
+    switch (userTypeUpperCase) {
+      case "PLAYER":
         fullProfileData = await api.players.getById(basicUserData.id);
         break;
-      case "organization":
+      case "ORGANIZATION":
         fullProfileData = await api.organizations.getById(basicUserData.id);
         break;
-      case "spectator":
+      case "SPECTATOR":
         fullProfileData = await api.spectators.getById(basicUserData.id);
         break;
       default:
@@ -89,7 +90,7 @@ export const AuthProvider = ({ children }) => {
       const userBasicDataWithIdAndType = {
         ...restOfResponse,
         id: profileId, // Mapeia profileId para id
-        userType: role, // Usar 'role' como 'userType'
+        userType: role.toUpperCase(), // Usar 'role' como 'userType' e garantir maiúsculas
       };
 
       const fullProfileData = await fetchFullProfileData(

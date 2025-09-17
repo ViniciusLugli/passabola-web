@@ -2,7 +2,8 @@
 
 import { memo } from "react";
 
-const Modal = ({ isOpen, onClose, children }) => {
+const Modal = ({ isOpen, onClose, title, children }) => {
+  // Adicionar 'title'
   if (!isOpen) return null;
 
   return (
@@ -27,6 +28,9 @@ const Modal = ({ isOpen, onClose, children }) => {
             />
           </svg>
         </button>
+        {title && ( // Renderizar título se existir
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">{title}</h2>
+        )}
         {children}
       </div>
     </div>

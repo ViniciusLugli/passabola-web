@@ -5,27 +5,33 @@ import Header from "@/app/components/Header";
 import GameCard from "@/app/components/GameCard";
 import Link from "next/link";
 import { api } from "@/app/lib/api";
+import { useAuth } from "@/app/context/AuthContext";
 
 function Games() {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user: loggedInUser } = useAuth();
+
+  const fetchGames = async () => {
+    try {
+      setLoading(true);
+      const response = await api.games.getAll();
+      setGames(response.content || []);
+    } catch (err) {
+      setError(err.message || "Falha ao carregar os jogos.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        setLoading(true);
-        const response = await api.games.getAll();
-        setGames(response.content || []);
-      } catch (err) {
-        setError(err.message || "Falha ao carregar os jogos.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchGames();
   }, []);
+
+  const handleGameUpdate = () => {
+    fetchGames();
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -57,7 +63,13 @@ function Games() {
         {!loading && !error && (
           <section className="flex flex-col gap-6">
             {games.length > 0 ? (
-              games.map((game) => <GameCard key={game.id} game={game} />)
+              games.map((game) => (
+                <GameCard
+                  key={game.id}
+                  game={game}
+                  onGameUpdate={handleGameUpdate}
+                />
+              ))
             ) : (
               <p className="text-center text-gray-500">
                 Nenhum jogo encontrado.

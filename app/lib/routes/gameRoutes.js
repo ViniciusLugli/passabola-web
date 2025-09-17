@@ -1,4 +1,3 @@
-// app/lib/routes/gameRoutes.js
 const createGameRoutes = (fetchApi) => ({
   getAll: ({ page = 0, size = 20 } = {}) =>
     fetchApi(`/games?page=${page}&size=${size}`),
@@ -23,6 +22,12 @@ const createGameRoutes = (fetchApi) => ({
   createChampionship: (data) => fetchApi("/games/championship", { body: data }),
   createCup: (data) => fetchApi("/games/cup", { body: data }),
   update: (id, data) => fetchApi(`/games/${id}`, { method: "PUT", body: data }),
+  updateFriendly: (id, data) =>
+    fetchApi(`/games/friendly/${id}`, { method: "PUT", body: data }),
+  updateChampionship: (id, data) =>
+    fetchApi(`/games/championship/${id}`, { method: "PUT", body: data }),
+  updateCup: (id, data) =>
+    fetchApi(`/games/cup/${id}`, { method: "PUT", body: data }),
   delete: (id) => fetchApi(`/games/${id}`, { method: "DELETE" }),
   updateScore: (id, { homeGoals, awayGoals }) =>
     fetchApi(

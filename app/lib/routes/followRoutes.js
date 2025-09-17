@@ -1,4 +1,3 @@
-// app/lib/routes/followRoutes.js
 const createFollowRoutes = (fetchApi) => ({
   follow: (targetUserId, targetUserType) =>
     fetchApi("/follow", {
