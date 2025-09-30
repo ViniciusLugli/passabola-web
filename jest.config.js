@@ -1,9 +1,1 @@
-module.exports = {
-  testEnvironment: "jest-environment-jsdom",
-  transform: {
-    "^.+\\.(js|jsx|ts|tsx)$": "babel-jest",
-  },
-  moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/$1",
-  },
-};
+// jest configuration removed — project no longer uses Jest for unit tests
