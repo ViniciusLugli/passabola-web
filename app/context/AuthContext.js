@@ -42,6 +42,15 @@ export const AuthProvider = ({ children }) => {
     return fullProfileData;
   }, []);
 
+  const logout = useCallback(() => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    setAuthToken(null);
+    setUser(null);
+    setIsAuthenticated(false);
+    router.push("/login"); // Redireciona para a página de login após o logout
+  }, [router]);
+
   useEffect(() => {
     const loadUserFromLocalStorage = async () => {
       try {
@@ -76,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     loadUserFromLocalStorage();
-  }, [fetchFullProfileData]);
+  }, [fetchFullProfileData, logout]);
 
   const login = async (credentials) => {
     try {
@@ -116,15 +125,6 @@ export const AuthProvider = ({ children }) => {
       );
       throw error; // Re-lança o erro para que o componente de login possa lidar com ele
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("user");
-    setAuthToken(null);
-    setUser(null);
-    setIsAuthenticated(false);
-    router.push("/login"); // Redireciona para a página de login após o logout
   };
 
   const register = async (payload, apiRole) => {

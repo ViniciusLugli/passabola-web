@@ -104,9 +104,12 @@ export const useRegisterForm = () => {
     }
 
     try {
-      await register(payload, apiRole);
+      const res = await register(payload, apiRole);
+      router.push("/login");
+      return res;
     } catch (err) {
       setError(err.message || "Falha no cadastro. Verifique os dados.");
+      throw err;
     } finally {
       setLoading(false);
     }
