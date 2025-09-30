@@ -16,13 +16,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [loginErrorMessage, setLoginErrorMessage] = useState(null); // Novo estado para mensagens de erro de login
+  const [loginErrorMessage, setLoginErrorMessage] = useState(null);
   const router = useRouter();
 
   const fetchFullProfileData = useCallback(async (basicUserData) => {
-  let fullProfileData;
-  const userTypeUpperCase = basicUserData.userType.toUpperCase();
-  switch (userTypeUpperCase) {
+    let fullProfileData;
+    const userTypeUpperCase = basicUserData.userType.toUpperCase();
+    switch (userTypeUpperCase) {
       case "PLAYER":
         fullProfileData = await api.players.getById(basicUserData.id);
         break;
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     setAuthToken(null);
     setUser(null);
     setIsAuthenticated(false);
-  router.push("/login");
+    router.push("/login");
   }, [router]);
 
   useEffect(() => {
@@ -62,7 +62,9 @@ export const AuthProvider = ({ children }) => {
           const basicUserData = JSON.parse(storedUser);
 
           if (!basicUserData || !basicUserData.id || !basicUserData.userType) {
-            console.error("Dados de usuário incompletos no localStorage. Deslogando.");
+            console.error(
+              "Dados de usuário incompletos no localStorage. Deslogando."
+            );
             logout();
             return;
           }
@@ -74,7 +76,7 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error("Failed to load user from local storage:", error);
-        logout(); // Limpa qualquer estado inconsistente
+        logout();
       } finally {
         setLoading(false);
       }
@@ -96,7 +98,9 @@ export const AuthProvider = ({ children }) => {
         userType: role.toUpperCase(),
       };
 
-      const fullProfileData = await fetchFullProfileData(userBasicDataWithIdAndType);
+      const fullProfileData = await fetchFullProfileData(
+        userBasicDataWithIdAndType
+      );
 
       const userDataToStore = {
         ...userBasicDataWithIdAndType,
@@ -112,7 +116,9 @@ export const AuthProvider = ({ children }) => {
       router.push("/feed");
     } catch (error) {
       console.error("Login failed:", error);
-      setLoginErrorMessage(error.message || "Falha no login. Verifique suas credenciais.");
+      setLoginErrorMessage(
+        error.message || "Falha no login. Verifique suas credenciais."
+      );
       throw error;
     }
   };
@@ -133,10 +139,10 @@ export const AuthProvider = ({ children }) => {
         default:
           throw new Error("Tipo de registro inválido.");
       }
-  return response;
+      return response;
     } catch (error) {
-  console.error("Registration failed:", error);
-  throw error;
+      console.error("Registration failed:", error);
+      throw error;
     }
   };
 
@@ -152,7 +158,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         logout,
-  register,
+        register,
         loginErrorMessage,
         clearLoginError,
       }}

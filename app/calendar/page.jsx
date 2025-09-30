@@ -15,7 +15,7 @@ function Calendar() {
 
   useEffect(() => {
     const fetchUserGames = async () => {
-      if (authLoading) return; // Espera o carregamento do usuário
+      if (authLoading) return;
 
       if (!isAuthenticated || !user) {
         setError("Você precisa estar logado para ver o calendário de jogos.");
@@ -25,16 +25,14 @@ function Calendar() {
 
       try {
         setLoading(true);
-        // Buscar jogos em que o usuário logado se inscreveu
+
         const response = await api.gameParticipants.getMyParticipations();
         let fetchedParticipations = response.content || [];
 
-        // Extrair os objetos de jogo das participações
         const fetchedGames = fetchedParticipations
           .map((p) => p.game)
-          .filter(Boolean); // Filtrar participações sem jogo (se houver)
+          .filter(Boolean);
 
-        // Ordenar os jogos por data, do mais próximo para o mais distante
         fetchedGames.sort(
           (a, b) => new Date(a.gameDate) - new Date(b.gameDate)
         );
@@ -84,7 +82,7 @@ function Calendar() {
                 <GameCard
                   key={game.id}
                   game={game}
-                  onGameUpdate={fetchUserGames} // Passar a função de re-fetch
+                  onGameUpdate={fetchUserGames}
                 />
               ))
             ) : (

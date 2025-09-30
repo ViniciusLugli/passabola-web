@@ -1,17 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react"; // Importar useState e useEffect
-import { api } from "@/app/lib/api"; // Importar a API
-import { useAuth } from "@/app/context/AuthContext"; // Importar useAuth
+import { useState, useEffect } from "react";
+import { api } from "@/app/lib/api";
+import { useAuth } from "@/app/context/AuthContext";
 
 function PostCard({ post }) {
   const { isAuthenticated } = useAuth(); // Obter estado de autenticação
-  const [hasLiked, setHasLiked] = useState(post.isLikedByCurrentUser || false); // Inicializar com dados da API
+  const [hasLiked, setHasLiked] = useState(post.isLikedByCurrentUser || false);
   const [currentLikes, setCurrentLikes] = useState(
     post.totalLikes || post.likes || 0
-  ); // Inicializar com dados da API
+  );
 
-  // Sincronizar estado local com props do post se o post mudar
   useEffect(() => {
     setHasLiked(post.isLikedByCurrentUser || false);
     setCurrentLikes(post.totalLikes || post.likes || 0);

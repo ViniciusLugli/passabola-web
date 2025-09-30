@@ -1,7 +1,7 @@
 export default class User {
   constructor(
-    id, // Novo: ID único do usuário
-    userType, // Novo: Tipo de usuário (ex: 'player', 'organization', 'spectator')
+    id,
+    userType,
     username,
     name,
     email,

@@ -22,7 +22,7 @@ export default class Organization extends User {
   ) {
     super(
       id,
-      "organization", // Define o userType como 'organization'
+      "organization",
       username,
       name,
       email,

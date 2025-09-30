@@ -25,7 +25,7 @@ export default function Header() {
     { name: "Calendário", href: "/calendar" },
     { name: "Equipes", href: "/teams" },
     { name: "Convites", href: "/mail" },
-    { name: "Chatbot", href: "/chatbot" }, // Nova rota para o chatbot
+    { name: "Chatbot", href: "/chatbot" },
     {
       name: "Perfil",
       href: user ? `/user/${user.userType.toLowerCase()}/${user.id}` : "/login",
@@ -125,7 +125,6 @@ export default function Header() {
         )}
       </nav>
 
-      {/* Menu Hamburger para mobile */}
       <button
         className="md:hidden text-white"
         onClick={() => setIsMenuOpen(!isMenuOpen)}

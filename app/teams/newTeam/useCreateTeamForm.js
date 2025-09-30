@@ -15,7 +15,7 @@ export const useCreateTeamForm = () => {
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [mutualFollows, setMutualFollows] = useState([]);
-  const [selectedPlayers, setSelectedPlayers] = useState([]); // { id, username, status: 'pending' | 'accepted' | 'rejected' }
+  const [selectedPlayers, setSelectedPlayers] = useState([]);
 
   const fetchFollowData = useCallback(async () => {
     if (!user) return;
@@ -81,7 +81,6 @@ export const useCreateTeamForm = () => {
       const teamResponse = await api.teams.create({ nameTeam: teamName });
       const teamId = teamResponse.id;
 
-      // Enviar convites para os jogadores selecionados
       for (const player of selectedPlayers) {
         await api.teams.sendInvite(teamId, player.id);
       }

@@ -100,7 +100,6 @@ export default function GameCard({ game, onGameUpdate }) {
         ${isExpanded ? "shadow-2xl" : ""}
       `}
     >
-      {/* Marcador de Tipo de Jogo (Flag/Banner) */}
       <div
         className={`
           absolute 

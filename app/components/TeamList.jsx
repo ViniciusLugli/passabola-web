@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { api } from "@/app/lib/api";
-import TeamCard from "@/app/components/TeamCard"; // Assumindo que você tem um componente TeamCard
+import TeamCard from "@/app/components/TeamCard";
 
 export default function TeamList() {
   const [teams, setTeams] = useState([]);
