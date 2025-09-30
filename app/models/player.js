@@ -24,7 +24,7 @@ export default class Player extends User {
   ) {
     super(
       id,
-      "player", // Define o userType como 'player'
+      "player",
       username,
       name,
       email,

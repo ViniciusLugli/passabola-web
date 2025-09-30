@@ -20,7 +20,7 @@ export default class Spectator extends User {
   ) {
     super(
       id,
-      "spectator", // Define o userType como 'spectator'
+      "spectator",
       username,
       name,
       email,

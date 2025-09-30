@@ -21,7 +21,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
             user.id,
             user.userType
           );
-          setIsFollowing(response); // A API retorna true/false diretamente
+          setIsFollowing(response);
         } catch (error) {
           console.error("Erro ao verificar status de seguimento:", error);
           setIsFollowing(false);
@@ -38,7 +38,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
 
   const handleFollow = async () => {
     try {
-      await api.follow.follow(user.id, user.userType.toUpperCase()); // Corrigido para maiúsculas
+      await api.follow.follow(user.id, user.userType.toUpperCase());
       setIsFollowing(true);
       setFollowersCount((prev) => prev + 1);
       if (onFollowChange) {
@@ -46,14 +46,12 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
       }
     } catch (error) {
       console.error("Erro ao seguir usuário:", error);
-      // Não reverter o estado aqui, pois a API já rejeitou a promessa
-      // A página pai (page.jsx) deve re-buscar os dados para sincronizar
     }
   };
 
   const handleUnfollow = async () => {
     try {
-      await api.follow.unfollow(user.id, user.userType.toUpperCase()); // Corrigido para maiúsculas
+      await api.follow.unfollow(user.id, user.userType.toUpperCase());
       setIsFollowing(false);
       setFollowersCount((prev) => prev - 1);
       if (onFollowChange) {
@@ -61,8 +59,6 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
       }
     } catch (error) {
       console.error("Erro ao deixar de seguir usuário:", error);
-      // Não reverter o estado aqui, pois a API já rejeitou a promessa
-      // A página pai (page.jsx) deve re-buscar os dados para sincronizar
     }
   };
 
@@ -114,7 +110,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
               </button>
             </Link>
           ) : (
-            loggedInUser && ( // Só mostra o botão se houver um usuário logado e não for o próprio perfil
+            loggedInUser && (
               <button
                 onClick={isFollowing ? handleUnfollow : handleFollow}
                 className={`

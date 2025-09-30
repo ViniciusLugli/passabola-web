@@ -12,7 +12,7 @@ const Input = ({
   className = "",
   ...props
 }) => {
-  const inputId = name; // Usar o name como ID se disponível
+  const inputId = name;
 
   const textareaRef = useRef(null);
 

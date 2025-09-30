@@ -13,7 +13,7 @@ export default function TeamInviteCard({ invite, onUpdate }) {
     setError(null);
     try {
       await api.teams.acceptInvite(invite.id);
-      onUpdate(); // Notifica o componente pai para recarregar os convites
+      onUpdate();
     } catch (err) {
       setError(err.message || "Falha ao aceitar convite.");
     } finally {

@@ -35,7 +35,6 @@ function Feed() {
     };
 
     if (!authLoading && isAuthenticated) {
-      // Chamar fetchPosts apenas quando não estiver carregando e autenticado
       const handler = setTimeout(() => {
         fetchPosts();
       }, 1000);

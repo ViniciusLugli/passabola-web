@@ -103,7 +103,7 @@ export const useConfigForm = (userId, userType) => {
       if (newPassword) {
         dataToUpdate.password = newPassword;
       }
-      dataToUpdate.currentPassword = passwordConfirm; // Adiciona a senha atual para validação
+      dataToUpdate.currentPassword = passwordConfirm;
 
       switch (userType.toLowerCase()) {
         case "player":

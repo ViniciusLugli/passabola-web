@@ -39,14 +39,13 @@ async function fetchApi(endpoint, options = {}) {
       return Promise.reject(errorData);
     }
     if (response.status === 204) {
-      return null; // No Content
+      return null;
     }
 
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
       return response.json();
     } else {
-      // Se não for JSON, tenta ler como texto. Se for vazio, retorna null.
       const text = await response.text();
       return text ? text : null;
     }
@@ -57,14 +56,14 @@ async function fetchApi(endpoint, options = {}) {
 
 async function fetchApiFormData(endpoint, formData, options = {}) {
   const { ...customConfig } = options;
-  const headers = {}; // FormData sets its own Content-Type header
+  const headers = {};
 
   if (authToken) {
     headers["Authorization"] = `Bearer ${authToken}`;
   }
 
   const config = {
-    method: "PUT", // Assumindo PUT para uploads de foto
+    method: "PUT",
     ...customConfig,
     headers: {
       ...headers,
@@ -82,7 +81,7 @@ async function fetchApiFormData(endpoint, formData, options = {}) {
       return Promise.reject(errorData);
     }
     if (response.status === 204) {
-      return null; // No Content
+      return null;
     }
     return response.json();
   } catch (error) {
@@ -90,7 +89,6 @@ async function fetchApiFormData(endpoint, formData, options = {}) {
   }
 }
 
-// Importar as funções de criação de rotas
 import createAuthRoutes from "./routes/authRoutes";
 import createPlayerRoutes from "./routes/playerRoutes";
 import createOrganizationRoutes from "./routes/organizationRoutes";

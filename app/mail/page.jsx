@@ -17,14 +17,13 @@ export default function MailPage() {
 
   useEffect(() => {
     if (!user) {
-      router.push("/login"); // Redirecionar se não estiver autenticado
+      router.push("/login");
       return;
     }
 
     const fetchInvites = async () => {
       setLoading(true);
       try {
-        // Buscar convites de jogos (se o usuário for uma ORGANIZATION)
         if (user.userType === "ORGANIZATION") {
           const gameInvitesResponse = await api.gameInvites.getPending();
           setGameInvites(gameInvitesResponse.content || []);
@@ -48,7 +47,6 @@ export default function MailPage() {
     try {
       await api.gameInvites.accept(inviteId);
       setAlert({ type: "success", message: "Convite de jogo aceito!" });
-      // Atualizar a lista de convites
       setGameInvites((prev) => prev.filter((invite) => invite.id !== inviteId));
     } catch (err) {
       console.error("Erro ao aceitar convite de jogo:", err);
@@ -66,7 +64,6 @@ export default function MailPage() {
     try {
       await api.gameInvites.reject(inviteId);
       setAlert({ type: "success", message: "Convite de jogo rejeitado!" });
-      // Atualizar a lista de convites
       setGameInvites((prev) => prev.filter((invite) => invite.id !== inviteId));
     } catch (err) {
       console.error("Erro ao rejeitar convite de jogo:", err);

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Header from "@/app/components/Header";
 import ProfileHeader from "@/app/components/ProfileHeader";
-import PostList from "@/app/components/PostList"; // Importar PostList
+import PostList from "@/app/components/PostList";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
 
@@ -60,13 +60,11 @@ export default function ProfilePage() {
         loggedInUser.id === Number(id) &&
         loggedInUser.userType.toLowerCase() === lowerCaseUserType;
 
-      // A API agora retorna os contadores de seguidores/seguindo diretamente na entidade do usuário.
-      // Se não estiverem presentes, calculamos a partir das listas.
       const updatedProfileUser = {
         ...fetchedUser,
         userType: lowerCaseUserType.toUpperCase(),
-        followers: fetchedUser.followers || 0, // Garante que o contador exista
-        following: fetchedUser.following || 0, // Garante que o contador exista
+        followers: fetchedUser.followers || 0,
+        following: fetchedUser.following || 0,
       };
 
       let followersListResponse;
@@ -89,7 +87,6 @@ export default function ProfilePage() {
       updatedProfileUser.followersList = followersListResponse.content || [];
       updatedProfileUser.followingList = followingListResponse.content || [];
 
-      // Se os contadores não vieram do fetchedUser (são null ou undefined), use o tamanho das listas
       if (
         fetchedUser.followers === null ||
         fetchedUser.followers === undefined
@@ -107,8 +104,6 @@ export default function ProfilePage() {
 
       const postsResponse = await api.posts.getByAuthor(id);
 
-      // A filtragem de posts pode ser removida se o backend garantir que os posts são do autor correto.
-      // Por enquanto, manteremos para segurança.
       const filteredPosts = (postsResponse.content || []).filter(
         (post) => post.authorType.toLowerCase() === lowerCaseUserType
       );
@@ -168,7 +163,6 @@ export default function ProfilePage() {
   }
 
   const handleFollowChange = () => {
-    // Re-fetch profile data to update follower/following counts
     fetchProfileData();
   };
 
