@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Header from "@/app/components/Header";
 import PostCard from "@/app/components/PostCard";
 import SearchBar from "@/app/components/SearchBar";
@@ -11,24 +11,139 @@ import { useAuth } from "@/app/context/AuthContext";
 function Feed() {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState([]);
+  const [userResults, setUserResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFilters, setSelectedFilters] = useState([]);
+  const abortRef = useRef(null);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchResults = async () => {
       try {
         setLoading(true);
-        let response;
-        if (searchTerm) {
-          response = await api.posts.search(searchTerm);
-        } else {
-          response = await api.posts.getAll();
+        setError(null);
+
+        // Cancel previous requests if any
+        if (abortRef.current) {
+          try {
+            abortRef.current.abort();
+          } catch (e) {}
         }
-        setPosts(response.content || []);
+        const controller = new AbortController();
+        abortRef.current = controller;
+
+        const q = searchTerm.trim();
+
+        // If there is a search term and filters, call only the selected endpoints
+        const filters = selectedFilters || [];
+
+        let usersAccum = [];
+        let postsAccum = [];
+
+        // Helper to call endpoints and guard abort
+        const guarded = async (fn) => {
+          const res = await fn();
+          if (controller.signal.aborted) throw new Error("aborted");
+          return res;
+        };
+
+        // If no filters selected: first search users (players, spectators, organizations), then posts
+        if (q && filters.length === 0) {
+          // players
+          const p = await guarded(() =>
+            api.players.search(q, { page: 0, size: 5 })
+          );
+          usersAccum = usersAccum.concat(
+            (p.content || []).map((u) => ({ ...u, _type: "player" }))
+          );
+
+          const s = await guarded(() =>
+            api.spectators.search(q, { page: 0, size: 5 })
+          );
+          usersAccum = usersAccum.concat(
+            (s.content || []).map((u) => ({ ...u, _type: "spectator" }))
+          );
+
+          const o = await guarded(() =>
+            api.organizations.search(q, { page: 0, size: 5 })
+          );
+          usersAccum = usersAccum.concat(
+            (o.content || []).map((u) => ({ ...u, _type: "organization" }))
+          );
+
+          // posts after users
+          const postsRes = await guarded(() =>
+            api.posts.search(q, { page: 0, size: 20 })
+          );
+          postsAccum = postsRes.content || [];
+        } else if (q && filters.length > 0) {
+          // For each selected filter, call respective search
+          const promises = [];
+          if (filters.includes("posts")) {
+            promises.push(
+              guarded(() => api.posts.search(q, { page: 0, size: 20 })).then(
+                (r) => ({ kind: "posts", data: r.content || [] })
+              )
+            );
+          }
+          if (filters.includes("players")) {
+            promises.push(
+              guarded(() => api.players.search(q, { page: 0, size: 20 })).then(
+                (r) => ({
+                  kind: "players",
+                  data: (r.content || []).map((u) => ({
+                    ...u,
+                    _type: "player",
+                  })),
+                })
+              )
+            );
+          }
+          if (filters.includes("spectators")) {
+            promises.push(
+              guarded(() =>
+                api.spectators.search(q, { page: 0, size: 20 })
+              ).then((r) => ({
+                kind: "spectators",
+                data: (r.content || []).map((u) => ({
+                  ...u,
+                  _type: "spectator",
+                })),
+              }))
+            );
+          }
+          if (filters.includes("organizations")) {
+            promises.push(
+              guarded(() =>
+                api.organizations.search(q, { page: 0, size: 20 })
+              ).then((r) => ({
+                kind: "organizations",
+                data: (r.content || []).map((u) => ({
+                  ...u,
+                  _type: "organization",
+                })),
+              }))
+            );
+          }
+
+          const results = await Promise.all(promises);
+          results.forEach((res) => {
+            if (res.kind === "posts") postsAccum = postsAccum.concat(res.data);
+            else usersAccum = usersAccum.concat(res.data);
+          });
+        } else {
+          // Empty query: show default posts
+          const postsRes = await guarded(() => api.posts.getAll());
+          postsAccum = postsRes.content || [];
+        }
+
+        setUserResults(usersAccum);
+        setPosts(postsAccum);
       } catch (err) {
-        console.error("Erro ao carregar posts:", err);
-        setError(err.message || "Falha ao carregar os posts.");
+        if (err.message === "aborted") return;
+        console.error("Erro ao carregar resultados:", err);
+        setError(err.message || "Falha ao carregar resultados.");
       } finally {
         setLoading(false);
       }
@@ -36,20 +151,29 @@ function Feed() {
 
     if (!authLoading && isAuthenticated) {
       const handler = setTimeout(() => {
-        fetchPosts();
+        fetchResults();
       }, 1000);
 
       return () => {
         clearTimeout(handler);
+        if (abortRef.current) {
+          try {
+            abortRef.current.abort();
+          } catch (e) {}
+        }
       };
     } else if (!authLoading && !isAuthenticated) {
       setError("Você precisa estar logado para ver o feed.");
       setLoading(false);
     }
-  }, [searchTerm, isAuthenticated, authLoading]);
+  }, [searchTerm, isAuthenticated, authLoading, selectedFilters]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+  };
+
+  const handleFiltersChange = (filters) => {
+    setSelectedFilters(filters || []);
   };
 
   return (
@@ -77,14 +201,54 @@ function Feed() {
         </h1>
 
         <div className="mb-8">
-          <SearchBar value={searchTerm} onChange={handleSearchChange} />
+          <SearchBar
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onFiltersChange={handleFiltersChange}
+            selectedFilters={selectedFilters}
+          />
         </div>
 
-        {loading && <p className="text-center">Carregando posts...</p>}
+        {loading && <p className="text-center">Carregando...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
 
         {!loading && !error && (
           <section className="flex flex-col gap-6">
+            {/* Usuários encontrados (quando houver) */}
+            {userResults.length > 0 && (
+              <div className="bg-white p-4 rounded-md shadow-sm">
+                <h3 className="font-semibold mb-2">Usuários</h3>
+                <div className="flex flex-col gap-3">
+                  {userResults.map((u) => (
+                    <div
+                      key={`${u._type}-${u.id}`}
+                      className="flex items-center gap-3"
+                    >
+                      <img
+                        src={u.profilePhoto || "/icons/user-default.png"}
+                        alt={u.name || u.username}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <div>
+                        <a
+                          href={
+                            u._type === "organization"
+                              ? `/user/organization/${u.id}`
+                              : `/user/player/${u.id}`
+                          }
+                          className="font-medium text-purple-600"
+                        >
+                          {u.name || u.username}
+                        </a>
+                        <div className="text-sm text-gray-500">{u._type}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Posts */}
             {posts.length > 0 ? (
               posts.map((post) => <PostCard key={post.id} post={post} />)
             ) : (
