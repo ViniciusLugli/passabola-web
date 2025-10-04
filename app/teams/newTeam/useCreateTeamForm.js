@@ -35,7 +35,32 @@ export const useCreateTeamForm = () => {
       const mutual = myFollowers.filter((follower) =>
         myFollowing.some((f) => f.targetUserId === follower.followerId)
       );
-      setMutualFollows(mutual);
+
+      // Normalize shape to { id, username, profilePhoto }
+      const normalize = (p) => {
+        const id =
+          p?.followerId ??
+          p?.id ??
+          p?.targetUserId ??
+          p?.follower?.id ??
+          p?.targetId ??
+          null;
+        const username =
+          p?.followerUsername ??
+          p?.username ??
+          p?.targetUsername ??
+          p?.follower?.username ??
+          p?.targetUserUsername ??
+          null;
+        const profilePhoto =
+          p?.profilePhoto ??
+          p?.follower?.profilePhotoUrl ??
+          p?.profilePhotoUrl ??
+          null;
+        return { id, username, profilePhoto };
+      };
+
+      setMutualFollows(mutual.map(normalize));
     } catch (err) {
       console.error("Erro ao buscar dados de seguidores:", err);
       setError("Falha ao carregar seguidores e seguidos.");
@@ -79,7 +104,11 @@ export const useCreateTeamForm = () => {
 
     try {
       const teamResponse = await api.teams.create({ nameTeam: teamName });
-      const teamId = teamResponse.id;
+      const teamId = teamResponse?.id ?? teamResponse?.content?.id;
+      if (!teamId) {
+        console.warn("Resposta inesperada ao criar time:", teamResponse);
+        throw new Error("Id do time não encontrado na resposta do servidor.");
+      }
 
       for (const player of selectedPlayers) {
         await api.teams.sendInvite(teamId, player.id);

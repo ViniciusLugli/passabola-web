@@ -3,9 +3,15 @@
 import Link from "next/link";
 
 function TeamCard({ team }) {
+  const teamName =
+    team?.name ?? team?.nameTeam ?? team?.teamName ?? "Equipe sem nome";
+  const teamBio = team?.bio ?? team?.description ?? "";
+  const followersCount =
+    team?.followers ?? team?.playerCount ?? team?.players?.length ?? 0;
+
   return (
     <Link
-      href={`/user/${team.id}`}
+      href={`/teams/${team.id}`}
       className="
         block 
         bg-white 
@@ -19,10 +25,8 @@ function TeamCard({ team }) {
       "
     >
       <div className="p-4">
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          {team.name}
-        </h2>
-        <p className="text-gray-600 text-sm mb-2">{team.bio}</p>
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">{teamName}</h2>
+        {teamBio && <p className="text-gray-600 text-sm mb-2">{teamBio}</p>}
         <div className="flex items-center text-gray-500 text-xs">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -38,7 +42,7 @@ function TeamCard({ team }) {
               d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
             />
           </svg>
-          <span>{team.followers} seguidores</span>
+          <span>{followersCount} seguidores</span>
         </div>
       </div>
     </Link>
