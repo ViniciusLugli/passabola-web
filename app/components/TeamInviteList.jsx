@@ -21,7 +21,11 @@ export default function TeamInviteList() {
     setError(null);
     try {
       const response = await api.teams.getMyPendingInvites();
-      setInvites(response.content || []);
+      // Backend may return { content: [...] } or { invites: [...] } or raw array
+      const invitesData =
+        response?.content ?? response?.invites ?? response ?? [];
+      
+      setInvites(Array.isArray(invitesData) ? invitesData : []);
     } catch (err) {
       console.error("Erro ao buscar convites:", err);
       setError(err.message || "Falha ao carregar convites.");

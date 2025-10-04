@@ -36,26 +36,31 @@ export default function CreateTeamForm() {
           <p className="text-gray-500">Nenhum seguidor mútuo encontrado.</p>
         )}
         <ul>
-          {mutualFollows.map((player) => (
+          {mutualFollows.map((p) => (
             <li
-              key={player.followerId}
-              className={`
-                flex items-center justify-between p-2 rounded-md cursor-pointer
-                ${
-                  selectedPlayers.some((p) => p.id === player.followerId)
-                    ? "bg-blue-100"
-                    : "hover:bg-gray-100"
-                }
-              `}
+              key={p.id || p.username}
+              className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
+                selectedPlayers.some((s) => s.id === p.id)
+                  ? "bg-blue-100"
+                  : "hover:bg-gray-100"
+              }`}
               onClick={() =>
-                handleSelectPlayer({
-                  id: player.followerId,
-                  username: player.followerUsername,
-                })
+                handleSelectPlayer({ id: p.id, username: p.username })
               }
             >
-              <span>{player.followerUsername}</span>
-              {selectedPlayers.some((p) => p.id === player.followerId) && (
+              <div className="flex items-center gap-3">
+                {p.profilePhoto ? (
+                  <img
+                    src={p.profilePhoto}
+                    alt={p.username}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-200" />
+                )}
+                <span>{p.username || "(usuário sem nome)"}</span>
+              </div>
+              {selectedPlayers.some((s) => s.id === p.id) && (
                 <span className="text-blue-600">Selecionado</span>
               )}
             </li>

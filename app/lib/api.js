@@ -13,9 +13,13 @@ async function fetchApi(endpoint, options = {}) {
   const { body, ...customConfig } = options;
   const headers = { "Content-Type": "application/json" };
 
-  if (authToken) {
+  // Allow callers to skip attaching the Authorization header when needed
+  if (authToken && !customConfig.skipAuth) {
     headers["Authorization"] = `Bearer ${authToken}`;
   }
+
+  // Debug: indicate whether Authorization will be attached (do not log the token)
+  // (debug logging removed)
 
   const config = {
     method: body ? "POST" : options.method || "GET",
@@ -33,10 +37,18 @@ async function fetchApi(endpoint, options = {}) {
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
     if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ message: response.statusText }));
-      return Promise.reject(errorData);
+      // Try to parse a JSON body for more info; fall back to statusText
+      const parsedBody = await response.json().catch(() => null);
+      const errorObj = {
+        status: response.status,
+        statusText: response.statusText,
+        body: parsedBody,
+      };
+      // If parsedBody contains a message, include it as well
+      if (parsedBody && typeof parsedBody === "object" && parsedBody.message) {
+        errorObj.message = parsedBody.message;
+      }
+      return Promise.reject(errorObj);
     }
     if (response.status === 204) {
       return null;
@@ -50,7 +62,8 @@ async function fetchApi(endpoint, options = {}) {
       return text ? text : null;
     }
   } catch (error) {
-    return Promise.reject(error);
+    // Normalize thrown errors to include a message
+    return Promise.reject({ message: error.message || String(error) });
   }
 }
 
@@ -58,9 +71,13 @@ async function fetchApiFormData(endpoint, formData, options = {}) {
   const { ...customConfig } = options;
   const headers = {};
 
-  if (authToken) {
+  // Respect skipAuth option for form-data requests as well
+  if (authToken && !customConfig.skipAuth) {
     headers["Authorization"] = `Bearer ${authToken}`;
   }
+
+  // Debug: indicate whether Authorization will be attached for form-data
+  // (debug logging removed)
 
   const config = {
     method: "PUT",
@@ -75,10 +92,16 @@ async function fetchApiFormData(endpoint, formData, options = {}) {
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
     if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ message: response.statusText }));
-      return Promise.reject(errorData);
+      const parsedBody = await response.json().catch(() => null);
+      const errorObj = {
+        status: response.status,
+        statusText: response.statusText,
+        body: parsedBody,
+      };
+      if (parsedBody && typeof parsedBody === "object" && parsedBody.message) {
+        errorObj.message = parsedBody.message;
+      }
+      return Promise.reject(errorObj);
     }
     if (response.status === 204) {
       return null;
