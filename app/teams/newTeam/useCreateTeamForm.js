@@ -36,7 +36,6 @@ export const useCreateTeamForm = () => {
         myFollowing.some((f) => f.targetUserId === follower.followerId)
       );
 
-      // Normalize shape to { id, username, profilePhoto }
       const normalize = (p) => {
         const id =
           p?.followerId ??

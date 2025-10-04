@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
 import Header from "@/app/components/Header";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
@@ -40,8 +39,6 @@ function PlayerRow({ player, leaderId, currentUserId }) {
 }
 
 export default function TeamDetailsPage({ params }) {
-  // params may be a Promise in newer Next.js versions for client components.
-  // Use React.use() to unwrap it safely.
   const resolvedParams = React.use(params);
   const { id } = resolvedParams;
   const [team, setTeam] = useState(null);
@@ -78,9 +75,7 @@ export default function TeamDetailsPage({ params }) {
     setActionLoading(true);
     try {
       await api.teams.removePlayer(id, playerId);
-      // refetch
       await fetchTeam();
-      // notify lists
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("teams:changed"));
       }
@@ -130,7 +125,6 @@ export default function TeamDetailsPage({ params }) {
                 </div>
               </div>
               <div className="ml-4">
-                {/* Show leave button for members who are not the leader */}
                 {currentUser?.id && currentUser.id !== team?.leader?.id && (
                   <button
                     disabled={actionLoading}
@@ -161,7 +155,6 @@ export default function TeamDetailsPage({ params }) {
                       />
                     </div>
                     <div className="flex gap-2">
-                      {/* show remove button only if current user is the team leader and not removing the leader themself */}
                       {currentUser?.id &&
                         team?.leader?.id &&
                         String(currentUser.id) === String(team.leader.id) &&

@@ -15,16 +15,13 @@ export default function TeamList() {
     const fetchTeams = async () => {
       setLoading(true);
       setError(null);
-      // Prevent fetching before AuthContext has initialized (so token is set)
       if (authLoading) {
-        // wait until authLoading is false before proceeding
         return;
       }
       try {
-  let response = await api.teams.getAll();
-        // Alguns endpoints podem retornar { teams: [...] } ou { content: [...] }
+        let response = await api.teams.getAll();
         let teamsData = response?.teams ?? response?.content ?? [];
-        
+
         if (!response) {
           console.warn("api.teams.getAll() retornou falsy:", response);
         }
@@ -35,18 +32,17 @@ export default function TeamList() {
           response &&
           response.status === 403
         ) {
-          
           try {
             const publicResponse = await api.teams.getAll({
               options: { skipAuth: true },
             });
-            
+
             teamsData =
               publicResponse?.teams ??
               publicResponse?.content ??
               publicResponse ??
               [];
-            
+
             response = publicResponse;
           } catch (publicErr) {
             console.warn("Tentativa pública falhou:", publicErr);
@@ -57,7 +53,6 @@ export default function TeamList() {
         console.error("Erro ao buscar equipes:", err);
         // Se o backend retornou 403 ao usar o token/sem auth, tentamos fetch público
         if (err && err.status === 403) {
-          
           try {
             const publicResponse = await api.teams.getAll({
               options: { skipAuth: true },

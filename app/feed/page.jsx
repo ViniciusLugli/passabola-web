@@ -133,7 +133,6 @@ function Feed() {
             else usersAccum = usersAccum.concat(res.data);
           });
         } else {
-          // Empty query: show default posts
           const postsRes = await guarded(() => api.posts.getAll());
           postsAccum = postsRes.content || [];
         }
@@ -214,7 +213,6 @@ function Feed() {
 
         {!loading && !error && (
           <section className="flex flex-col gap-6">
-            {/* Usuários encontrados (quando houver) */}
             {userResults.length > 0 && (
               <div className="bg-white p-4 rounded-md shadow-sm">
                 <h3 className="font-semibold mb-2">Usuários</h3>
@@ -248,7 +246,6 @@ function Feed() {
               </div>
             )}
 
-            {/* Posts */}
             {posts.length > 0 ? (
               posts.map((post) => <PostCard key={post.id} post={post} />)
             ) : (

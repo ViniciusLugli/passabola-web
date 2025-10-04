@@ -21,7 +21,6 @@ export default function TeamInviteList() {
     setError(null);
     try {
       const response = await api.teams.getMyPendingInvites();
-      // Backend may return { content: [...] } or { invites: [...] } or raw array
       const invitesData =
         response?.content ?? response?.invites ?? response ?? [];
       

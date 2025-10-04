@@ -16,14 +16,11 @@ export default function TeamInviteCard({ invite, onUpdate }) {
       if (!inviteId) throw new Error("Invite id ausente na requisição.");
       await api.teams.acceptInvite(inviteId);
       onUpdate();
-      // notify other parts of the app (e.g., TeamList) that teams may have changed
       try {
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("teams:changed"));
         }
-      } catch (e) {
-        // ignore
-      }
+      } catch (e) {}
     } catch (err) {
       setError(err.message || "Falha ao aceitar convite.");
     } finally {
@@ -43,9 +40,7 @@ export default function TeamInviteCard({ invite, onUpdate }) {
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("teams:changed"));
         }
-      } catch (e) {
-        // ignore
-      }
+      } catch (e) {}
     } catch (err) {
       setError(err.message || "Falha ao rejeitar convite.");
     } finally {
