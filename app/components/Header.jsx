@@ -151,8 +151,8 @@ export default function Header() {
           md:hidden
           absolute
           top-full
-          left-100%
-          w-50
+          right-0
+          w-64
           bg-purple-700
           shadow-lg
           p-4

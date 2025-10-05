@@ -38,7 +38,7 @@ function PostCard({ post }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
+    <div className="bg-white border border-zinc-300 rounded-lg shadow-xl p-4">
       <div className="flex items-center mb-4">
         <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3">
           <Image

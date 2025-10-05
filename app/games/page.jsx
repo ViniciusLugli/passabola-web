@@ -34,7 +34,7 @@ function Games() {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="transparent min-h-screen">
       <Header />
       <main
         className="
@@ -44,39 +44,41 @@ function Games() {
         max-w-4xl
       "
       >
-        <h1
-          className="
-          text-4xl 
-          font-extrabold 
-          text-gray-900 
-          leading-tight
-          mb-8
-          text-center
-        "
-        >
-          Jogos
-        </h1>
+        <div className="bg-white border border-zinc-300 rounded-lg shadow-xl p-6 md:p-8">
+          <h1
+            className="
+            text-4xl 
+            font-extrabold 
+            text-gray-900 
+            leading-tight
+            mb-8
+            text-center
+          "
+          >
+            Jogos
+          </h1>
 
-        {loading && <p className="text-center">Carregando jogos...</p>}
-        {error && <p className="text-center text-red-500">{error}</p>}
+          {loading && <p className="text-center">Carregando jogos...</p>}
+          {error && <p className="text-center text-red-500">{error}</p>}
 
-        {!loading && !error && (
-          <section className="flex flex-col gap-6">
-            {games.length > 0 ? (
-              games.map((game) => (
-                <GameCard
-                  key={game.id}
-                  game={game}
-                  onGameUpdate={handleGameUpdate}
-                />
-              ))
-            ) : (
-              <p className="text-center text-gray-500">
-                Nenhum jogo encontrado.
-              </p>
-            )}
-          </section>
-        )}
+          {!loading && !error && (
+            <section className="flex flex-col gap-6">
+              {games.length > 0 ? (
+                games.map((game) => (
+                  <GameCard
+                    key={game.id}
+                    game={game}
+                    onGameUpdate={handleGameUpdate}
+                  />
+                ))
+              ) : (
+                <p className="text-center text-gray-500">
+                  Nenhum jogo encontrado.
+                </p>
+              )}
+            </section>
+          )}
+        </div>
       </main>
 
       <Link

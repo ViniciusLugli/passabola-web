@@ -14,20 +14,25 @@ function TeamCard({ team }) {
       href={`/teams/${team.id}`}
       className="
         block 
-        bg-white 
-        rounded-lg 
-        shadow-md 
-        hover:shadow-lg 
-        transition-shadow 
+        bg-gray-50
+        border
+        border-zinc-200
+        rounded-xl
+        hover:border-purple-300
+        hover:bg-white
+        hover:shadow-md
+        transition-all
         duration-200 
         ease-in-out 
         overflow-hidden
       "
     >
-      <div className="p-4">
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">{teamName}</h2>
-        {teamBio && <p className="text-gray-600 text-sm mb-2">{teamBio}</p>}
-        <div className="flex items-center text-gray-500 text-xs">
+      <div className="p-5">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">{teamName}</h2>
+        {teamBio && (
+          <p className="text-gray-600 text-sm mb-3 line-clamp-2">{teamBio}</p>
+        )}
+        <div className="flex items-center text-gray-500 text-sm">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"

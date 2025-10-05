@@ -49,7 +49,7 @@ function Calendar() {
   }, [isAuthenticated, user, authLoading]);
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="transparent min-h-screen">
       <Header />
       <main
         className="

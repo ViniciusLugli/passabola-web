@@ -25,8 +25,6 @@ export default function TeamList() {
         if (!response) {
           console.warn("api.teams.getAll() retornou falsy:", response);
         }
-        // Se a resposta está vazia e possivelmente foi um 403 com body vazio,
-        // tentamos novamente sem enviar o Authorization (recurso público)
         if (
           (!teamsData || teamsData.length === 0) &&
           response &&
@@ -51,7 +49,6 @@ export default function TeamList() {
         setTeams(teamsData);
       } catch (err) {
         console.error("Erro ao buscar equipes:", err);
-        // Se o backend retornou 403 ao usar o token/sem auth, tentamos fetch público
         if (err && err.status === 403) {
           try {
             const publicResponse = await api.teams.getAll({
@@ -81,7 +78,6 @@ export default function TeamList() {
     fetchTeams();
 
     const handleTeamsChanged = () => {
-      // refetch when other parts of the app signal teams changed
       fetchTeams();
     };
 
@@ -101,7 +97,6 @@ export default function TeamList() {
   }
 
   if (error) {
-    // error pode ser string ou objeto com status/message/body
     const errMsg =
       typeof error === "string"
         ? error

@@ -86,9 +86,10 @@ export default function GameCard({ game, onGameUpdate }) {
       className={`
         relative
         w-full
-        bg-white
-        rounded-2xl
-        shadow-lg
+        bg-gray-50
+        border
+        border-zinc-200
+        rounded-xl
         p-6
         flex
         flex-col
@@ -97,7 +98,9 @@ export default function GameCard({ game, onGameUpdate }) {
         transition-all
         duration-300
         ease-in-out
-        ${isExpanded ? "shadow-2xl" : ""}
+        hover:border-purple-300
+        hover:bg-white
+        ${isExpanded ? "border-purple-400 bg-white shadow-md" : ""}
       `}
     >
       <div
@@ -114,7 +117,7 @@ export default function GameCard({ game, onGameUpdate }) {
           transition-all 
           duration-300
           ${typeColors[game.gameType]}
-          ${isExpanded ? "w-40 rounded-none rounded-t-2xl px-6 py-2" : ""}
+          ${isExpanded ? "w-40 rounded-none rounded-tr-2xl px-6 py-2" : ""}
         `}
       >
         {isExpanded ? (

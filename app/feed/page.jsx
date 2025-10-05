@@ -24,7 +24,6 @@ function Feed() {
         setLoading(true);
         setError(null);
 
-        // Cancel previous requests if any
         if (abortRef.current) {
           try {
             abortRef.current.abort();
@@ -35,22 +34,18 @@ function Feed() {
 
         const q = searchTerm.trim();
 
-        // If there is a search term and filters, call only the selected endpoints
         const filters = selectedFilters || [];
 
         let usersAccum = [];
         let postsAccum = [];
 
-        // Helper to call endpoints and guard abort
         const guarded = async (fn) => {
           const res = await fn();
           if (controller.signal.aborted) throw new Error("aborted");
           return res;
         };
 
-        // If no filters selected: first search users (players, spectators, organizations), then posts
         if (q && filters.length === 0) {
-          // players
           const p = await guarded(() =>
             api.players.search(q, { page: 0, size: 5 })
           );
@@ -176,7 +171,7 @@ function Feed() {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="transparent min-h-screen">
       <Header />
       <main
         className="
@@ -261,9 +256,12 @@ function Feed() {
         href="/feed/newPost"
         className="
         fixed 
-        bottom-6 
-        right-6 
-        p-4 
+        bottom-4 
+        right-4 
+        sm:bottom-6 
+        sm:right-6
+        p-3 
+        sm:p-4 
         rounded-full 
         bg-purple-600 
         text-white 
@@ -280,7 +278,7 @@ function Feed() {
           viewBox="0 0 24 24"
           strokeWidth={2}
           stroke="currentColor"
-          className="w-8 h-8"
+          className="w-6 h-6 sm:w-8 sm:h-8"
         >
           <path
             strokeLinecap="round"

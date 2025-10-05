@@ -63,7 +63,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
   };
 
   return (
-    <div className="w-full bg-white rounded-b-2xl shadow-xl overflow-hidden relative">
+    <div className="w-full bg-white rounded-2xl border border-zinc-400 shadow-xl overflow-hidden relative">
       <div className="relative w-full h-40 md:h-64">
         <Image
           src={user.bannerUrl || "/icons/banner-default.jpeg"}

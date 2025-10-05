@@ -95,10 +95,10 @@ export default function MailPage() {
   const hasInvites = gameInvites.length > 0;
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="transparent min-h-screen">
       <Header />
       <main className="container mx-auto p-4 mt-8 max-w-2xl">
-        <div className="relative bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-6">
+        <div className="relative bg-white border border-zinc-300 rounded-2xl shadow-lg p-8 flex flex-col gap-6">
           <button
             onClick={() => router.back()}
             className="absolute top-8 right-8 text-gray-500 hover:text-gray-800 transition-colors duration-200"
