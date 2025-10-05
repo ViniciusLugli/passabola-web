@@ -1,6 +1,7 @@
 export default class User {
   constructor(
     id,
+    userId,
     userType,
     username,
     name,
@@ -16,6 +17,7 @@ export default class User {
     subscribedGames
   ) {
     this.id = id;
+    this.userId = userId;
     this.userType = userType;
     this.username = username;
     this.name = name;

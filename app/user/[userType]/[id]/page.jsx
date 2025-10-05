@@ -57,16 +57,15 @@ export default function ProfilePage() {
 
       const isOwnProfile =
         loggedInUser &&
-        loggedInUser.id === Number(id) &&
+        loggedInUser.userId === fetchedUser.userId &&
         loggedInUser.userType.toLowerCase() === lowerCaseUserType;
 
       const updatedProfileUser = {
         ...fetchedUser,
         userType: lowerCaseUserType.toUpperCase(),
-        followers: fetchedUser.followers || 0,
-        following: fetchedUser.following || 0,
       };
 
+      // Buscar listas de seguidores e seguindo
       let followersListResponse;
       let followingListResponse;
 
@@ -74,31 +73,22 @@ export default function ProfilePage() {
         followersListResponse = await api.follow.getMyFollowers();
         followingListResponse = await api.follow.getMyFollowing();
       } else {
+        // Usa userId para endpoints públicos
         followersListResponse = await api.follow.getFollowers(
-          id,
+          fetchedUser.userId,
           userType.toUpperCase()
         );
         followingListResponse = await api.follow.getFollowing(
-          id,
+          fetchedUser.userId,
           userType.toUpperCase()
         );
       }
 
+      // Sempre usar as contagens das listas retornadas
       updatedProfileUser.followersList = followersListResponse.content || [];
       updatedProfileUser.followingList = followingListResponse.content || [];
-
-      if (
-        fetchedUser.followers === null ||
-        fetchedUser.followers === undefined
-      ) {
-        updatedProfileUser.followers = updatedProfileUser.followersList.length;
-      }
-      if (
-        fetchedUser.following === null ||
-        fetchedUser.following === undefined
-      ) {
-        updatedProfileUser.following = updatedProfileUser.followingList.length;
-      }
+      updatedProfileUser.followers = followersListResponse.totalElements || updatedProfileUser.followersList.length;
+      updatedProfileUser.following = followingListResponse.totalElements || updatedProfileUser.followingList.length;
 
       setProfileUser(updatedProfileUser);
 

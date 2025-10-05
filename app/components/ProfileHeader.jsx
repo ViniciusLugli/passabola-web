@@ -15,10 +15,10 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
 
   useEffect(() => {
     const checkFollowingStatus = async () => {
-      if (loggedInUser && loggedInUser.id !== user.id) {
+      if (loggedInUser && loggedInUser.userId !== user.userId) {
         try {
           const response = await api.follow.checkFollowing(
-            user.id,
+            user.userId,
             user.userType
           );
           setIsFollowing(response);
@@ -38,7 +38,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
 
   const handleFollow = async () => {
     try {
-      await api.follow.follow(user.id, user.userType.toUpperCase());
+      await api.follow.follow(user.userId, user.userType.toUpperCase());
       setIsFollowing(true);
       setFollowersCount((prev) => prev + 1);
       if (onFollowChange) {
@@ -51,7 +51,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
 
   const handleUnfollow = async () => {
     try {
-      await api.follow.unfollow(user.id, user.userType.toUpperCase());
+      await api.follow.unfollow(user.userId, user.userType.toUpperCase());
       setIsFollowing(false);
       setFollowersCount((prev) => prev - 1);
       if (onFollowChange) {
@@ -110,7 +110,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
               </button>
             </Link>
           ) : (
-            loggedInUser && (
+            loggedInUser && loggedInUser.userId !== user.userId && (
               <button
                 onClick={isFollowing ? handleUnfollow : handleFollow}
                 className={`

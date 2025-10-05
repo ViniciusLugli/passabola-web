@@ -3,6 +3,7 @@ import User from "./user.js";
 export default class Organization extends User {
   constructor(
     id,
+    userId,
     username,
     name,
     email,
@@ -22,6 +23,7 @@ export default class Organization extends User {
   ) {
     super(
       id,
+      userId,
       "organization",
       username,
       name,

@@ -3,6 +3,7 @@ import User from "./user.js";
 export default class Player extends User {
   constructor(
     id,
+    userId,
     username,
     name,
     email,
@@ -24,6 +25,7 @@ export default class Player extends User {
   ) {
     super(
       id,
+      userId,
       "player",
       username,
       name,
