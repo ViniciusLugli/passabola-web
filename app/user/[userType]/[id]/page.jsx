@@ -87,8 +87,12 @@ export default function ProfilePage() {
       // Sempre usar as contagens das listas retornadas
       updatedProfileUser.followersList = followersListResponse.content || [];
       updatedProfileUser.followingList = followingListResponse.content || [];
-      updatedProfileUser.followers = followersListResponse.totalElements || updatedProfileUser.followersList.length;
-      updatedProfileUser.following = followingListResponse.totalElements || updatedProfileUser.followingList.length;
+      updatedProfileUser.followers =
+        followersListResponse.totalElements ||
+        updatedProfileUser.followersList.length;
+      updatedProfileUser.following =
+        followingListResponse.totalElements ||
+        updatedProfileUser.followingList.length;
 
       setProfileUser(updatedProfileUser);
 

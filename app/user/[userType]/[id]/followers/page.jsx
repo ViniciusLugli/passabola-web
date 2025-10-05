@@ -105,9 +105,7 @@ export default function FollowersPage() {
       }));
     } catch (err) {
       console.error("Error fetching followers:", err);
-      setError(
-        err.message || "Falha ao carregar seguidores. Tente novamente."
-      );
+      setError(err.message || "Falha ao carregar seguidores. Tente novamente.");
     } finally {
       setLoading(false);
     }

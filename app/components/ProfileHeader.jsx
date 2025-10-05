@@ -110,7 +110,8 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
               </button>
             </Link>
           ) : (
-            loggedInUser && loggedInUser.userId !== user.userId && (
+            loggedInUser &&
+            loggedInUser.userId !== user.userId && (
               <button
                 onClick={isFollowing ? handleUnfollow : handleFollow}
                 className={`

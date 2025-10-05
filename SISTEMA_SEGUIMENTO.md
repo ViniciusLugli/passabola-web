@@ -14,6 +14,7 @@ O sistema de seguimento permite que usuários (Players, Organizations e Spectato
 - **`userId`**: ID global do usuário no sistema - **SEMPRE usado nas APIs de follow**
 
 **Exemplo**:
+
 ```javascript
 // ❌ ERRADO
 await api.follow.follow(user.id, "PLAYER");
@@ -25,21 +26,25 @@ await api.follow.follow(user.userId, "PLAYER");
 ## 🛠️ Estrutura de Arquivos
 
 ### Modelos (`app/models/`)
+
 - **`user.js`**: Classe base com propriedade `userId`
 - **`player.js`**: Herda de User, adiciona `userId` no construtor
 - **`organization.js`**: Herda de User, adiciona `userId` no construtor
 - **`spectator.js`**: Herda de User, adiciona `userId` no construtor
 
 ### Componentes (`app/components/`)
+
 - **`ProfileHeader.jsx`**: Header de perfil com botão seguir/deixar de seguir
 - **`UserListCard.jsx`**: Card para exibir usuários em listas
 
 ### Páginas (`app/user/[userType]/[id]/`)
+
 - **`page.jsx`**: Página de perfil do usuário
 - **`followers/page.jsx`**: Lista de seguidores
 - **`following/page.jsx`**: Lista de quem o usuário segue
 
 ### Rotas da API (`app/lib/routes/followRoutes.js`)
+
 Todas as rotas seguem o padrão correto com `userId`.
 
 ## 📡 Endpoints da API
@@ -134,11 +139,10 @@ const followersResponse = await api.follow.getMyFollowers({
 });
 
 // Para perfil de outro usuário (público)
-const followersResponse = await api.follow.getFollowers(
-  user.userId,
-  "PLAYER",
-  { page: 0, size: 20 }
-);
+const followersResponse = await api.follow.getFollowers(user.userId, "PLAYER", {
+  page: 0,
+  size: 20,
+});
 
 // Extrair dados
 const followers = followersResponse.content || [];
@@ -177,18 +181,22 @@ const totalFollowers = followersResponse.totalElements || 0;
 ## ⚠️ Erros Comuns
 
 ### 1. "You cannot follow yourself"
+
 **Causa**: Tentando seguir o próprio perfil
 **Solução**: Verificar `loggedInUser.userId !== user.userId` antes de mostrar botão
 
 ### 2. "Target user not found"
+
 **Causa**: `userId` incorreto ou usuário não existe
 **Solução**: Garantir que está usando `user.userId` e não `user.id`
 
 ### 3. "You are already following this user"
+
 **Causa**: Tentando seguir novamente
 **Solução**: Verificar status antes com `checkFollowing()`
 
 ### 4. 403 Forbidden
+
 **Causa**: Token ausente ou inválido
 **Solução**: Verificar `Authorization: Bearer {token}` no header
 
@@ -203,7 +211,7 @@ Use o Postman para criar usuários conforme o guia fornecido.
 1. **Login**: Entre com um usuário
 2. **Navegar**: Vá para o perfil de outro usuário
 3. **Seguir**: Clique no botão "Seguir"
-4. **Verificar**: 
+4. **Verificar**:
    - Contador de seguidores deve aumentar
    - Botão muda para "Deixar de Seguir"
 5. **Ver Listas**: Clique em "Seguidores" ou "Seguindo"
@@ -241,6 +249,7 @@ const handleFollow = async () => {
 ### UserListCard
 
 Exibe um card compacto com:
+
 - Avatar redondo
 - Nome e username
 - Badge com tipo de usuário (Player/Organization/Spectator)
@@ -250,6 +259,7 @@ Exibe um card compacto com:
 ### ProfileHeader
 
 Exibe:
+
 - Banner e avatar
 - Botão seguir/deixar de seguir (se não for próprio perfil)
 - Contadores clicáveis de seguidores/seguindo
@@ -259,6 +269,7 @@ Exibe:
 ## 📱 Responsividade
 
 Todos os componentes são totalmente responsivos:
+
 - **Mobile**: Layout vertical, informações essenciais
 - **Tablet/Desktop**: Layout horizontal, bio visível, avatares maiores
 
