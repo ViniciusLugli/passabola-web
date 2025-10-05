@@ -15,7 +15,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
 
   useEffect(() => {
     const checkFollowingStatus = async () => {
-      if (loggedInUser && loggedInUser.userId !== user.userId) {
+      if (loggedInUser && user.userId && loggedInUser.userId !== user.userId) {
         try {
           const response = await api.follow.checkFollowing(
             user.userId,
@@ -96,7 +96,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
               sizes="(max-width: 768px) 24vw, 15vw"
             />
           </div>
-          {loggedInUser && loggedInUser.id === user.id ? (
+          {loggedInUser && (loggedInUser.id === user.id || loggedInUser.userId === user.userId) ? (
             <Link
               href={`/user/${user.userType.toLowerCase()}/${user.id}/config`}
               passHref
@@ -111,6 +111,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
             </Link>
           ) : (
             loggedInUser &&
+            user.userId &&
             loggedInUser.userId !== user.userId && (
               <button
                 onClick={isFollowing ? handleUnfollow : handleFollow}
