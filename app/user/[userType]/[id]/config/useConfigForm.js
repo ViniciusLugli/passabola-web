@@ -101,9 +101,6 @@ export const useConfigForm = (userId, userType) => {
     try {
       const dataToUpdate = { ...formData };
 
-      // Se houver nova senha, envia a nova senha
-      // Se não, envia a senha atual (passwordConfirm)
-      // O backend SEMPRE requer o campo 'password'
       dataToUpdate.password = newPassword || passwordConfirm;
 
       switch (userType.toLowerCase()) {

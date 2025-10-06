@@ -13,38 +13,59 @@ function Calendar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchUserGames = async () => {
-      if (authLoading) return;
+  const fetchUserGames = async () => {
+    if (authLoading) return;
 
-      if (!isAuthenticated || !user) {
-        setError("Você precisa estar logado para ver o calendário de jogos.");
+    if (!isAuthenticated || !user) {
+      setError("Você precisa estar logado para ver o calendário de jogos.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await api.gameParticipants.getMyParticipations({
+        page: 0,
+        size: 100,
+      });
+      let fetchedParticipations = response.content || [];
+
+      // Extrair os IDs dos jogos das participações
+      const gameIds = fetchedParticipations
+        .map((p) => p.gameId)
+        .filter(Boolean);
+
+      if (gameIds.length === 0) {
+        setGames([]);
         setLoading(false);
         return;
       }
 
-      try {
-        setLoading(true);
+      // Buscar os detalhes completos de cada jogo
+      const allGamesResponse = await api.games.getAll({ page: 0, size: 1000 });
+      const allGames = allGamesResponse.content || [];
 
-        const response = await api.gameParticipants.getMyParticipations();
-        let fetchedParticipations = response.content || [];
+      // Filtrar apenas os jogos que o usuário está inscrito
+      const fetchedGames = allGames
+        .filter((game) => gameIds.includes(game.id))
+        .map((game) => ({
+          ...game,
+          isJoined: true, // No calendário, todos os jogos estão joined
+        }));
 
-        const fetchedGames = fetchedParticipations
-          .map((p) => p.game)
-          .filter(Boolean);
+      fetchedGames.sort((a, b) => new Date(a.gameDate) - new Date(b.gameDate));
 
-        fetchedGames.sort(
-          (a, b) => new Date(a.gameDate) - new Date(b.gameDate)
-        );
+      setGames(fetchedGames);
+    } catch (err) {
+      console.error("Erro ao carregar calendário:", err);
+      setError(err.message || "Falha ao carregar os jogos inscritos.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setGames(fetchedGames);
-      } catch (err) {
-        setError(err.message || "Falha ao carregar os jogos inscritos.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  useEffect(() => {
     fetchUserGames();
   }, [isAuthenticated, user, authLoading]);
 
@@ -82,7 +103,10 @@ function Calendar() {
                 <GameCard
                   key={game.id}
                   game={game}
-                  onGameUpdate={fetchUserGames}
+                  onGameUpdate={() => {
+                    // Recarrega a lista após ação
+                    fetchUserGames();
+                  }}
                 />
               ))
             ) : (

@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
 import { getGameTypeLabel } from "@/app/lib/gameUtils";
+import Toast from "@/app/components/Toast";
 
 export default function GameCard({ game, onGameUpdate }) {
+  const [toast, setToast] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const { user: loggedInUser } = useAuth();
   const router = useRouter();
@@ -44,19 +46,32 @@ export default function GameCard({ game, onGameUpdate }) {
     organizer = game.hostUsername;
   }
 
-  const [isJoined, setIsJoined] = useState(game.isJoined);
+  const [isJoined, setIsJoined] = useState(game.isJoined || false);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Sincroniza o estado local quando a prop game.isJoined mudar
+  useEffect(() => {
+    setIsJoined(game.isJoined || false);
+  }, [game.isJoined, game.id]);
 
   const handleJoinLeaveGame = async (e) => {
     e.stopPropagation();
+
     if (!loggedInUser) {
-      router.push("/login");
+      setToast({ message: "Você precisa estar logado para se inscrever em jogos.", type: "error" });
+      setTimeout(() => router.push("/login"), 2000);
       return;
     }
+
+    if (isProcessing) return;
+
+    setIsProcessing(true);
 
     try {
       if (isJoined) {
         await api.gameParticipants.leave(game.id);
         setIsJoined(false);
+        setToast({ message: "Você saiu do jogo com sucesso!", type: "success" });
       } else {
         await api.gameParticipants.join({
           gameId: game.id,
@@ -64,12 +79,29 @@ export default function GameCard({ game, onGameUpdate }) {
           teamSide: 1,
         });
         setIsJoined(true);
+        setToast({ message: "Você se inscreveu no jogo com sucesso!", type: "success" });
       }
+
       if (onGameUpdate) {
         onGameUpdate();
       }
     } catch (error) {
       console.error("Erro ao participar/sair do jogo:", error);
+
+      // Se o erro for que já está inscrito, atualiza o estado
+      if (error.message && error.message.includes("already participating")) {
+        setIsJoined(true);
+        if (onGameUpdate) {
+          onGameUpdate();
+        }
+      }
+
+      setToast({ 
+        message: error.message || "Erro ao processar sua solicitação. Tente novamente.",
+        type: "error"
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -78,7 +110,12 @@ export default function GameCard({ game, onGameUpdate }) {
     router.push(`/games/edit/${game.id}`);
   };
 
-  const isGameCreator = loggedInUser && loggedInUser.userId === game.hostId;
+  // Verifica se o usuário logado é o criador do jogo
+  // Converte para string para garantir comparação correta
+  const isGameCreator =
+    loggedInUser &&
+    (String(loggedInUser.userId) === String(game.hostId) ||
+      String(loggedInUser.id) === String(game.hostId));
 
   return (
     <div
@@ -178,6 +215,7 @@ export default function GameCard({ game, onGameUpdate }) {
           <button
             onClick={handleEditGame}
             className="p-1 rounded-full hover:bg-gray-300"
+            title="Editar Jogo"
           >
             <Image
               src="/icons/pencil.svg"
@@ -189,16 +227,34 @@ export default function GameCard({ game, onGameUpdate }) {
         )}
         <button
           onClick={handleJoinLeaveGame}
-          className="p-1 rounded-full hover:bg-gray-300"
+          disabled={isProcessing}
+          className={`p-1 rounded-full hover:bg-gray-300 ${
+            isProcessing ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          title={
+            isProcessing
+              ? "Processando..."
+              : isJoined
+              ? "Sair do jogo"
+              : "Inscrever-se no jogo"
+          }
         >
           <Image
             src={isJoined ? "/icons/check.svg" : "/icons/adicionar.svg"}
-            alt={isJoined ? "Adicionado" : "Adicionar"}
+            alt={isJoined ? "Inscrito" : "Inscrever-se"}
             width={24}
             height={24}
           />
         </button>
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
