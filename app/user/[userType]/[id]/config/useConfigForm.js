@@ -100,10 +100,11 @@ export const useConfigForm = (userId, userType) => {
 
     try {
       const dataToUpdate = { ...formData };
-      if (newPassword) {
-        dataToUpdate.password = newPassword;
-      }
-      dataToUpdate.currentPassword = passwordConfirm;
+
+      // Se houver nova senha, envia a nova senha
+      // Se não, envia a senha atual (passwordConfirm)
+      // O backend SEMPRE requer o campo 'password'
+      dataToUpdate.password = newPassword || passwordConfirm;
 
       switch (userType.toLowerCase()) {
         case "player":
