@@ -13,13 +13,9 @@ async function fetchApi(endpoint, options = {}) {
   const { body, ...customConfig } = options;
   const headers = { "Content-Type": "application/json" };
 
-  // Allow callers to skip attaching the Authorization header when needed
   if (authToken && !customConfig.skipAuth) {
     headers["Authorization"] = `Bearer ${authToken}`;
   }
-
-  // Debug: indicate whether Authorization will be attached (do not log the token)
-  // (debug logging removed)
 
   const config = {
     method: body ? "POST" : options.method || "GET",
@@ -37,17 +33,16 @@ async function fetchApi(endpoint, options = {}) {
   try {
     const response = await fetch(`${API_URL}${endpoint}`, config);
     if (!response.ok) {
-      // Try to parse a JSON body for more info; fall back to statusText
       const parsedBody = await response.json().catch(() => null);
       const errorObj = {
         status: response.status,
         statusText: response.statusText,
         body: parsedBody,
       };
-      // If parsedBody contains a message, include it as well
       if (parsedBody && typeof parsedBody === "object" && parsedBody.message) {
         errorObj.message = parsedBody.message;
       }
+
       return Promise.reject(errorObj);
     }
     if (response.status === 204) {

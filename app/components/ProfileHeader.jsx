@@ -19,7 +19,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
         try {
           const response = await api.follow.checkFollowing(
             user.userId,
-            user.userType
+            user.userType.toUpperCase()
           );
           setIsFollowing(response);
         } catch (error) {
@@ -96,7 +96,9 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
               sizes="(max-width: 768px) 24vw, 15vw"
             />
           </div>
-          {loggedInUser && (loggedInUser.id === user.id || loggedInUser.userId === user.userId) ? (
+          {loggedInUser &&
+          loggedInUser.userId === user.userId &&
+          loggedInUser.userType === user.userType ? (
             <Link
               href={`/user/${user.userType.toLowerCase()}/${user.id}/config`}
               passHref

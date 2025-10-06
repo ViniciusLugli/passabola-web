@@ -55,9 +55,6 @@ export default function ProfilePage() {
         throw new Error("Usuário não encontrado.");
       }
 
-      console.log("Fetched user data:", fetchedUser);
-      console.log("Logged in user:", loggedInUser);
-
       const isOwnProfile =
         loggedInUser &&
         loggedInUser.userId === fetchedUser.userId &&
@@ -74,27 +71,37 @@ export default function ProfilePage() {
 
       try {
         if (isOwnProfile) {
-          console.log("Buscando dados de follow do próprio perfil");
+          // Para o próprio perfil, usar endpoints privados
           followersListResponse = await api.follow.getMyFollowers();
           followingListResponse = await api.follow.getMyFollowing();
         } else {
-          // Verifica se userId existe antes de chamar a API
+          // Para outros perfis, usar endpoints públicos com userId
           if (fetchedUser.userId) {
-            console.log("Buscando dados de follow para userId:", fetchedUser.userId);
-            followersListResponse = await api.follow.getFollowers(
-              fetchedUser.userId,
-              userType.toUpperCase()
-            );
-            followingListResponse = await api.follow.getFollowing(
-              fetchedUser.userId,
-              userType.toUpperCase()
-            );
-          } else {
-            console.warn("userId não disponível, usando valores padrão");
+            // Tenta buscar seguidores (endpoint público usa userId)
+            try {
+              followersListResponse = await api.follow.getFollowers(
+                fetchedUser.userId,
+                userType.toUpperCase()
+              );
+            } catch (followersError) {
+              console.error("Erro ao buscar seguidores:", followersError);
+              // Mantém valores padrão
+            }
+
+            // Tenta buscar seguindo (endpoint público usa userId)
+            try {
+              followingListResponse = await api.follow.getFollowing(
+                fetchedUser.userId,
+                userType.toUpperCase()
+              );
+            } catch (followingError) {
+              console.error("Erro ao buscar seguindo:", followingError);
+              // Mantém valores padrão
+            }
           }
         }
       } catch (followError) {
-        console.warn("Erro ao buscar dados de follow, usando valores padrão:", followError);
+        console.error("Erro ao buscar dados de follow:", followError);
         // Continua com valores padrão
       }
 
