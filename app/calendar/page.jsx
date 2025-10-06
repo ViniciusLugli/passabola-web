@@ -58,7 +58,6 @@ function Calendar() {
       });
       let fetchedParticipations = response.content || [];
 
-      // Extrair os IDs dos jogos das participações
       const gameIds = fetchedParticipations
         .map((p) => p.gameId)
         .filter(Boolean);
@@ -71,21 +70,18 @@ function Calendar() {
         return;
       }
 
-      // Buscar os detalhes completos de cada jogo
       const allGamesResponse = await api.games.getAll({ page: 0, size: 1000 });
       const allGames = allGamesResponse.content || [];
 
-      // Filtrar apenas os jogos que o usuário está inscrito
       const fetchedGames = allGames
         .filter((game) => gameIds.includes(game.id))
         .map((game) => ({
           ...game,
-          isJoined: true, // No calendário, todos os jogos estão joined
+          isJoined: true,
         }));
 
       fetchedGames.sort((a, b) => new Date(a.gameDate) - new Date(b.gameDate));
 
-      // Filtrar jogos por período
       const { week, month, future } = filterGamesByDate(fetchedGames);
 
       setGamesThisWeek(week);
@@ -116,8 +112,7 @@ function Calendar() {
           shadow-lg
         "
       >
-        <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-          <span className="text-3xl">📅</span>
+        <h2 className="text-2xl font-bold text-white">
           {title}
         </h2>
       </div>
