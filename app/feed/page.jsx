@@ -170,6 +170,15 @@ function Feed() {
     setSelectedFilters(filters || []);
   };
 
+  const getUserTypeLabel = (type) => {
+    const types = {
+      player: "Jogadora",
+      organization: "Organização",
+      spectator: "Espectador",
+    };
+    return types[type] || type;
+  };
+
   return (
     <div className="transparent min-h-screen">
       <Header />
@@ -224,16 +233,14 @@ function Feed() {
                       />
                       <div>
                         <a
-                          href={
-                            u._type === "organization"
-                              ? `/user/organization/${u.id}`
-                              : `/user/player/${u.id}`
-                          }
+                          href={`/user/${u._type}/${u.id}`}
                           className="font-medium text-purple-600"
                         >
                           {u.name || u.username}
                         </a>
-                        <div className="text-sm text-gray-500">{u._type}</div>
+                        <div className="text-sm text-gray-500">
+                          {getUserTypeLabel(u._type)}
+                        </div>
                       </div>
                     </div>
                   ))}
