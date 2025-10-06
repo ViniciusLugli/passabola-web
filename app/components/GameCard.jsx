@@ -49,7 +49,6 @@ export default function GameCard({ game, onGameUpdate }) {
   const [isJoined, setIsJoined] = useState(game.isJoined || false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Sincroniza o estado local quando a prop game.isJoined mudar
   useEffect(() => {
     setIsJoined(game.isJoined || false);
   }, [game.isJoined, game.id]);
@@ -58,7 +57,10 @@ export default function GameCard({ game, onGameUpdate }) {
     e.stopPropagation();
 
     if (!loggedInUser) {
-      showToast("Você precisa estar logado para se inscrever em jogos.", "error");
+      showToast(
+        "Você precisa estar logado para se inscrever em jogos.",
+        "error"
+      );
       setTimeout(() => router.push("/login"), 2000);
       return;
     }
@@ -110,8 +112,6 @@ export default function GameCard({ game, onGameUpdate }) {
     router.push(`/games/edit/${game.id}`);
   };
 
-  // Verifica se o usuário logado é o criador do jogo
-  // Converte para string para garantir comparação correta
   const isGameCreator =
     loggedInUser &&
     (String(loggedInUser.userId) === String(game.hostId) ||

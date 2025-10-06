@@ -112,9 +112,7 @@ function Calendar() {
           shadow-lg
         "
       >
-        <h2 className="text-2xl font-bold text-white">
-          {title}
-        </h2>
+        <h2 className="text-2xl font-bold text-white">{title}</h2>
       </div>
 
       {games.length > 0 ? (
