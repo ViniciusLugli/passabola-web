@@ -5,13 +5,13 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
+import { useToast } from "@/app/context/ToastContext";
 import { getGameTypeLabel } from "@/app/lib/gameUtils";
-import Toast from "@/app/components/Toast";
 
 export default function GameCard({ game, onGameUpdate }) {
-  const [toast, setToast] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const { user: loggedInUser } = useAuth();
+  const { showToast } = useToast();
   const router = useRouter();
 
   const typeColors = {
@@ -58,7 +58,7 @@ export default function GameCard({ game, onGameUpdate }) {
     e.stopPropagation();
 
     if (!loggedInUser) {
-      setToast({ message: "Você precisa estar logado para se inscrever em jogos.", type: "error" });
+      showToast("Você precisa estar logado para se inscrever em jogos.", "error");
       setTimeout(() => router.push("/login"), 2000);
       return;
     }
@@ -71,7 +71,7 @@ export default function GameCard({ game, onGameUpdate }) {
       if (isJoined) {
         await api.gameParticipants.leave(game.id);
         setIsJoined(false);
-        setToast({ message: "Você saiu do jogo com sucesso!", type: "success" });
+        showToast("Você saiu do jogo com sucesso!", "success");
       } else {
         await api.gameParticipants.join({
           gameId: game.id,
@@ -79,7 +79,7 @@ export default function GameCard({ game, onGameUpdate }) {
           teamSide: 1,
         });
         setIsJoined(true);
-        setToast({ message: "Você se inscreveu no jogo com sucesso!", type: "success" });
+        showToast("Você se inscreveu no jogo com sucesso!", "success");
       }
 
       if (onGameUpdate) {
@@ -96,10 +96,10 @@ export default function GameCard({ game, onGameUpdate }) {
         }
       }
 
-      setToast({ 
-        message: error.message || "Erro ao processar sua solicitação. Tente novamente.",
-        type: "error"
-      });
+      showToast(
+        error.message || "Erro ao processar sua solicitação. Tente novamente.",
+        "error"
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -247,14 +247,6 @@ export default function GameCard({ game, onGameUpdate }) {
           />
         </button>
       </div>
-
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
     </div>
   );
 }

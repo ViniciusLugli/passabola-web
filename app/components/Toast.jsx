@@ -10,7 +10,12 @@ import { useEffect } from "react";
  * @param {function} props.onClose - Callback para fechar o toast
  * @param {number} props.duration - Duração em ms (padrão: 3000)
  */
-export default function Toast({ message, type = "info", onClose, duration = 3000 }) {
+export default function Toast({
+  message,
+  type = "info",
+  onClose,
+  duration = 3000,
+}) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
