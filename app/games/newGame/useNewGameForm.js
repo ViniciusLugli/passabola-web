@@ -111,7 +111,8 @@ export const useNewGameForm = () => {
           if (isNaN(maxSpec) || maxSpec < 5) {
             setAlert({
               type: "error",
-              message: "Quando houver espectadores, 'Máximo de Espectadores' deve ser informado e ser pelo menos 5.",
+              message:
+                "Quando houver espectadores, 'Máximo de Espectadores' deve ser informado e ser pelo menos 5.",
             });
             setLoading(false);
             return;
@@ -124,7 +125,9 @@ export const useNewGameForm = () => {
           gameDate: fullGameDate,
           description,
           hasSpectators,
-          maxSpectators: hasSpectators ? parseInt(formData.maxSpectators) : undefined,
+          maxSpectators: hasSpectators
+            ? parseInt(formData.maxSpectators)
+            : undefined,
           minPlayers: parseInt(minPlayers),
           maxPlayers: parseInt(maxPlayers),
         };
@@ -144,7 +147,8 @@ export const useNewGameForm = () => {
           if (isNaN(maxSpec) || maxSpec < 5) {
             setAlert({
               type: "error",
-              message: "Quando houver espectadores, 'Máximo de Espectadores' deve ser informado e ser pelo menos 5.",
+              message:
+                "Quando houver espectadores, 'Máximo de Espectadores' deve ser informado e ser pelo menos 5.",
             });
             setLoading(false);
             return;
@@ -157,7 +161,9 @@ export const useNewGameForm = () => {
           gameDate: fullGameDate,
           description,
           hasSpectators,
-          maxSpectators: hasSpectators ? parseInt(formData.maxSpectators) : undefined,
+          maxSpectators: hasSpectators
+            ? parseInt(formData.maxSpectators)
+            : undefined,
           minPlayers: parseInt(minPlayers),
           maxPlayers: parseInt(maxPlayers),
         };

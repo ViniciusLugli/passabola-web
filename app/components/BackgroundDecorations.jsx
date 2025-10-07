@@ -4,11 +4,11 @@ import React from "react";
 import Image from "next/image";
 
 const SOURCES = [
-  "/DecoR (tatica 1).svg",
-  "/DecoR (tatica 2).svg",
+  "/DecoR-tatica-1.svg",
+  "/DecoR-tatica-2.svg",
   "/TrianguloM-RV.svg",
   "/TrianguloP-RV.svg",
-  "/Deco (linha).svg",
+  "/Deco-linha.svg",
 ];
 
 const FIXED_POSITIONS = [

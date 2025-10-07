@@ -107,10 +107,17 @@ export const useEditGameForm = (gameId) => {
     setSubmitting(true);
     setAlert(null);
 
+    // O host do jogo deve ter o mesmo id e também o tipo correto:
+    // - CUP: ORGANIZATION
+    // - FRIENDLY/CHAMPIONSHIP: PLAYER
+    const requiredHostType =
+      gameData && gameData.gameType === "CUP" ? "ORGANIZATION" : "PLAYER";
+
     if (
       !user ||
       !gameData ||
-      String(user.id || user.playerId) !== String(gameData.hostId)
+      String(user.id || user.playerId) !== String(gameData.hostId) ||
+      String(user.userType || "").toUpperCase() !== requiredHostType
     ) {
       setAlert({
         type: "error",
@@ -160,7 +167,9 @@ export const useEditGameForm = (gameId) => {
         apiCall = api.games.updateFriendly;
         specificPayload.gameName = gameName;
         specificPayload.hasSpectators = hasSpectators;
-        specificPayload.maxSpectators = hasSpectators ? parseInt(maxSpectators) : undefined;
+        specificPayload.maxSpectators = hasSpectators
+          ? parseInt(maxSpectators)
+          : undefined;
         specificPayload.minPlayers = parseInt(minPlayers);
         specificPayload.maxPlayers = parseInt(maxPlayers);
         break;
@@ -168,7 +177,9 @@ export const useEditGameForm = (gameId) => {
         apiCall = api.games.updateChampionship;
         specificPayload.gameName = gameName;
         specificPayload.hasSpectators = hasSpectators;
-        specificPayload.maxSpectators = hasSpectators ? parseInt(maxSpectators) : undefined;
+        specificPayload.maxSpectators = hasSpectators
+          ? parseInt(maxSpectators)
+          : undefined;
         specificPayload.minPlayers = parseInt(minPlayers);
         specificPayload.maxPlayers = parseInt(maxPlayers);
         break;

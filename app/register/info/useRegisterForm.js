@@ -135,12 +135,10 @@ export const useRegisterForm = () => {
         return;
     }
 
-    console.log("📤 Payload sendo enviado:", JSON.stringify(payload, null, 2));
-    console.log("🎯 API Role:", apiRole);
+    // debug logs removed
 
     try {
       const res = await register(payload, apiRole);
-      console.log("✅ Registro bem-sucedido:", res);
       router.push("/login");
       return res;
     } catch (err) {

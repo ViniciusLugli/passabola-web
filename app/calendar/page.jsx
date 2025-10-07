@@ -49,6 +49,17 @@ function Calendar() {
       return;
     }
 
+    // Evitar chamada para usuários SPECTATOR: endpoint 'my-participations' aceita PLAYER/ORG
+    const role = String(user.userType || "").toUpperCase();
+    if (role === "SPECTATOR") {
+      // Espectadores não têm participações no mesmo sentido; retornar vazio sem chamar a API para evitar 403
+      setGamesThisWeek([]);
+      setGamesThisMonth([]);
+      setGamesFuture([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
 
