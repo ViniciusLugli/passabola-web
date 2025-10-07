@@ -2,11 +2,19 @@
 
 import { useState, memo } from "react";
 
-const SelectInput = ({ label, name, options, value, onChange }) => {
+const SelectInput = ({
+  label,
+  name,
+  options,
+  value,
+  onChange,
+  required = false,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const defaultLabel = required ? "Selecione o tipo *" : "Selecione o tipo";
   const selectedOption = options.find((opt) => opt.value === value) || {
-    label: "Selecione o tipo",
+    label: defaultLabel,
     value: "",
   };
 
