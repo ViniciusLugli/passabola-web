@@ -9,7 +9,7 @@ export default function TeamList() {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { loading: authLoading } = useAuth();
+  const { loading: authLoading, user } = useAuth();
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -46,7 +46,33 @@ export default function TeamList() {
             console.warn("Tentativa pública falhou:", publicErr);
           }
         }
-        setTeams(teamsData);
+
+        if (user && teamsData.length > 0) {
+          const currentUserId = String(user.id || user.playerId);
+
+          const myTeams = teamsData.filter((team) => {
+            if (team.leader) {
+              const leaderId = String(
+                team.leader.id || team.leader.playerId || team.leaderId
+              );
+              if (leaderId === currentUserId) return true;
+            }
+
+            if (team.players && Array.isArray(team.players)) {
+              const isPlayerInTeam = team.players.some((player) => {
+                const playerId = String(player.id || player.playerId);
+                return playerId === currentUserId;
+              });
+              if (isPlayerInTeam) return true;
+            }
+
+            return false;
+          });
+
+          setTeams(myTeams);
+        } else {
+          setTeams(teamsData);
+        }
       } catch (err) {
         console.error("Erro ao buscar equipes:", err);
         if (err && err.status === 403) {

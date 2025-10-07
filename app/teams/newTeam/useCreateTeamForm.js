@@ -59,7 +59,15 @@ export const useCreateTeamForm = () => {
         return { id, username, profilePhoto };
       };
 
-      setMutualFollows(mutual.map(normalize));
+      const normalizedMutual = mutual.map(normalize);
+
+      const uniqueMutual = normalizedMutual.filter((player, index, self) => {
+        if (!player.id || !player.username) return false;
+        return index === self.findIndex((p) => p.id === player.id);
+      });
+
+      console.log("Seguidores mútuos encontrados:", uniqueMutual.length);
+      setMutualFollows(uniqueMutual);
     } catch (err) {
       console.error("Erro ao buscar dados de seguidores:", err);
       setError("Falha ao carregar seguidores e seguidos.");
@@ -97,6 +105,14 @@ export const useCreateTeamForm = () => {
 
     if (!teamName.trim()) {
       setError("O nome do time não pode ser vazio.");
+      setLoading(false);
+      return;
+    }
+
+    if (selectedPlayers.length === 0) {
+      setError(
+        "Você precisa convidar pelo menos 1 jogadora para criar um time."
+      );
       setLoading(false);
       return;
     }

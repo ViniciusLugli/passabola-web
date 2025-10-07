@@ -31,14 +31,35 @@ export default function CreateTeamForm() {
       />
 
       <div className="border p-4 rounded-md">
-        <h3 className="text-lg font-semibold mb-2">Adicionar Jogadores</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-semibold">
+            Adicionar Jogadores <span className="text-red-500">*</span>
+          </h3>
+          <span
+            className={`px-3 py-1 rounded-full text-sm font-semibold ${
+              selectedPlayers.length > 0
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-600"
+            }`}
+          >
+            {selectedPlayers.length} selecionada
+            {selectedPlayers.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+        <p className="text-sm text-gray-600 mb-3">
+          Selecione pelo menos 1 jogadora para criar o time. Apenas seguidores
+          mútuos podem ser convidados.
+        </p>
         {mutualFollows.length === 0 && (
-          <p className="text-gray-500">Nenhum seguidor mútuo encontrado.</p>
+          <p className="text-gray-500">
+            Nenhum seguidor mútuo encontrado. Você precisa seguir e ser
+            seguido(a) por outras jogadoras.
+          </p>
         )}
         <ul>
-          {mutualFollows.map((p) => (
+          {mutualFollows.map((p, index) => (
             <li
-              key={p.id || p.username}
+              key={`player-${p.id}-${index}`}
               className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
                 selectedPlayers.some((s) => s.id === p.id)
                   ? "bg-blue-100"
@@ -72,9 +93,9 @@ export default function CreateTeamForm() {
         <div className="border p-4 rounded-md">
           <h3 className="text-lg font-semibold mb-2">Jogadores Selecionados</h3>
           <ul>
-            {selectedPlayers.map((player) => (
+            {selectedPlayers.map((player, index) => (
               <li
-                key={player.id}
+                key={`selected-${player.id}-${index}`}
                 className="flex items-center justify-between p-2 rounded-md bg-blue-50 mb-1"
               >
                 <span>
@@ -94,12 +115,18 @@ export default function CreateTeamForm() {
         </div>
       )}
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && (
+        <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
       {success && (
-        <p className="text-green-500 text-sm">Time criado com sucesso!</p>
+        <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+          Time criado com sucesso!
+        </div>
       )}
 
-      <Button type="submit" disabled={loading}>
+      <Button type="submit" disabled={loading || mutualFollows.length === 0}>
         {loading ? "Criando..." : "Criar Time"}
       </Button>
     </form>
