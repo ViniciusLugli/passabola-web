@@ -167,10 +167,6 @@ export default function GameCard({ game, onGameUpdate }) {
     router.push(`/games/edit/${game.id}`);
   };
 
-  // Usar user.id (ID do banco) ao invés de userId (ID do JWT)
-  // Validar também o tipo de usuário do host: jogos CUP são criados por ORGANIZATION,
-  // FRIENDLY/CHAMPIONSHIP por PLAYER. Assim garantimos que uma conta SPECTATOR
-  // com mesmo id não consiga editar o jogo.
   const requiredHostType =
     game && game.gameType === "CUP" ? "ORGANIZATION" : "PLAYER";
   const isGameCreator =

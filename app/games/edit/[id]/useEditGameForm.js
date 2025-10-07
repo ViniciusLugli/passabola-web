@@ -106,10 +106,7 @@ export const useEditGameForm = (gameId) => {
     e.preventDefault();
     setSubmitting(true);
     setAlert(null);
-
-    // O host do jogo deve ter o mesmo id e também o tipo correto:
-    // - CUP: ORGANIZATION
-    // - FRIENDLY/CHAMPIONSHIP: PLAYER
+    
     const requiredHostType =
       gameData && gameData.gameType === "CUP" ? "ORGANIZATION" : "PLAYER";
 
