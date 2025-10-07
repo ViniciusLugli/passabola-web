@@ -108,6 +108,19 @@ const EditGameForm = ({
               />
             </div>
           </div>
+          {formData.hasSpectators && (
+            <div className="mt-2">
+              <Input
+                label="Máximo de Espectadores"
+                type="number"
+                name="maxSpectators"
+                value={formData.maxSpectators || ""}
+                onChange={handleInputChange}
+                min="5"
+                required
+              />
+            </div>
+          )}
         </>
       ) : null}
 
