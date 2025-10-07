@@ -14,3 +14,17 @@
 .animate-slide-in-right {
   animation: slide-in-right 0.3s ease-out;
 }
+
+/* Animação shimmer para efeito de brilho nos botões */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-12deg);
+  }
+}
+
+.group:hover .group-hover\:animate-shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import Alert from "@/app/components/Alert";
@@ -8,9 +8,11 @@ import Modal from "@/app/components/Modal";
 import JoinGameModal from "@/app/components/JoinGameModal";
 import GameForm from "./components/GameForm";
 import { useNewGameForm } from "./useNewGameForm";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function NewGamePage() {
   const router = useRouter();
+  const { user: loggedInUser, isAuthenticated } = useAuth();
   const {
     formData,
     handleInputChange,
@@ -28,6 +30,16 @@ export default function NewGamePage() {
   } = useNewGameForm();
 
   const [showJoinModal, setShowJoinModal] = useState(false);
+
+  // Redirecionar SPECTATORs que acessarem a página de criação
+  useEffect(() => {
+    if (isAuthenticated && loggedInUser) {
+      const role = String(loggedInUser.userType || "").toUpperCase();
+      if (role === "SPECTATOR") {
+        router.replace("/games");
+      }
+    }
+  }, [isAuthenticated, loggedInUser]);
 
   const handleHostWantsToJoin = () => {
     setShowHostParticipationModal(false);
