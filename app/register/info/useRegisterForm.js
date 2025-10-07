@@ -14,6 +14,7 @@ export const useRegisterForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -37,6 +38,23 @@ export const useRegisterForm = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
+    
+    // Limpar erro ao começar a digitar
+    if (error) setError(null);
+    
+    // Validação em tempo real das senhas
+    if (name === "password" || name === "confirmPassword") {
+      const password = name === "password" ? value : formData.password;
+      const confirmPassword = name === "confirmPassword" ? value : formData.confirmPassword;
+      
+      if (password.length > 0 && password.length < 8) {
+        setPasswordError("A senha deve ter no mínimo 8 caracteres");
+      } else if (confirmPassword.length > 0 && password !== confirmPassword) {
+        setPasswordError("As senhas não coincidem");
+      } else {
+        setPasswordError("");
+      }
+    }
   };
 
   const handleFinalSubmit = async () => {
@@ -117,6 +135,19 @@ export const useRegisterForm = () => {
 
   const handleNextStep = (e) => {
     e.preventDefault();
+    
+    // Validar senhas no step 1 antes de avançar
+    if (currentStep === 1) {
+      if (formData.password.length < 8) {
+        setError("A senha deve ter no mínimo 8 caracteres");
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError("As senhas não coincidem");
+        return;
+      }
+    }
+    
     if (currentStep < 2) {
       setCurrentStep((prev) => prev + 1);
     } else {
@@ -170,6 +201,7 @@ export const useRegisterForm = () => {
     error,
     loading,
     formData,
+    passwordError,
     isOrganization,
     step1Fields,
     step2Fields,
