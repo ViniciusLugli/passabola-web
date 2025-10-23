@@ -39,10 +39,22 @@ async function fetchApi(endpoint, options = {}) {
         statusText: response.statusText,
         body: parsedBody,
       };
-      if (parsedBody && typeof parsedBody === "object" && parsedBody.message) {
-        errorObj.message = parsedBody.message;
+
+      if (parsedBody && typeof parsedBody === "object") {
+        if (parsedBody.message) {
+          errorObj.message = parsedBody.message;
+        } else if (parsedBody.error) {
+          errorObj.message = parsedBody.error;
+        } else if (parsedBody.errors && Array.isArray(parsedBody.errors)) {
+          errorObj.message = parsedBody.errors.join(", ");
+        } else {
+          errorObj.message = `Erro ${response.status}: ${response.statusText}`;
+        }
+      } else {
+        errorObj.message = `Erro ${response.status}: ${response.statusText}`;
       }
 
+      console.error("API Error:", errorObj);
       return Promise.reject(errorObj);
     }
     if (response.status === 204) {
@@ -57,7 +69,7 @@ async function fetchApi(endpoint, options = {}) {
       return text ? text : null;
     }
   } catch (error) {
-    // Normalize thrown errors to include a message
+    console.error("Fetch Error:", error);
     return Promise.reject({ message: error.message || String(error) });
   }
 }
@@ -66,13 +78,9 @@ async function fetchApiFormData(endpoint, formData, options = {}) {
   const { ...customConfig } = options;
   const headers = {};
 
-  // Respect skipAuth option for form-data requests as well
   if (authToken && !customConfig.skipAuth) {
     headers["Authorization"] = `Bearer ${authToken}`;
   }
-
-  // Debug: indicate whether Authorization will be attached for form-data
-  // (debug logging removed)
 
   const config = {
     method: "PUT",
@@ -117,6 +125,8 @@ import createGameParticipantsRoutes from "./routes/gameParticipantsRoutes";
 import createGameInvitesRoutes from "./routes/gameInvitesRoutes";
 import createPostRoutes from "./routes/postRoutes";
 import createTeamRoutes from "./routes/teamRoutes";
+import createNotificationRoutes from "./routes/notificationRoutes";
+import createChatRoutes from "./routes/chatRoutes";
 
 export const api = {
   auth: createAuthRoutes(fetchApi),
@@ -129,4 +139,6 @@ export const api = {
   gameInvites: createGameInvitesRoutes(fetchApi),
   posts: createPostRoutes(fetchApi),
   teams: createTeamRoutes(fetchApi),
+  notifications: createNotificationRoutes(fetchApi),
+  chats: createChatRoutes(fetchApi),
 };

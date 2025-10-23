@@ -144,11 +144,11 @@ export default function JoinGameModal({
     }
 
     if (participationType === "INDIVIDUAL") {
-      await handleJoinGame(side, "INDIVIDUAL", null);
+      await handleJoinGame(side, "INDIVIDUAL");
     } else if (participationType === "WITH_TEAM") {
-      await handleJoinGame(side, "WITH_TEAM", selectedPlayerTeam);
+      await handleJoinGame(side, "WITH_TEAM");
     } else if (participationType === "SPECTATOR") {
-      await handleJoinGame(null, "SPECTATOR", null);
+      await handleJoinGame(null, "SPECTATOR");
     }
   };
 
@@ -157,7 +157,7 @@ export default function JoinGameModal({
     setStep("selectTeamSide");
   };
 
-  const handleJoinGame = async (side, type, playerTeamId) => {
+  const handleJoinGame = async (side, type) => {
     try {
       setLoading(true);
       setError(null);
@@ -177,24 +177,119 @@ export default function JoinGameModal({
           setError("Limite de espectadores atingido.");
           return;
         }
-      }
 
-      if (type === "SPECTATOR") {
         await api.games.spectate(gameId);
       } else {
-        await api.gameParticipants.join({
-          gameId: gameId,
-          participationType: type,
-          teamSide: side,
-          playerTeamId: playerTeamId,
+        if (!user || !user.userType) {
+          setError("Usuário não autenticado.");
+          return;
+        }
+
+        if (String(user.userType).toUpperCase() !== "PLAYER") {
+          setError("Apenas jogadoras podem se inscrever em jogos.");
+          return;
+        }
+
+        if (!gameId) {
+          setError("ID do jogo inválido.");
+          return;
+        }
+
+        if (!side || (side !== 1 && side !== 2)) {
+          setError("Selecione um time válido (1 ou 2).");
+          return;
+        }
+
+        if (!type || (type !== "INDIVIDUAL" && type !== "WITH_TEAM")) {
+          setError("Tipo de participação inválido.");
+          return;
+        }
+
+        const allPlayers = [
+          ...(game.team1Players || []),
+          ...(game.team2Players || []),
+        ];
+        const isAlreadyParticipating = allPlayers.some((p) => {
+          const playerId =
+            p.player?.id || p.player?.playerId || p.playerId || p.id;
+          return Number(playerId) === Number(user.id);
         });
+
+        if (isAlreadyParticipating) {
+          setError("Você já está participando deste jogo.");
+          return;
+        }
+
+        const payload = {
+          gameId: Number(gameId),
+          participationType: type,
+          teamSide: Number(side),
+        };
+
+        console.log("📤 Enviando payload:", payload);
+        console.log("👤 User info:", { id: user.id, userType: user.userType });
+        console.log("🎮 Game info:", game);
+        console.log("👥 All players:", allPlayers);
+        if (game.status && game.status !== "SCHEDULED") {
+          setError(
+            `Este jogo já ${game.status === "LIVE" ? "começou" : "terminou"}.`
+          );
+          return;
+        }
+
+        const currentTotal = (game.team1Count || 0) + (game.team2Count || 0);
+        if (game.maxPlayers && currentTotal >= game.maxPlayers) {
+          setError("Jogo já atingiu o número máximo de jogadoras.");
+          return;
+        }
+
+        try {
+          const myParticipations =
+            await api.gameParticipants.getMyParticipations({
+              page: 0,
+              size: 1,
+            });
+          console.log(
+            "Minhas participações (teste de autenticação):",
+            myParticipations
+          );
+        } catch (testErr) {
+          console.error("Erro ao buscar participações (teste):", testErr);
+          if (testErr.status === 401 || testErr.status === 403) {
+            setError("Problema de autenticação. Tente fazer login novamente.");
+            return;
+          }
+        }
+
+        await api.gameParticipants.join(payload);
       }
 
       onSuccess();
       handleClose();
     } catch (err) {
       console.error("Erro ao se inscrever:", err);
-      setError(err.message || "Erro ao se inscrever no jogo.");
+      console.error("Detalhes do erro:", JSON.stringify(err, null, 2));
+
+      let errorMessage = "Erro ao se inscrever no jogo.";
+
+      if (err.status === 400) {
+        errorMessage =
+          err.message ||
+          "Dados inválidos. Verifique os campos e tente novamente.";
+      } else if (err.status === 401) {
+        errorMessage = "Você precisa estar autenticado para se inscrever.";
+      } else if (err.status === 403) {
+        errorMessage = "Você não tem permissão para se inscrever neste jogo.";
+      } else if (err.status === 409) {
+        errorMessage = err.message || "Você já está inscrito neste jogo.";
+      } else if (err.status === 500) {
+        errorMessage =
+          "⚠️ Erro no servidor backend. Este é um problema conhecido no endpoint de inscrição. Por favor, contate o administrador ou tente novamente mais tarde.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -416,7 +511,7 @@ export default function JoinGameModal({
               <button
                 onClick={async (e) => {
                   e.stopPropagation();
-                  await handleJoinGame(null, "SPECTATOR", null);
+                  await handleJoinGame(null, "SPECTATOR");
                 }}
                 className={`w-full font-bold py-3 px-4 rounded-lg transition-colors ${
                   loading

@@ -1,5 +1,7 @@
 import { AuthProvider } from "@/app/context/AuthContext";
 import { ToastProvider } from "@/app/context/ToastContext";
+import { NotificationProvider } from "@/app/context/NotificationContext";
+import { ChatProvider } from "@/app/context/ChatContext";
 import "./globals.css";
 
 export const metadata = {
@@ -13,7 +15,11 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <AuthProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <NotificationProvider>
+            <ChatProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </ChatProvider>
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>

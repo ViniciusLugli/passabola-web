@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useNotifications } from "@/app/context/NotificationContext";
+import { useChat } from "@/app/context/ChatContext";
 
 const iconMap = {
   Feed: "/icons/feed.svg",
@@ -11,21 +13,24 @@ const iconMap = {
   Calendário: "/icons/calendario.svg",
   Equipes: "/icons/equipe.svg",
   Perfil: "/icons/perfil.svg",
-  Convites: "/icons/mail.svg",
+  Notificações: "/icons/mail.svg",
+  Chat: "/icons/chat.svg",
   Chatbot: "/icons/chatbot.svg",
 };
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { unreadCount } = useNotifications();
+  const { unreadCount: chatUnreadCount } = useChat();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Construir links dinamicamente e remover "Equipes" para usuários SPECTATOR
   const baseLinks = [
     { name: "Feed", href: "/feed" },
     { name: "Jogos", href: "/games" },
     { name: "Calendário", href: "/calendar" },
     { name: "Equipes", href: "/teams" },
-    { name: "Convites", href: "/mail" },
+    { name: "Notificações", href: "/notifications" },
+    { name: "Chat", href: "/chat" },
     { name: "Chatbot", href: "/chatbot" },
   ];
 
@@ -87,6 +92,7 @@ export default function Header() {
               duration-200 
               font-semibold
               w-20
+              relative
             "
           >
             <Image
@@ -97,6 +103,16 @@ export default function Header() {
               className="w-6 h-6"
             />
             <span className="text-xs">{link.name}</span>
+            {link.name === "Notificações" && unreadCount > 0 && (
+              <span className="absolute top-0 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+            {link.name === "Chat" && chatUnreadCount > 0 && (
+              <span className="absolute top-0 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+              </span>
+            )}
           </Link>
         ))}
         {isAuthenticated ? (
@@ -183,6 +199,7 @@ export default function Header() {
                 font-semibold
                 p-2
                 rounded-lg
+                relative
               "
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -194,6 +211,16 @@ export default function Header() {
                   className="w-6 h-6"
                 />
                 <span>{link.name}</span>
+                {link.name === "Notificações" && unreadCount > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+                {link.name === "Chat" && chatUnreadCount > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                  </span>
+                )}
               </Link>
             ))}
             {isAuthenticated ? (

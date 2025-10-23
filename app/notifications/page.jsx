@@ -1,0 +1,301 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Header from "@/app/components/Header";
+import Alert from "@/app/components/Alert";
+import NotificationCard from "@/app/components/NotificationCard";
+import { useAuth } from "@/app/context/AuthContext";
+import { useNotifications } from "@/app/context/NotificationContext";
+import { api } from "@/app/lib/api";
+
+export default function NotificationsPage() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const {
+    notifications: liveNotifications,
+    unreadCount,
+    isConnected,
+    markAsReadLocally,
+    removeNotificationLocally,
+    clearReadNotificationsLocally,
+    markAllAsReadLocally,
+    setNotificationsList,
+    updateUnreadCount,
+  } = useNotifications();
+
+  const [alert, setAlert] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    fetchNotifications();
+  }, [user, router]);
+
+  const fetchNotifications = async () => {
+    setLoading(true);
+    try {
+      const response = await api.notifications.getAll({
+        size: 50,
+        sort: "createdAt,desc",
+      });
+      const notificationsList = response.content || [];
+      setNotificationsList(notificationsList);
+
+      // Atualizar contagem de não lidas
+      const count = await api.notifications.getUnreadCount();
+      updateUnreadCount(count);
+    } catch (err) {
+      console.error("Erro ao buscar notificações:", err);
+      setAlert({
+        type: "error",
+        message: err.message || "Erro ao carregar notificações.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await api.notifications.markAsRead(notificationId);
+      markAsReadLocally(notificationId);
+    } catch (err) {
+      console.error("Erro ao marcar como lida:", err);
+      setAlert({
+        type: "error",
+        message: "Erro ao marcar notificação como lida.",
+      });
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await api.notifications.markAllAsRead();
+      markAllAsReadLocally();
+      setAlert({
+        type: "success",
+        message: "Todas as notificações foram marcadas como lidas!",
+      });
+    } catch (err) {
+      console.error("Erro ao marcar todas como lidas:", err);
+      setAlert({
+        type: "error",
+        message: "Erro ao marcar todas as notificações como lidas.",
+      });
+    }
+  };
+
+  const handleDelete = async (notificationId) => {
+    try {
+      await api.notifications.delete(notificationId);
+      removeNotificationLocally(notificationId);
+      setAlert({
+        type: "success",
+        message: "Notificação deletada!",
+      });
+    } catch (err) {
+      console.error("Erro ao deletar notificação:", err);
+      setAlert({
+        type: "error",
+        message: "Erro ao deletar notificação.",
+      });
+    }
+  };
+
+  const handleActionComplete = (type, message) => {
+    setAlert({ type, message });
+  };
+
+  const handleDeleteAllRead = async () => {
+    try {
+      await api.notifications.deleteAllRead();
+      clearReadNotificationsLocally();
+      setAlert({
+        type: "success",
+        message: "Notificações lidas foram deletadas!",
+      });
+    } catch (err) {
+      console.error("Erro ao deletar notificações lidas:", err);
+      setAlert({
+        type: "error",
+        message: "Erro ao deletar notificações lidas.",
+      });
+    }
+  };
+
+  const filteredNotifications = liveNotifications.filter((notif) => {
+    if (filter === "unread") return !notif.read;
+    if (filter === "read") return notif.read;
+    return true;
+  });
+
+  if (loading) {
+    return (
+      <div className="bg-gray-100 min-h-screen">
+        <Header />
+        <main className="container mx-auto p-4 mt-8 max-w-4xl">
+          <div className="relative bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-6">
+            <h1 className="text-4xl font-bold text-gray-900 text-center mt-4">
+              Notificações
+            </h1>
+            <p className="text-center text-gray-600">
+              Carregando notificações...
+            </p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="transparent min-h-screen">
+      <Header />
+      <main className="container mx-auto p-4 mt-8 max-w-4xl">
+        <div className="relative bg-white border border-zinc-300 rounded-2xl shadow-lg p-4 md:p-8 flex flex-col gap-6">
+          <button
+            onClick={() => router.back()}
+            className="absolute top-4 md:top-8 right-4 md:right-8 text-gray-500 hover:text-gray-800 transition-colors duration-200"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6 md:w-7 md:h-7"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-4">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                Notificações
+              </h1>
+              {unreadCount > 0 && (
+                <p className="text-sm text-gray-600 mt-1">
+                  {unreadCount} {unreadCount === 1 ? "nova" : "novas"}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div
+                className={`
+                  w-2 h-2 rounded-full
+                  ${isConnected ? "bg-green-500" : "bg-red-500"}
+                `}
+                title={isConnected ? "Conectado" : "Desconectado"}
+              ></div>
+              <span className="text-xs text-gray-500">
+                {isConnected ? "Online" : "Offline"}
+              </span>
+            </div>
+          </div>
+
+          {alert && <Alert type={alert.type} message={alert.message} />}
+
+          {/* Filtros e Ações */}
+          <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setFilter("all")}
+                className={`
+                  px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+                  ${
+                    filter === "all"
+                      ? "bg-purple-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }
+                `}
+              >
+                Todas
+              </button>
+              <button
+                onClick={() => setFilter("unread")}
+                className={`
+                  px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+                  ${
+                    filter === "unread"
+                      ? "bg-purple-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }
+                `}
+              >
+                Não Lidas
+              </button>
+              <button
+                onClick={() => setFilter("read")}
+                className={`
+                  px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+                  ${
+                    filter === "read"
+                      ? "bg-purple-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }
+                `}
+              >
+                Lidas
+              </button>
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              {unreadCount > 0 && (
+                <button
+                  onClick={handleMarkAllAsRead}
+                  className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  Marcar todas como lidas
+                </button>
+              )}
+              {liveNotifications.some((n) => n.read) && (
+                <button
+                  onClick={handleDeleteAllRead}
+                  className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
+                >
+                  Limpar lidas
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Lista de Notificações */}
+          <div className="flex flex-col gap-3">
+            {filteredNotifications.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">
+                  {filter === "unread"
+                    ? "Nenhuma notificação não lida"
+                    : filter === "read"
+                    ? "Nenhuma notificação lida"
+                    : "Você não tem notificações"}
+                </p>
+              </div>
+            ) : (
+              filteredNotifications.map((notification) => (
+                <NotificationCard
+                  key={notification.id}
+                  notification={notification}
+                  onMarkAsRead={handleMarkAsRead}
+                  onDelete={handleDelete}
+                  onActionComplete={handleActionComplete}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
