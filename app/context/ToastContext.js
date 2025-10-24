@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState } from "react";
-import Toast from "@/app/components/Toast";
+import Toast from "@/app/components/ui/Toast";
 
 const ToastContext = createContext();
 
