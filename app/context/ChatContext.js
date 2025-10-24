@@ -117,66 +117,74 @@ export function ChatProvider({ children }) {
 
   const handleNewMessage = useCallback(
     (message) => {
-      const chatId = message.chatId;
+      // Determinar o otherUserId baseado em quem enviou/recebeu
+      // Se eu enviei, otherUserId é recipientId
+      // Se eu recebi, otherUserId é senderId
+      const otherUserId =
+        message.senderId === user?.id ? message.recipientId : message.senderId;
 
+      // Armazenar mensagens por otherUserId (não por chatId)
       setMessages((prev) => ({
         ...prev,
-        [chatId]: [...(prev[chatId] || []), message],
+        [otherUserId]: [...(prev[otherUserId] || []), message],
       }));
 
-      if (!activeConversation || activeConversation.id !== chatId) {
+      // Atualizar lista de conversas
+      if (
+        !activeConversation ||
+        activeConversation.otherUserId !== otherUserId
+      ) {
         setUnreadCount((prev) => prev + 1);
 
-        setConversations((prev) =>
-          prev.map((conv) =>
-            conv.id === chatId
-              ? {
-                  ...conv,
-                  lastMessage: message.content,
-                  lastMessageAt: message.sentAt,
-                  unreadCount: (conv.unreadCount || 0) + 1,
-                }
-              : conv
-          )
-        );
-      }
-    },
-    [activeConversation]
-  );
+        setConversations((prev) => {
+          const existingConv = prev.find((c) => c.otherUserId === otherUserId);
 
-  const subscribeToChat = useCallback(
-    (chatId) => {
-      if (!clientRef.current || !isConnected) {
-        console.warn("[Chat] Não conectado, não é possível subscrever");
-        return;
-      }
-
-      if (subscriptionsRef.current[chatId]) {
-        return;
-      }
-
-      const subscription = clientRef.current.subscribe(
-        `/user/queue/messages/${chatId}`,
-        (message) => {
-          try {
-            const newMessage = JSON.parse(message.body);
-            handleNewMessage(newMessage);
-          } catch (error) {
-            console.error("Erro ao processar mensagem:", error);
+          if (existingConv) {
+            return prev.map((conv) =>
+              conv.otherUserId === otherUserId
+                ? {
+                    ...conv,
+                    lastMessage: message.content,
+                    lastMessageTime: message.createdAt,
+                    unreadCount: (conv.unreadCount || 0) + 1,
+                  }
+                : conv
+            );
+          } else {
+            // Nova conversa
+            const newConv = {
+              otherUserId: otherUserId,
+              otherUsername:
+                message.senderId === user?.id
+                  ? message.recipientUsername
+                  : message.senderUsername,
+              otherName:
+                message.senderId === user?.id
+                  ? message.recipientName
+                  : message.senderName,
+              otherProfilePhotoUrl: null,
+              lastMessage: message.content,
+              lastMessageTime: message.createdAt,
+              unreadCount: 1,
+            };
+            return [newConv, ...prev];
           }
-        }
-      );
-
-      subscriptionsRef.current[chatId] = subscription;
+        });
+      }
     },
-    [isConnected, handleNewMessage]
+    [activeConversation, user]
   );
 
-  const unsubscribeFromChat = useCallback((chatId) => {
-    if (subscriptionsRef.current[chatId]) {
-      subscriptionsRef.current[chatId].unsubscribe();
-      delete subscriptionsRef.current[chatId];
-    }
+  // subscribeToChat e unsubscribeFromChat não são mais necessários
+  // porque a API usa /user/queue/messages global
+  const subscribeToChat = useCallback((otherUserId) => {
+    // Não faz nada - subscribe já foi feito no onConnect
+    console.log(`[Chat] Conversa com ${otherUserId} ativa`);
+  }, []);
+
+  const unsubscribeFromChat = useCallback((otherUserId) => {
+    // Não faz nada - subscribe é global
+    console.log(`[Chat] Conversa com ${otherUserId} inativa`);
   }, []);
 
   const sendMessageViaWebSocket = useCallback(
@@ -200,24 +208,24 @@ export function ChatProvider({ children }) {
     [isConnected]
   );
 
-  const addMessageLocally = useCallback((chatId, message) => {
+  const addMessageLocally = useCallback((otherUserId, message) => {
     setMessages((prev) => ({
       ...prev,
-      [chatId]: [...(prev[chatId] || []), message],
+      [otherUserId]: [...(prev[otherUserId] || []), message],
     }));
   }, []);
 
-  const setConversationMessages = useCallback((chatId, messageList) => {
+  const setConversationMessages = useCallback((otherUserId, messageList) => {
     setMessages((prev) => ({
       ...prev,
-      [chatId]: messageList,
+      [otherUserId]: messageList,
     }));
   }, []);
 
-  const clearConversationMessages = useCallback((chatId) => {
+  const clearConversationMessages = useCallback((otherUserId) => {
     setMessages((prev) => {
       const newMessages = { ...prev };
-      delete newMessages[chatId];
+      delete newMessages[otherUserId];
       return newMessages;
     });
   }, []);

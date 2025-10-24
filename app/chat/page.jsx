@@ -56,10 +56,11 @@ export default function ChatPage() {
   // Subscrever à conversa ativa
   useEffect(() => {
     if (activeConversation && isConnected) {
-      subscribeToChat(activeConversation.id);
-      
+      // WebSocket usa otherUserId para identificar a conversa
+      subscribeToChat(activeConversation.otherUserId);
+
       return () => {
-        unsubscribeFromChat(activeConversation.id);
+        unsubscribeFromChat(activeConversation.otherUserId);
       };
     }
   }, [activeConversation, isConnected, subscribeToChat, unsubscribeFromChat]);
@@ -67,8 +68,9 @@ export default function ChatPage() {
   const fetchConversations = async () => {
     setLoading(true);
     try {
-      const response = await api.chats.getConversations({ size: 50, sort: "lastMessageAt,desc" });
-      setConversations(response.content || []);
+      // GET /api/chat/conversations - Retorna array direto
+      const conversations = await api.chats.getConversations();
+      setConversations(Array.isArray(conversations) ? conversations : []);
     } catch (err) {
       console.error("Erro ao buscar conversas:", err);
       setAlert({
@@ -80,14 +82,18 @@ export default function ChatPage() {
     }
   };
 
-  const fetchMessages = async (chatId) => {
+  const fetchMessages = async (otherUserId) => {
     setLoadingMessages(true);
     try {
-      const response = await api.chats.getMessages(chatId, { size: 100, sort: "sentAt,asc" });
-      setConversationMessages(chatId, response.content || []);
-      
-      // Marcar como lida
-      await api.chats.markAsRead(chatId);
+      // GET /api/chat/conversation/{otherUserId} - Retorna array de mensagens
+      const messages = await api.chats.getConversation(otherUserId);
+      setConversationMessages(
+        otherUserId,
+        Array.isArray(messages) ? messages : []
+      );
+
+      // PUT /api/chat/read/{senderId} - Marcar mensagens deste remetente como lidas
+      await api.chats.markAsRead(otherUserId);
     } catch (err) {
       console.error("Erro ao buscar mensagens:", err);
       setAlert({
@@ -101,33 +107,43 @@ export default function ChatPage() {
 
   const handleSelectConversation = (conversation) => {
     setActiveConversation(conversation);
-    fetchMessages(conversation.id);
+    // conversation.otherUserId é o userId global do outro usuário
+    fetchMessages(conversation.otherUserId);
   };
 
   const handleSendMessage = async (content) => {
     if (!activeConversation) return;
 
     setSending(true);
-    
+
     // Envio otimista
     const optimisticMessage = {
       id: `temp-${Date.now()}`,
       content,
       senderId: user.id,
       senderName: user.name,
-      sentAt: new Date().toISOString(),
-      chatId: activeConversation.id,
+      senderUsername: user.username,
+      recipientId: activeConversation.otherUserId,
+      recipientName: activeConversation.otherName,
+      recipientUsername: activeConversation.otherUsername,
+      isRead: false,
+      createdAt: new Date().toISOString(),
     };
-    
-    addMessageLocally(activeConversation.id, optimisticMessage);
+
+    addMessageLocally(activeConversation.otherUserId, optimisticMessage);
 
     try {
       // Tentar via WebSocket primeiro
-      const sentViaWS = sendMessageViaWebSocket(activeConversation.id, content);
-      
+      // sendMessageViaWebSocket usa recipientId (userId global)
+      const sentViaWS = sendMessageViaWebSocket(
+        activeConversation.otherUserId,
+        content
+      );
+
       // Se WebSocket não disponível, usar HTTP
+      // POST /api/chat/send { recipientId, content }
       if (!sentViaWS) {
-        await api.chats.sendMessage(activeConversation.id, content);
+        await api.chats.sendMessage(activeConversation.otherUserId, content);
       }
     } catch (err) {
       console.error("Erro ao enviar mensagem:", err);
@@ -135,7 +151,7 @@ export default function ChatPage() {
         type: "error",
         message: "Erro ao enviar mensagem.",
       });
-      
+
       // Remover mensagem otimista em caso de erro
       // (idealmente implementar lógica de retry ou marcação de falha)
     } finally {
@@ -143,7 +159,9 @@ export default function ChatPage() {
     }
   };
 
-  const activeMessages = activeConversation ? messages[activeConversation.id] || [] : [];
+  const activeMessages = activeConversation
+    ? messages[activeConversation.otherUserId] || []
+    : [];
 
   if (loading) {
     return (
@@ -161,9 +179,11 @@ export default function ChatPage() {
   return (
     <div className="transparent min-h-screen">
       <Header />
-      <main className="container mx-auto p-4 mt-8" style={{ height: "calc(100vh - 140px)" }}>
+      <main
+        className="container mx-auto p-4 mt-8"
+        style={{ height: "calc(100vh - 140px)" }}
+      >
         <div className="bg-white border border-zinc-300 rounded-2xl shadow-lg overflow-hidden h-full flex flex-col md:flex-row">
-          
           {/* Lista de Conversas */}
           <div className="w-full md:w-1/3 border-r border-gray-200 flex flex-col">
             <div className="p-4 border-b border-gray-200 bg-gray-50">
@@ -195,9 +215,12 @@ export default function ChatPage() {
               ) : (
                 conversations.map((conversation) => (
                   <ConversationItem
-                    key={conversation.id}
+                    key={conversation.otherUserId}
                     conversation={conversation}
-                    isActive={activeConversation?.id === conversation.id}
+                    isActive={
+                      activeConversation?.otherUserId ===
+                      conversation.otherUserId
+                    }
                     onClick={() => handleSelectConversation(conversation)}
                   />
                 ))
@@ -212,8 +235,13 @@ export default function ChatPage() {
                 {/* Header da Conversa */}
                 <div className="p-4 border-b border-gray-200 bg-gray-50">
                   <h3 className="font-semibold text-gray-900">
-                    {activeConversation.participantName || "Usuário"}
+                    {activeConversation.otherName || "Usuário"}
                   </h3>
+                  {activeConversation.otherUsername && (
+                    <p className="text-sm text-gray-500">
+                      @{activeConversation.otherUsername}
+                    </p>
+                  )}
                 </div>
 
                 {/* Mensagens */}
@@ -229,7 +257,10 @@ export default function ChatPage() {
                   ) : (
                     <>
                       {activeMessages.map((message, index) => (
-                        <MessageBubble key={message.id || index} message={message} />
+                        <MessageBubble
+                          key={message.id || index}
+                          message={message}
+                        />
                       ))}
                       <div ref={messagesEndRef} />
                     </>
@@ -237,7 +268,10 @@ export default function ChatPage() {
                 </div>
 
                 {/* Input de Mensagem */}
-                <MessageInput onSend={handleSendMessage} disabled={sending || loadingMessages} />
+                <MessageInput
+                  onSend={handleSendMessage}
+                  disabled={sending || loadingMessages}
+                />
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center bg-gray-50">

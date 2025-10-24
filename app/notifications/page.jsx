@@ -40,16 +40,17 @@ export default function NotificationsPage() {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
+      // GET /api/notifications?page=0&size=50 retorna { content: [...] }
       const response = await api.notifications.getAll({
+        page: 0,
         size: 50,
-        sort: "createdAt,desc",
       });
       const notificationsList = response.content || [];
       setNotificationsList(notificationsList);
 
-      // Atualizar contagem de não lidas
-      const count = await api.notifications.getUnreadCount();
-      updateUnreadCount(count);
+      // GET /api/notifications/unread/count retorna { unreadCount: 5 }
+      const countResponse = await api.notifications.getUnreadCount();
+      updateUnreadCount(countResponse.unreadCount || 0);
     } catch (err) {
       console.error("Erro ao buscar notificações:", err);
       setAlert({
@@ -76,11 +77,14 @@ export default function NotificationsPage() {
 
   const handleMarkAllAsRead = async () => {
     try {
-      await api.notifications.markAllAsRead();
+      // PATCH /api/notifications/read-all retorna { message: "...", count: 10 }
+      const response = await api.notifications.markAllAsRead();
       markAllAsReadLocally();
       setAlert({
         type: "success",
-        message: "Todas as notificações foram marcadas como lidas!",
+        message:
+          response.message ||
+          "Todas as notificações foram marcadas como lidas!",
       });
     } catch (err) {
       console.error("Erro ao marcar todas como lidas:", err);
@@ -93,6 +97,7 @@ export default function NotificationsPage() {
 
   const handleDelete = async (notificationId) => {
     try {
+      // DELETE /api/notifications/{id}
       await api.notifications.delete(notificationId);
       removeNotificationLocally(notificationId);
       setAlert({
@@ -114,11 +119,18 @@ export default function NotificationsPage() {
 
   const handleDeleteAllRead = async () => {
     try {
-      await api.notifications.deleteAllRead();
+      // AVISO: A API não tem endpoint para deletar todas as lidas
+      // Vamos deletar uma por uma
+      const readNotifications = liveNotifications.filter((n) => n.read);
+
+      await Promise.all(
+        readNotifications.map((notif) => api.notifications.delete(notif.id))
+      );
+
       clearReadNotificationsLocally();
       setAlert({
         type: "success",
-        message: "Notificações lidas foram deletadas!",
+        message: `${readNotifications.length} notificações lidas foram deletadas!`,
       });
     } catch (err) {
       console.error("Erro ao deletar notificações lidas:", err);
