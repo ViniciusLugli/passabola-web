@@ -87,12 +87,12 @@ function Games() {
         max-w-7xl
       "
       >
-        <div className="bg-white border border-zinc-300 rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 lg:p-10">
+        <div className="bg-surface border border-default rounded-2xl shadow-elevated p-4 sm:p-6 md:p-8 lg:p-10">
           <h1
             className="
             text-2xl sm:text-3xl md:text-4xl lg:text-5xl
             font-extrabold 
-            text-gray-900 
+            text-primary 
             leading-tight
             mb-6 sm:mb-8 md:mb-10
             text-center
@@ -104,7 +104,7 @@ function Games() {
           {loading && (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mb-4"></div>
-              <p className="text-center text-gray-600 font-medium">
+              <p className="text-center text-secondary font-medium">
                 Carregando jogos...
               </p>
             </div>
@@ -128,12 +128,12 @@ function Games() {
                   />
                 ))
               ) : (
-                <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-8 sm:p-12 text-center">
+                <div className="bg-surface-muted border-2 border-default rounded-xl p-8 sm:p-12 text-center">
                   <span className="text-5xl sm:text-6xl mb-4 block">🎮</span>
-                  <p className="text-gray-700 font-semibold text-lg sm:text-xl mb-2">
+                  <p className="text-secondary font-semibold text-lg sm:text-xl mb-2">
                     Nenhum jogo encontrado
                   </p>
-                  <p className="text-gray-500 text-sm sm:text-base">
+                  <p className="text-tertiary text-sm sm:text-base">
                     Seja o primeiro a criar um jogo!
                   </p>
                 </div>

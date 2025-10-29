@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { api } from "@/app/lib/api";
 import { useNotifications } from "@/app/context/NotificationContext";
+import Button from "@/app/components/ui/Button";
 
 export default function InviteNotificationActions({
   notification,
@@ -94,46 +95,22 @@ export default function InviteNotificationActions({
   if (notification.type === "GAME_INVITE") {
     return (
       <div className="flex gap-2 mt-3">
-        <button
+        <Button
           onClick={handleAcceptGameInvite}
           disabled={loading}
-          className="
-            flex-1
-            bg-green-500
-            hover:bg-green-600
-            disabled:bg-green-300
-            text-white
-            px-4
-            py-2
-            rounded-md
-            transition-colors
-            duration-200
-            text-sm
-            font-medium
-          "
+          className="flex-1 text-sm shadow-none"
+          variant="primary"
         >
           {loading ? "Processando..." : "Aceitar"}
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={handleRejectGameInvite}
           disabled={loading}
-          className="
-            flex-1
-            bg-red-500
-            hover:bg-red-600
-            disabled:bg-red-300
-            text-white
-            px-4
-            py-2
-            rounded-md
-            transition-colors
-            duration-200
-            text-sm
-            font-medium
-          "
+          className="flex-1 text-sm shadow-none"
+          variant="danger"
         >
           {loading ? "Processando..." : "Rejeitar"}
-        </button>
+        </Button>
       </div>
     );
   }
@@ -141,46 +118,22 @@ export default function InviteNotificationActions({
   if (notification.type === "TEAM_INVITE") {
     return (
       <div className="flex gap-2 mt-3">
-        <button
+        <Button
           onClick={handleAcceptTeamInvite}
           disabled={loading}
-          className="
-            flex-1
-            bg-green-500
-            hover:bg-green-600
-            disabled:bg-green-300
-            text-white
-            px-4
-            py-2
-            rounded-md
-            transition-colors
-            duration-200
-            text-sm
-            font-medium
-          "
+          className="flex-1 text-sm shadow-none"
+          variant="primary"
         >
           {loading ? "Processando..." : "Aceitar"}
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={handleRejectTeamInvite}
           disabled={loading}
-          className="
-            flex-1
-            bg-red-500
-            hover:bg-red-600
-            disabled:bg-red-300
-            text-white
-            px-4
-            py-2
-            rounded-md
-            transition-colors
-            duration-200
-            text-sm
-            font-medium
-          "
+          className="flex-1 text-sm shadow-none"
+          variant="danger"
         >
           {loading ? "Processando..." : "Rejeitar"}
-        </button>
+        </Button>
       </div>
     );
   }

@@ -109,18 +109,8 @@ function Calendar() {
 
   const renderSection = (title, games, emptyMessage) => (
     <section className="mb-12">
-      <div
-        className="
-          bg-gradient-to-r 
-          from-purple-700 
-          to-purple-900
-          rounded-xl
-          p-6
-          mb-6
-          shadow-lg
-        "
-      >
-        <h2 className="text-2xl font-bold text-white">{title}</h2>
+      <div className="bg-brand-gradient rounded-xl p-6 mb-6 shadow-elevated">
+        <h2 className="text-2xl font-bold text-on-brand">{title}</h2>
       </div>
 
       {games.length > 0 ? (
@@ -136,25 +126,15 @@ function Calendar() {
           ))}
         </div>
       ) : (
-        <div
-          className="
-            bg-gray-50
-            border-2
-            border-dashed
-            border-gray-300
-            rounded-xl
-            p-8
-            text-center
-          "
-        >
-          <p className="text-gray-500 text-lg">{emptyMessage}</p>
+        <div className="bg-surface-muted border-2 border-dashed border-default rounded-xl p-8 text-center">
+          <p className="text-secondary text-lg">{emptyMessage}</p>
         </div>
       )}
     </section>
   );
 
   return (
-    <div className="transparent min-h-screen">
+    <div className="min-h-screen">
       
       <main
         className="
@@ -166,9 +146,9 @@ function Calendar() {
       >
         <h1
           className="
-          text-4xl 
-          font-extrabold 
-          text-gray-900 
+          text-4xl
+          font-extrabold
+          text-primary
           leading-tight
           mb-8
           text-center
@@ -179,23 +159,14 @@ function Calendar() {
 
         {loading && (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent"></div>
-            <p className="mt-4 text-gray-600">Carregando seus jogos...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-accent border-t-transparent"></div>
+            <p className="mt-4 text-secondary">Carregando seus jogos...</p>
           </div>
         )}
 
         {error && (
-          <div
-            className="
-              bg-red-50
-              border-2
-              border-red-300
-              rounded-xl
-              p-6
-              text-center
-            "
-          >
-            <p className="text-red-600 font-semibold">{error}</p>
+          <div className="bg-surface-muted border-2 border-red-400 rounded-xl p-6 text-center text-red-400">
+            <p className="font-semibold">{error}</p>
           </div>
         )}
 
@@ -222,39 +193,28 @@ function Calendar() {
             {gamesThisWeek.length === 0 &&
               gamesThisMonth.length === 0 &&
               gamesFuture.length === 0 && (
-                <div
-                  className="
-                    bg-gradient-to-br
-                    from-purple-50
-                    to-blue-50
-                    border-2
-                    border-purple-200
-                    rounded-xl
-                    p-12
-                    text-center
-                  "
-                >
+                <div className="bg-surface-elevated border border-default rounded-xl p-12 text-center shadow-elevated">
                   <span className="text-6xl mb-4 block">⚽</span>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                  <h3 className="text-2xl font-bold text-primary mb-2">
                     Seu calendário está vazio
                   </h3>
-                  <p className="text-gray-600 mb-6">
+                  <p className="text-secondary mb-6">
                     Inscreva-se em jogos para vê-los aparecer aqui!
                   </p>
                   <a
                     href="/games"
                     className="
                       inline-block
-                      bg-purple-600
-                      hover:bg-purple-700
-                      text-white
+                      bg-accent
+                      hover:bg-accent-strong
+                      text-on-brand
                       font-bold
                       py-3
                       px-8
                       rounded-xl
-                      transition-all
+                      transition-transform
                       duration-300
-                      shadow-lg
+                      shadow-elevated
                       hover:scale-105
                     "
                   >

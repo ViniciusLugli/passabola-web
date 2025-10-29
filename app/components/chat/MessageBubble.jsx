@@ -26,13 +26,13 @@ export default function MessageBubble({ message }) {
           py-2
           ${
             isOwnMessage
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-900"
+              ? "bg-accent text-on-brand shadow-elevated"
+              : "bg-surface-muted border border-default text-primary"
           }
         `}
       >
         {!isOwnMessage && message.senderName && (
-          <p className="text-xs font-semibold mb-1 opacity-75">
+          <p className="text-xs font-semibold mb-1 text-secondary">
             {message.senderName}
           </p>
         )}
@@ -42,11 +42,11 @@ export default function MessageBubble({ message }) {
         </p>
 
         <p
-          className={`
-            text-xs
-            mt-1
-            ${isOwnMessage ? "text-blue-100" : "text-gray-500"}
-          `}
+          className={`text-xs mt-1 ${
+            isOwnMessage
+              ? "text-on-brand opacity-80"
+              : "text-secondary opacity-80"
+          }`}
         >
           {formatTime(message.sentAt)}
         </p>

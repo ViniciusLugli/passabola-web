@@ -164,11 +164,13 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-      <div className="bg-gray-100 min-h-screen">
+      <div className="bg-page min-h-screen">
         
         <main className="container mx-auto p-4 mt-8">
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <p className="text-center text-gray-600">Carregando conversas...</p>
+          <div className="bg-surface rounded-2xl border border-default shadow-elevated p-8">
+            <p className="text-center text-secondary">
+              Carregando conversas...
+            </p>
           </div>
         </main>
       </div>
@@ -176,22 +178,22 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="transparent min-h-screen">
+    <div className="min-h-screen">
       
       <main
         className="container mx-auto p-4 mt-8"
         style={{ height: "calc(100vh - 140px)" }}
       >
-        <div className="bg-white border border-zinc-300 rounded-2xl shadow-lg overflow-hidden h-full flex flex-col md:flex-row">
+        <div className="bg-surface border border-default rounded-2xl shadow-elevated overflow-hidden h-full flex flex-col md:flex-row">
           {/* Lista de Conversas */}
-          <div className="w-full md:w-1/3 border-r border-gray-200 flex flex-col">
-            <div className="p-4 border-b border-gray-200 bg-gray-50">
+          <div className="w-full md:w-1/3 border-r border-default flex flex-col bg-surface-muted">
+            <div className="p-4 border-b border-default">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">Conversas</h2>
+                <h2 className="text-xl font-bold text-primary">Conversas</h2>
                 {isConnected && (
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-xs text-gray-500">Online</span>
+                    <span className="text-xs text-secondary">Online</span>
                   </div>
                 )}
               </div>
@@ -205,9 +207,9 @@ export default function ChatPage() {
 
             <div className="flex-1 overflow-y-auto">
               {conversations.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
+                <div className="p-8 text-center text-secondary">
                   <p>Nenhuma conversa ainda</p>
-                  <p className="text-sm mt-2">
+                  <p className="text-sm mt-2 text-tertiary">
                     Inicie uma conversa visitando o perfil de um usuário
                   </p>
                 </div>
@@ -232,26 +234,26 @@ export default function ChatPage() {
             {activeConversation ? (
               <>
                 {/* Header da Conversa */}
-                <div className="p-4 border-b border-gray-200 bg-gray-50">
-                  <h3 className="font-semibold text-gray-900">
+                <div className="p-4 border-b border-default bg-surface-muted">
+                  <h3 className="font-semibold text-primary">
                     {activeConversation.otherName || "Usuário"}
                   </h3>
                   {activeConversation.otherUsername && (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-secondary">
                       @{activeConversation.otherUsername}
                     </p>
                   )}
                 </div>
 
                 {/* Mensagens */}
-                <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+                <div className="flex-1 overflow-y-auto p-4 bg-surface">
                   {loadingMessages ? (
                     <div className="flex items-center justify-center h-full">
-                      <p className="text-gray-500">Carregando mensagens...</p>
+                      <p className="text-secondary">Carregando mensagens...</p>
                     </div>
                   ) : activeMessages.length === 0 ? (
                     <div className="flex items-center justify-center h-full">
-                      <p className="text-gray-500">Nenhuma mensagem ainda</p>
+                      <p className="text-secondary">Nenhuma mensagem ainda</p>
                     </div>
                   ) : (
                     <>
@@ -273,10 +275,10 @@ export default function ChatPage() {
                 />
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center bg-gray-50">
-                <div className="text-center text-gray-500">
+              <div className="flex-1 flex items-center justify-center bg-surface-muted">
+                <div className="text-center text-secondary">
                   <svg
-                    className="mx-auto h-16 w-16 text-gray-400 mb-4"
+                    className="mx-auto h-16 w-16 text-tertiary mb-4"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -289,7 +291,7 @@ export default function ChatPage() {
                     />
                   </svg>
                   <p className="text-lg font-medium">Selecione uma conversa</p>
-                  <p className="text-sm mt-2">
+                  <p className="text-sm mt-2 text-tertiary">
                     Escolha uma conversa da lista para começar a conversar
                   </p>
                 </div>

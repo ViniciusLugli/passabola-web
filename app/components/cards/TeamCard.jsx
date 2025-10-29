@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Users } from "lucide-react";
 
 function TeamCard({ team }) {
   const teamName =
@@ -14,13 +15,13 @@ function TeamCard({ team }) {
       href={`/teams/${team.id}`}
       className="
         block 
-        bg-gray-50
+        bg-surface
         border
-        border-zinc-200
+        border-default
         rounded-xl
-        hover:border-purple-300
-        hover:bg-white
-        hover:shadow-md
+        hover:border-accent
+        hover:bg-surface-elevated
+        hover:shadow-elevated
         transition-all
         duration-200 
         ease-in-out 
@@ -28,30 +29,20 @@ function TeamCard({ team }) {
       "
     >
       <div className="p-3 sm:p-4 md:p-5">
-        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-1.5 sm:mb-2 truncate">
+        <h2 className="text-lg sm:text-xl font-bold text-primary mb-1.5 sm:mb-2 truncate">
           {teamName}
         </h2>
         {teamBio && (
-          <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2 leading-relaxed">
+          <p className="text-secondary text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2 leading-relaxed">
             {teamBio}
           </p>
         )}
-        <div className="flex items-center text-gray-500 text-xs sm:text-sm">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
+        <div className="flex items-center text-zinc-500 dark:text-gray-300 text-xs sm:text-sm font-bold">
+          <Users
             className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 flex-shrink-0"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-            />
-          </svg>
-          <span>{followersCount} seguidores</span>
+            strokeWidth={2}
+          />
+          <span>{followersCount} jogadoras</span>
         </div>
       </div>
     </Link>

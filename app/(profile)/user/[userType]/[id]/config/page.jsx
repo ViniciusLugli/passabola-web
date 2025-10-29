@@ -5,8 +5,7 @@ export default async function ConfigPage({ params }) {
   const { userType, id } = resolvedParams;
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      
+    <div className="min-h-screen">
       <main className="container mx-auto p-4 md:p-8 max-w-2xl">
         <ConfigForm userId={id} userType={userType} />
       </main>

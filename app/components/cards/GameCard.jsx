@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Pencil, Plus, Check } from "lucide-react";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
 import { useToast } from "@/app/context/ToastContext";
@@ -180,9 +181,9 @@ export default function GameCard({ game, onGameUpdate }) {
       className={`
         relative
         w-full
-        bg-gray-50
+        bg-surface
         border
-        border-gray-200
+        border-default
         rounded-2xl
         p-4 sm:p-5 md:p-6
         flex
@@ -192,12 +193,12 @@ export default function GameCard({ game, onGameUpdate }) {
         transition-all
         duration-300
         ease-in-out
-        hover:border-purple-300
-        hover:bg-white
-        hover:shadow-lg
+        hover:border-accent
+        hover:bg-surface-elevated
+        hover:shadow-elevated
         ${
           isExpanded
-            ? "border-purple-300 bg-white shadow-xl pb-20 sm:pb-24"
+            ? "border-accent bg-surface-elevated shadow-elevated pb-20 sm:pb-24"
             : "pb-20 sm:pb-24"
         }
       `}
@@ -246,19 +247,19 @@ export default function GameCard({ game, onGameUpdate }) {
 
       <div className="flex justify-between items-start gap-3 sm:gap-4 z-10 pr-16 sm:pr-20">
         <div className="flex-grow min-w-0">
-          <h3 className="font-bold text-base sm:text-lg md:text-xl text-gray-900 leading-tight truncate sm:whitespace-normal">
+          <h3 className="font-bold text-base sm:text-lg md:text-xl text-primary leading-tight truncate sm:whitespace-normal">
             {gameTitle}
           </h3>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1 break-words">
+          <p className="text-xs sm:text-sm text-secondary mt-1 break-words">
             <span className="inline-block mr-1">📍</span>
             {gameAddress}
           </p>
-          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-secondary mt-0.5">
             <span className="inline-block mr-1">🕐</span>
             {gameDateFormatted}
           </p>
           {organizer && (
-            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+            <p className="text-xs sm:text-sm text-secondary mt-0.5">
               <span className="inline-block mr-1">👤</span>
               <span className="font-medium">Organizador:</span> {organizer}
             </p>
@@ -267,48 +268,48 @@ export default function GameCard({ game, onGameUpdate }) {
       </div>
 
       {isExpanded && (
-        <div className="mt-3 sm:mt-4 border-t border-gray-200 pt-3 sm:pt-4 z-10 animate-in fade-in slide-in-from-top-2 duration-300">
-          <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-4 sm:mb-5">
+        <div className="mt-3 sm:mt-4 border-t border-default pt-3 sm:pt-4 z-10 animate-in fade-in slide-in-from-top-2 duration-300">
+          <p className="text-sm sm:text-base text-secondary leading-relaxed mb-4 sm:mb-5">
             {game.description || "Nenhuma descrição disponível."}
           </p>
 
           {(game.gameType === "FRIENDLY" ||
             game.gameType === "CHAMPIONSHIP") && (
-            <div className="mb-5 sm:mb-6 p-3 sm:p-4 md:p-5 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-gray-200">
-              <h4 className="text-sm sm:text-base md:text-lg font-bold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
-                <span className="text-purple-600">ℹ️</span>
+            <div className="mb-5 sm:mb-6 p-3 sm:p-4 md:p-5 bg-surface-muted rounded-xl border border-default shadow-elevated">
+              <h4 className="text-sm sm:text-base md:text-lg font-bold text-primary mb-3 sm:mb-4 flex items-center gap-2">
+                <span className="text-accent">ℹ️</span>
                 Informações da Partida
               </h4>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 text-xs sm:text-sm">
-                <div className="bg-white p-2.5 sm:p-3 rounded-lg shadow-sm border border-gray-200 hover:border-purple-300 transition-colors">
-                  <div className="text-gray-500 text-[10px] sm:text-xs mb-1">
+                <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
+                  <div className="text-secondary text-[10px] sm:text-xs mb-1">
                     Jogadoras
                   </div>
-                  <div className="font-bold text-base sm:text-lg text-gray-800">
+                  <div className="font-bold text-base sm:text-lg text-primary">
                     {game.currentPlayerCount ||
                       participants.team1.length + participants.team2.length}
-                    <span className="text-xs sm:text-sm text-gray-500 font-normal">
+                    <span className="text-xs sm:text-sm text-secondary font-normal">
                       {" "}
                       / {game.maxPlayers || "∞"}
                     </span>
                   </div>
-                  <div className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">
+                  <div className="text-[10px] sm:text-xs text-tertiary mt-0.5 sm:mt-1">
                     Mínimo: {game.minPlayers || "N/A"}
                   </div>
                 </div>
 
-                <div className="bg-white p-2.5 sm:p-3 rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 transition-colors">
-                  <div className="text-gray-500 text-[10px] sm:text-xs mb-1">
+                <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
+                  <div className="text-secondary text-[10px] sm:text-xs mb-1">
                     Distribuição
                   </div>
-                  <div className="font-bold text-base sm:text-lg text-gray-800">
+                  <div className="font-bold text-base sm:text-lg text-primary">
                     {game.team1Count || participants.team1.length} vs{" "}
                     {game.team2Count || participants.team2.length}
                   </div>
                   <div className="text-[10px] sm:text-xs mt-0.5 sm:mt-1">
                     {(game.team1Count || participants.team1.length) === 0 &&
                     (game.team2Count || participants.team2.length) === 0 ? (
-                      <span className="text-gray-400">Sem jogadores</span>
+                      <span className="text-tertiary">Sem jogadores</span>
                     ) : game.isTeamsBalanced ||
                       participants.team1.length ===
                         participants.team2.length ? (
@@ -316,26 +317,26 @@ export default function GameCard({ game, onGameUpdate }) {
                         ✓ Balanceado
                       </span>
                     ) : (
-                      <span className="text-orange-600 font-semibold">
+                      <span className="text-orange-500 font-semibold">
                         ⚠ Desbalanceado
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="bg-white p-2.5 sm:p-3 rounded-lg shadow-sm border border-gray-200 hover:border-green-300 transition-colors">
-                  <div className="text-gray-500 text-[10px] sm:text-xs mb-1">
+                <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
+                  <div className="text-secondary text-[10px] sm:text-xs mb-1">
                     Pode Iniciar?
                   </div>
                   <div className="font-bold text-base sm:text-lg">
                     {game.canStart ? (
                       <span className="text-green-600">✓ Sim</span>
                     ) : (
-                      <span className="text-red-600">✗ Não</span>
+                      <span className="text-red-500">✗ Não</span>
                     )}
                   </div>
                   {!game.canStart && (
-                    <div className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1 line-clamp-2">
+                    <div className="text-[10px] sm:text-xs text-tertiary mt-0.5 sm:mt-1 line-clamp-2">
                       {game.currentPlayerCount < game.minPlayers
                         ? `Faltam ${
                             game.minPlayers - game.currentPlayerCount
@@ -346,16 +347,16 @@ export default function GameCard({ game, onGameUpdate }) {
                 </div>
 
                 {/* Espectadores: card com mesmo design do card de Jogadoras */}
-                <div className="bg-white p-2.5 sm:p-3 rounded-lg shadow-sm border border-gray-200 hover:border-orange-300 transition-colors">
-                  <div className="text-gray-500 text-[10px] sm:text-xs mb-1">
+                <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
+                  <div className="text-secondary text-[10px] sm:text-xs mb-1">
                     Espectadores
                   </div>
 
                   {game.hasSpectators ? (
                     <>
-                      <div className="font-bold text-base sm:text-lg text-gray-800">
+                      <div className="font-bold text-base sm:text-lg text-primary">
                         {game.currentSpectatorCount ?? 0}
-                        <span className="text-xs sm:text-sm text-gray-500 font-normal">
+                        <span className="text-xs sm:text-sm text-secondary font-normal">
                           {" "}
                           / {game.maxSpectators || "∞"}
                         </span>
@@ -366,13 +367,13 @@ export default function GameCard({ game, onGameUpdate }) {
                       </div>
 
                       {game.minSpectators && (
-                        <div className="text-[10px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">
+                        <div className="text-[10px] sm:text-xs text-tertiary mt-0.5 sm:mt-1">
                           Mínimo: {game.minSpectators}
                         </div>
                       )}
                     </>
                   ) : (
-                    <div className="font-bold text-base sm:text-lg text-gray-400">
+                    <div className="font-bold text-base sm:text-lg text-tertiary">
                       ✗ Não
                     </div>
                   )}
@@ -385,22 +386,22 @@ export default function GameCard({ game, onGameUpdate }) {
           {(game.gameType === "FRIENDLY" ||
             game.gameType === "CHAMPIONSHIP") && (
             <div className="mt-5 sm:mt-6">
-              <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+              <h4 className="text-base sm:text-lg font-semibold text-primary mb-3 sm:mb-4 flex items-center gap-2">
                 <span className="text-xl sm:text-2xl">👥</span>
                 Jogadoras Inscritas
               </h4>
 
               {loadingParticipants ? (
                 <div className="flex items-center justify-center py-8 sm:py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-3 border-purple-500 border-t-transparent"></div>
-                  <span className="ml-3 text-gray-600 font-medium text-sm sm:text-base">
+                  <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-3 border-accent border-t-transparent"></div>
+                  <span className="ml-3 text-secondary font-medium text-sm sm:text-base">
                     Carregando participantes...
                   </span>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-3 sm:p-4 border border-blue-200 shadow-sm">
-                    <h5 className="font-bold text-blue-800 mb-2 sm:mb-3 text-center text-sm sm:text-base flex items-center justify-center gap-2">
+                  <div className="rounded-xl p-3 sm:p-4 border border-[rgb(59_130_246/0.35)] bg-[rgb(59_130_246/0.08)] shadow-elevated">
+                    <h5 className="font-bold text-blue-700 mb-2 sm:mb-3 text-center text-sm sm:text-base flex items-center justify-center gap-2">
                       <span className="text-lg sm:text-xl">🔵</span>
                       Time 1 ({participants.team1.length})
                     </h5>
@@ -409,7 +410,7 @@ export default function GameCard({ game, onGameUpdate }) {
                         {participants.team1.map((participant, index) => (
                           <li
                             key={index}
-                            className="bg-white rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm text-gray-800 border border-blue-200 hover:border-blue-400 transition-colors shadow-sm"
+                            className="bg-surface rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm text-primary border border-[rgb(59_130_246/0.35)] hover:border-[rgb(37_99_235/0.6)] transition-colors shadow-elevated"
                           >
                             <div className="font-semibold truncate">
                               {participant.player?.name ||
@@ -417,7 +418,7 @@ export default function GameCard({ game, onGameUpdate }) {
                                 "Jogadora"}
                             </div>
                             {participant.participationType === "WITH_TEAM" && (
-                              <div className="text-[10px] sm:text-xs text-gray-500 italic mt-0.5">
+                              <div className="text-[10px] sm:text-xs text-secondary italic mt-0.5">
                                 (Com equipe)
                               </div>
                             )}
@@ -426,15 +427,15 @@ export default function GameCard({ game, onGameUpdate }) {
                       </ul>
                     ) : (
                       <div className="text-center py-6 sm:py-8">
-                        <p className="text-gray-500 text-xs sm:text-sm">
+                        <p className="text-secondary text-xs sm:text-sm">
                           Nenhuma jogadora
                         </p>
                       </div>
                     )}
                   </div>
 
-                  <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-3 sm:p-4 border border-red-200 shadow-sm">
-                    <h5 className="font-bold text-red-800 mb-2 sm:mb-3 text-center text-sm sm:text-base flex items-center justify-center gap-2">
+                  <div className="rounded-xl p-3 sm:p-4 border border-[rgb(244_63_94/0.35)] bg-[rgb(244_63_94/0.08)] shadow-elevated">
+                    <h5 className="font-bold text-rose-700 mb-2 sm:mb-3 text-center text-sm sm:text-base flex items-center justify-center gap-2">
                       <span className="text-lg sm:text-xl">🔴</span>
                       Time 2 ({participants.team2.length})
                     </h5>
@@ -443,7 +444,7 @@ export default function GameCard({ game, onGameUpdate }) {
                         {participants.team2.map((participant, index) => (
                           <li
                             key={index}
-                            className="bg-white rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm text-gray-800 border border-red-200 hover:border-red-400 transition-colors shadow-sm"
+                            className="bg-surface rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm text-primary border border-[rgb(244_63_94/0.35)] hover:border-[rgb(225_29_72/0.6)] transition-colors shadow-elevated"
                           >
                             <div className="font-semibold truncate">
                               {participant.player?.name ||
@@ -451,7 +452,7 @@ export default function GameCard({ game, onGameUpdate }) {
                                 "Jogadora"}
                             </div>
                             {participant.participationType === "WITH_TEAM" && (
-                              <div className="text-[10px] sm:text-xs text-gray-500 italic mt-0.5">
+                              <div className="text-[10px] sm:text-xs text-secondary italic mt-0.5">
                                 (Com equipe)
                               </div>
                             )}
@@ -460,7 +461,7 @@ export default function GameCard({ game, onGameUpdate }) {
                       </ul>
                     ) : (
                       <div className="text-center py-6 sm:py-8">
-                        <p className="text-gray-500 text-xs sm:text-sm">
+                        <p className="text-secondary text-xs sm:text-sm">
                           Nenhuma jogadora
                         </p>
                       </div>
@@ -491,27 +492,24 @@ export default function GameCard({ game, onGameUpdate }) {
             onClick={handleEditGame}
             className="
               p-2 sm:p-2.5
-              bg-purple-100
-              hover:bg-purple-200
+              bg-accent-soft
+              text-gray-800
+              dark:text-gray-300
               rounded-full
               transition-all
               duration-200
               hover:scale-110
+              hover:text-gray-900
+              dark:hover:text-white
               active:scale-95
-              shadow-md
+              shadow-elevated
               hover:shadow-lg
               border-2
-              border-purple-300
+              border-accent
             "
             title="Editar Jogo"
           >
-            <Image
-              src="/icons/pencil.svg"
-              alt="Editar Jogo"
-              width={20}
-              height={20}
-              className="w-5 h-5 sm:w-6 sm:h-6"
-            />
+            <Pencil className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2} />
           </button>
         )}
         <button
@@ -522,13 +520,13 @@ export default function GameCard({ game, onGameUpdate }) {
             rounded-full
             transition-all
             duration-200
-            shadow-md
+            shadow-elevated
             hover:shadow-lg
             border-2
             ${
               isJoined
-                ? "bg-green-100 hover:bg-green-200 border-green-300"
-                : "bg-blue-100 hover:bg-blue-200 border-blue-300"
+                ? "bg-[rgb(34_197_94/0.18)] hover:bg-[rgb(34_197_94/0.28)] border-[rgb(34_197_94/0.55)] text-gray-800 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                : "bg-accent border-accent text-gray-800 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
             }
             ${
               isProcessing
@@ -545,15 +543,11 @@ export default function GameCard({ game, onGameUpdate }) {
           }
         >
           {isProcessing ? (
-            <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-2 border-gray-600 border-t-transparent"></div>
+            <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-2 border-[rgb(var(--color-text-primary))] border-t-transparent"></div>
+          ) : isJoined ? (
+            <Check className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2} />
           ) : (
-            <Image
-              src={isJoined ? "/icons/check.svg" : "/icons/adicionar.svg"}
-              alt={isJoined ? "Inscrito" : "Inscrever-se"}
-              width={20}
-              height={20}
-              className="w-5 h-5 sm:w-6 sm:h-6"
-            />
+            <Plus className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2} />
           )}
         </button>
       </div>

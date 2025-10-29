@@ -31,12 +31,12 @@ function RegisterForm() {
 
   return (
     <AuthLayout>
-      <div className="bg-white rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12 shadow-2xl text-center flex flex-col gap-6 sm:gap-8 md:gap-10 w-full transition-transform duration-300 ease-in-out">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-4 sm:mb-6">
-          Bem-vindo ao <span className="text-purple-700">Passa a Bola</span>
+      <div className="bg-surface border border-default rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12 shadow-elevated text-center flex flex-col gap-6 sm:gap-8 md:gap-10 w-full transition-transform duration-300 ease-in-out">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-primary leading-tight mb-4 sm:mb-6">
+          Bem-vindo ao <span className="text-accent">Passa a Bola</span>
         </h1>
 
-        <p className="text-lg sm:text-xl md:text-2xl text-gray-700 font-semibold mb-4 sm:mb-6">
+        <p className="text-lg sm:text-xl md:text-2xl text-secondary font-semibold mb-4 sm:mb-6">
           Insira suas informações de{" "}
           {role === "organizacao" ? "organização" : role}...
         </p>
@@ -87,7 +87,7 @@ function RegisterForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-purple-800 hover:bg-purple-900 text-white font-bold py-4 sm:py-5 rounded-xl text-xl sm:text-2xl transition-all duration-300 shadow-lg hover:scale-105 active:scale-95 disabled:bg-purple-400 disabled:cursor-not-allowed"
+              className="w-full bg-accent hover:bg-accent-strong font-bold py-4 sm:py-5 rounded-xl text-xl sm:text-2xl transition-all duration-300 shadow-elevated hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading
                 ? "CRIANDO..."
@@ -98,13 +98,13 @@ function RegisterForm() {
           </div>
         </form>
 
-        <div className="mt-6 sm:mt-8 md:mt-10 pt-6 border-t border-gray-200 flex flex-col items-center gap-3">
-          <p className="text-lg sm:text-xl font-semibold text-gray-700">
+        <div className="mt-6 sm:mt-8 md:mt-10 pt-6 border-t border-default flex flex-col items-center gap-3">
+          <p className="text-lg sm:text-xl font-semibold text-secondary">
             Já tem cadastro?
           </p>
           <Link
             href="/login"
-            className="text-purple-600 hover:text-purple-800 font-bold text-lg sm:text-xl transition-all duration-200 flex items-center gap-2 hover:scale-105 active:scale-95"
+            className="text-accent hover:text-accent-strong font-bold text-lg sm:text-xl transition-all duration-200 flex items-center gap-2 hover:scale-105 active:scale-95"
           >
             Faça seu login!
             <svg

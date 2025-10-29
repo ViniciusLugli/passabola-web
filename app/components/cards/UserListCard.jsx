@@ -22,10 +22,10 @@ export default function UserListCard({ user }) {
       href={`/user/${user.userType.toLowerCase()}/${user.id}`}
       className="block"
     >
-      <div className="bg-gray-50 border border-zinc-200 rounded-xl p-4 hover:border-purple-300 hover:bg-white hover:shadow-md transition-all duration-200">
+      <div className="bg-surface border border-default rounded-xl p-4 hover:border-accent hover:bg-surface-elevated hover:shadow-elevated transition-all duration-200">
         <div className="flex items-center gap-4">
           {/* Avatar */}
-          <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-200">
+          <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 border-2 border-default">
             <Image
               src={user.profilePhotoUrl || "/icons/user-default.png"}
               alt={user.name}
@@ -37,11 +37,11 @@ export default function UserListCard({ user }) {
 
           {/* Informações do usuário */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-gray-900 truncate">
+            <h3 className="text-lg font-bold text-primary truncate">
               {user.name}
             </h3>
-            <p className="text-sm text-gray-500 truncate">@{user.username}</p>
-            <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-700">
+            <p className="text-sm text-secondary truncate">@{user.username}</p>
+            <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-accent-soft text-accent-strong">
               {getUserTypeLabel(user.userType)}
             </span>
           </div>
@@ -49,7 +49,7 @@ export default function UserListCard({ user }) {
           {/* Bio (opcional) */}
           {user.bio && (
             <div className="hidden md:block flex-1 min-w-0">
-              <p className="text-sm text-gray-600 line-clamp-2">{user.bio}</p>
+              <p className="text-sm text-secondary line-clamp-2">{user.bio}</p>
             </div>
           )}
         </div>

@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { memo, useState, useEffect } from "react";
+import { Search } from "lucide-react";
 
 const FILTERS = [
   { key: "posts", label: "Post" },
@@ -41,16 +42,10 @@ const SearchBar = ({ value, onChange, onFiltersChange, selectedFilters }) => {
             placeholder="Pesquise..."
             value={value}
             onChange={onChange}
-            className="w-full py-4 px-6 rounded-full border border-gray-300 bg-white focus:outline-none focus:border-purple-500"
+            className="w-full py-4 px-6 rounded-full border border-default bg-surface focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent transition-colors"
           />
-          <button className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-            <Image
-              src="/icons/lupa.svg"
-              alt="lupa"
-              width={24}
-              height={24}
-              priority
-            />
+          <button className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-gray-300">
+            <Search className="w-6 h-6" strokeWidth={2} />
           </button>
         </div>
       </div>
@@ -65,8 +60,8 @@ const SearchBar = ({ value, onChange, onFiltersChange, selectedFilters }) => {
               onClick={() => toggleFilter(f.key)}
               className={`py-1.5 px-3 rounded-full border transition-colors text-sm ${
                 active
-                  ? "bg-purple-600 text-white border-purple-600"
-                  : "bg-white text-gray-700 border-gray-300"
+                  ? "bg-accent text-on-brand border-accent shadow-elevated"
+                  : "bg-surface text-secondary border-default hover:border-accent"
               }`}
             >
               {f.label}

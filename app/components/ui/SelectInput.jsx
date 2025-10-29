@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, memo, useRef, useEffect } from "react";
+import { ChevronDown } from "lucide-react";
 
 const SelectInput = ({
   label,
@@ -48,7 +49,7 @@ const SelectInput = ({
 
   return (
     <div className="relative w-full">
-      <label className="block text-md font-medium text-gray-700 mb-2">
+      <label className="block text-md font-medium text-secondary mb-2">
         {label}
       </label>
       <div
@@ -57,40 +58,32 @@ const SelectInput = ({
           p-4 sm:p-5 
           rounded-xl 
           border-2 
-          border-gray-200 
-          bg-white
+          border-default 
+          bg-surface
           text-lg sm:text-xl
-          text-gray-800
+          text-primary
           flex 
           justify-between 
           items-center 
           cursor-pointer
           transition-colors 
           duration-200
-          hover:border-purple-500
+          hover:border-accent
         "
         onClick={handleToggle}
       >
         <span>{selectedOption.label}</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={2}
-          stroke="currentColor"
+        <ChevronDown
           className={`
             w-5 h-5 
+            text-gray-800
+            dark:text-gray-300
             transition-transform 
             duration-200 
             ${isOpen ? "rotate-180" : "rotate-0"}
           `}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-          />
-        </svg>
+          strokeWidth={2}
+        />
       </div>
 
       {isOpen && (
@@ -101,9 +94,9 @@ const SelectInput = ({
           left-0 
           mt-2 
           w-full 
-          bg-white 
+          bg-surface 
           border 
-          border-gray-200 
+          border-default 
           rounded-xl 
           shadow-lg 
           z-20
@@ -113,7 +106,7 @@ const SelectInput = ({
         "
         >
           {/* Barra de busca */}
-          <div className="p-3 border-b border-gray-200 sticky top-0 bg-white rounded-t-xl">
+          <div className="p-3 border-b border-default sticky top-0 bg-surface rounded-t-xl">
             <input
               ref={searchInputRef}
               type="text"
@@ -126,10 +119,12 @@ const SelectInput = ({
                 p-2 sm:p-3
                 text-base sm:text-lg
                 border 
-                border-gray-300 
+                border-default 
                 rounded-lg 
                 focus:outline-none 
-                focus:border-purple-500
+                focus:border-accent
+                focus:ring-2
+                focus:ring-accent
                 transition-colors
               "
             />
@@ -144,9 +139,9 @@ const SelectInput = ({
                   className="
                     p-4 sm:p-5 
                     text-lg sm:text-xl 
-                    text-gray-800
+                    text-primary
                     cursor-pointer 
-                    hover:bg-gray-100 
+                    hover:bg-surface-muted 
                     transition-colors 
                     duration-200
                   "
@@ -156,7 +151,7 @@ const SelectInput = ({
                 </div>
               ))
             ) : (
-              <div className="p-4 sm:p-5 text-lg sm:text-xl text-gray-500 text-center">
+              <div className="p-4 sm:p-5 text-lg sm:text-xl text-secondary text-center">
                 Nenhum resultado encontrado
               </div>
             )}

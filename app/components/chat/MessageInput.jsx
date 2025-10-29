@@ -23,7 +23,7 @@ export default function MessageInput({ onSend, disabled }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-4 border-t border-gray-200 bg-white"
+      className="p-4 border-t border-default bg-surface"
     >
       <div className="flex gap-2">
         <textarea
@@ -37,14 +37,17 @@ export default function MessageInput({ onSend, disabled }) {
             flex-1
             resize-none
             border
-            border-gray-300
+            border-default
+            bg-surface
+            text-primary
+            placeholder:text-tertiary
             rounded-lg
             px-4
             py-2
             focus:outline-none
             focus:ring-2
-            focus:ring-blue-500
-            disabled:bg-gray-100
+            focus:ring-accent
+            disabled:bg-surface-muted
             disabled:cursor-not-allowed
           "
           style={{ minHeight: "42px", maxHeight: "120px" }}
@@ -60,12 +63,11 @@ export default function MessageInput({ onSend, disabled }) {
           className="
             px-6
             py-2
-            bg-blue-500
-            text-white
+            bg-accent
             rounded-lg
             font-medium
-            hover:bg-blue-600
-            disabled:bg-gray-300
+            hover:bg-accent-strong
+            disabled:opacity-60
             disabled:cursor-not-allowed
             transition-colors
             duration-200

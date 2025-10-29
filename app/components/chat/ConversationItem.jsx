@@ -28,18 +28,22 @@ export default function ConversationItem({ conversation, isActive, onClick }) {
       className={`
         p-4
         border-b
-        border-gray-200
+        border-default
         cursor-pointer
         transition-colors
         duration-200
-        hover:bg-gray-50
-        ${isActive ? "bg-blue-50 border-l-4 border-l-blue-500" : ""}
+        hover:bg-surface
+        ${
+          isActive
+            ? "bg-accent-soft border-l-4 border-l-accent shadow-elevated"
+            : "bg-surface-muted"
+        }
       `}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-900 truncate">
+            <h3 className="font-semibold text-primary truncate">
               {getParticipantName()}
             </h3>
             {conversation.unreadCount > 0 && (
@@ -50,13 +54,13 @@ export default function ConversationItem({ conversation, isActive, onClick }) {
           </div>
 
           {conversation.lastMessage && (
-            <p className="text-sm text-gray-600 truncate mt-1">
+            <p className="text-sm text-secondary truncate mt-1">
               {conversation.lastMessage}
             </p>
           )}
         </div>
 
-        <span className="text-xs text-gray-400 ml-2 flex-shrink-0">
+        <span className="text-xs text-tertiary ml-2 flex-shrink-0">
           {formatDate(conversation.lastMessageAt)}
         </span>
       </div>
