@@ -185,10 +185,11 @@ function Feed() {
         className="
         container 
         mx-auto 
-        p-4 md:p-8 lg:p-12 
-        max-w-4xl
+        p-3 sm:p-4 md:p-8 lg:p-12 
+        max-w-md sm:max-w-4xl
         min-h-screen
       "
+        aria-busy={loading}
       >
         <h1
           className="
@@ -212,11 +213,25 @@ function Feed() {
           />
         </div>
 
-        {loading && <p className="text-center">Carregando...</p>}
+        {loading && (
+          <div role="status" aria-live="polite" className="space-y-4">
+            <span className="sr-only">Carregando feed</span>
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="animate-pulse bg-surface border border-default rounded-xl p-4"
+              >
+                <div className="h-4 bg-default rounded w-1/3 mb-3" />
+                <div className="h-3 bg-default rounded w-full mb-2" />
+                <div className="h-3 bg-default rounded w-5/6" />
+              </div>
+            ))}
+          </div>
+        )}
         {error && <p className="text-center text-red-500">{error}</p>}
 
         {!loading && !error && (
-          <section className="flex flex-col gap-6">
+          <section className="flex flex-col gap-6" aria-live="polite">
             {userResults.length > 0 && (
               <div className="bg-surface border border-default p-4 rounded-md shadow-elevated">
                 <h3 className="font-semibold text-primary mb-2">Usuários</h3>
@@ -261,6 +276,7 @@ function Feed() {
 
       <Link
         href="/feed/newPost"
+        aria-label="Criar novo post"
         className="
         fixed 
         bottom-4 
@@ -270,12 +286,10 @@ function Feed() {
         p-3 
         sm:p-4 
         rounded-full 
-        bg-purple-600 
-        dark:bg-purple-500
-        text-white 
+        bg-accent 
+        text-on-brand 
         shadow-lg
-        hover:bg-purple-700
-        dark:hover:bg-purple-600
+        hover:bg-accent-strong
         transition-colors
         duration-200
         z-40
