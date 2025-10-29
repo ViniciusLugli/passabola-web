@@ -3,40 +3,49 @@
 import { useEffect, useState } from "react";
 import { api } from "@/app/lib/api";
 import GameCard from "@/app/components/cards/GameCard";
+import { getGameTypeLabel } from "@/app/lib/gameUtils";
 import { useAuth } from "@/app/context/AuthContext";
+
+import CalendarHeader from "./components/CalendarHeader";
+import Filters from "./components/Filters";
+import MonthGrid from "./components/MonthGrid";
+import GamesListSection from "./components/GamesListSection";
 
 function Calendar() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const [gamesThisWeek, setGamesThisWeek] = useState([]);
-  const [gamesThisMonth, setGamesThisMonth] = useState([]);
-  const [gamesFuture, setGamesFuture] = useState([]);
+  const [allGames, setAllGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [availableTypes, setAvailableTypes] = useState([]);
+  const [viewYear, setViewYear] = useState(new Date().getFullYear());
+  const [viewMonth, setViewMonth] = useState(new Date().getMonth());
+  const [selectedDate, setSelectedDate] = useState(null);
 
-  const filterGamesByDate = (games) => {
-    const now = new Date();
-    const endOfWeek = new Date(now);
-    endOfWeek.setDate(now.getDate() + 7);
+  const toggleType = (type) => {
+    setSelectedTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
 
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const clearFilters = () => setSelectedTypes([]);
 
-    const week = [];
-    const month = [];
-    const future = [];
-
-    games.forEach((game) => {
-      const gameDate = new Date(game.gameDate);
-
-      if (gameDate <= endOfWeek) {
-        week.push(game);
-      } else if (gameDate <= endOfMonth) {
-        month.push(game);
-      } else {
-        future.push(game);
-      }
+  const groupGamesByDay = (games) => {
+    const map = {};
+    games.forEach((g) => {
+      const d = new Date(g.gameDate);
+      const key = d.toISOString().slice(0, 10);
+      if (!map[key]) map[key] = [];
+      map[key].push(g);
     });
+    return map;
+  };
 
-    return { week, month, future };
+  const getGamesForMonth = (year, month) => {
+    return allGames.filter((g) => {
+      const d = new Date(g.gameDate);
+      return d.getFullYear() === year && d.getMonth() === month;
+    });
   };
 
   const fetchUserGames = async () => {
@@ -50,9 +59,7 @@ function Calendar() {
 
     const role = String(user.userType || "").toUpperCase();
     if (role === "SPECTATOR") {
-      setGamesThisWeek([]);
-      setGamesThisMonth([]);
-      setGamesFuture([]);
+      setAllGames([]);
       setLoading(false);
       return;
     }
@@ -71,30 +78,25 @@ function Calendar() {
         .filter(Boolean);
 
       if (gameIds.length === 0) {
-        setGamesThisWeek([]);
-        setGamesThisMonth([]);
-        setGamesFuture([]);
+        setAllGames([]);
         setLoading(false);
         return;
       }
 
       const allGamesResponse = await api.games.getAll({ page: 0, size: 1000 });
-      const allGames = allGamesResponse.content || [];
+      const allGamesResp = allGamesResponse.content || [];
 
-      const fetchedGames = allGames
+      const fetchedGames = allGamesResp
         .filter((game) => gameIds.includes(game.id))
-        .map((game) => ({
-          ...game,
-          isJoined: true,
-        }));
+        .map((game) => ({ ...game, isJoined: true }));
 
       fetchedGames.sort((a, b) => new Date(a.gameDate) - new Date(b.gameDate));
 
-      const { week, month, future } = filterGamesByDate(fetchedGames);
-
-      setGamesThisWeek(week);
-      setGamesThisMonth(month);
-      setGamesFuture(future);
+      const types = Array.from(
+        new Set(fetchedGames.map((g) => g.gameType).filter(Boolean))
+      );
+      setAvailableTypes(types);
+      setAllGames(fetchedGames);
     } catch (err) {
       console.error("Erro ao carregar calendário:", err);
       setError(err.message || "Falha ao carregar os jogos inscritos.");
@@ -107,55 +109,84 @@ function Calendar() {
     fetchUserGames();
   }, [isAuthenticated, user, authLoading]);
 
-  const renderSection = (title, games, emptyMessage) => (
-    <section className="mb-12">
-      <div className="bg-brand-gradient rounded-xl p-6 mb-6 shadow-elevated">
-        <h2 className="text-2xl font-bold text-on-brand">{title}</h2>
-      </div>
+  const prevMonth = () => {
+    setViewMonth((m) => {
+      if (m === 0) {
+        setViewYear((y) => y - 1);
+        return 11;
+      }
+      return m - 1;
+    });
+  };
 
-      {games.length > 0 ? (
-        <div className="flex flex-col gap-6">
-          {games.map((game) => (
-            <GameCard
-              key={game.id}
-              game={game}
-              onGameUpdate={() => {
-                fetchUserGames();
-              }}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="bg-surface-muted border-2 border-dashed border-default rounded-xl p-8 text-center">
-          <p className="text-secondary text-lg">{emptyMessage}</p>
-        </div>
-      )}
-    </section>
-  );
+  const nextMonth = () => {
+    setViewMonth((m) => {
+      if (m === 11) {
+        setViewYear((y) => y + 1);
+        return 0;
+      }
+      return m + 1;
+    });
+  };
+
+  // build grid cells
+  const buildCellsForMonth = () => {
+    const firstOfMonth = new Date(viewYear, viewMonth, 1);
+    const lastOfMonth = new Date(viewYear, viewMonth + 1, 0);
+    const startDay = firstOfMonth.getDay();
+    const daysInMonth = lastOfMonth.getDate();
+
+    const monthGames = getGamesForMonth(viewYear, viewMonth);
+    const grouped = groupGamesByDay(monthGames);
+
+    const cells = [];
+    for (let i = 0; i < startDay; i++) cells.push(null);
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(viewYear, viewMonth, d);
+      const key = date.toISOString().slice(0, 10);
+      const games = grouped[key] || [];
+      cells.push({ date, games });
+    }
+
+    while (cells.length % 7 !== 0) cells.push(null);
+    return cells;
+  };
+
+  const cells = buildCellsForMonth();
 
   return (
     <div className="min-h-screen">
-      
-      <main
-        className="
-        container 
-        mx-auto 
-        p-4 md:p-8 lg:p-12 
-        max-w-4xl
-      "
-      >
-        <h1
-          className="
-          text-4xl
-          font-extrabold
-          text-primary
-          leading-tight
-          mb-8
-          text-center
-        "
-        >
+      <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
+        <h1 className="text-4xl font-extrabold text-primary leading-tight mb-8 text-center">
           Meu Calendário de Jogos
         </h1>
+
+        <Filters
+          availableTypes={availableTypes}
+          selectedTypes={selectedTypes}
+          toggleType={toggleType}
+        />
+
+        <div className="mb-6">
+          <CalendarHeader
+            viewYear={viewYear}
+            viewMonth={viewMonth}
+            onPrev={prevMonth}
+            onNext={nextMonth}
+            onClear={clearFilters}
+            hasFilters={availableTypes.length > 0}
+          />
+
+          <MonthGrid
+            viewYear={viewYear}
+            viewMonth={viewMonth}
+            cells={cells}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            selectedTypes={selectedTypes}
+          />
+        </div>
 
         {loading && (
           <div className="text-center py-12">
@@ -172,56 +203,76 @@ function Calendar() {
 
         {!loading && !error && (
           <>
-            {renderSection(
-              "Jogos nos Próximos 7 Dias",
-              gamesThisWeek,
-              "Nenhum jogo programado para esta semana"
-            )}
+            <section className="mt-8">
+              <div className="bg-brand-gradient rounded-xl p-6 mb-6 shadow-elevated">
+                <h2 className="text-2xl font-bold text-on-brand">
+                  {selectedDate
+                    ? `Jogos em ${new Date(selectedDate).toLocaleDateString(
+                        "pt-BR",
+                        { day: "2-digit", month: "long", year: "numeric" }
+                      )}`
+                    : `Jogos em ${new Date(
+                        viewYear,
+                        viewMonth,
+                        1
+                      ).toLocaleDateString("pt-BR", {
+                        month: "long",
+                        year: "numeric",
+                      })}`}
+                </h2>
+              </div>
 
-            {renderSection(
-              "Jogos Neste Mês",
-              gamesThisMonth,
-              "Nenhum jogo adicional este mês"
-            )}
-
-            {renderSection(
-              "Jogos Futuros",
-              gamesFuture,
-              "Nenhum jogo distante agendado"
-            )}
-
-            {gamesThisWeek.length === 0 &&
-              gamesThisMonth.length === 0 &&
-              gamesFuture.length === 0 && (
-                <div className="bg-surface-elevated border border-default rounded-xl p-12 text-center shadow-elevated">
-                  <span className="text-6xl mb-4 block">⚽</span>
-                  <h3 className="text-2xl font-bold text-primary mb-2">
-                    Seu calendário está vazio
-                  </h3>
-                  <p className="text-secondary mb-6">
-                    Inscreva-se em jogos para vê-los aparecer aqui!
-                  </p>
-                  <a
-                    href="/games"
-                    className="
-                      inline-block
-                      bg-accent
-                      hover:bg-accent-strong
-                      text-on-brand
-                      font-bold
-                      py-3
-                      px-8
-                      rounded-xl
-                      transition-transform
-                      duration-300
-                      shadow-elevated
-                      hover:scale-105
-                    "
-                  >
-                    Ver Jogos Disponíveis
-                  </a>
-                </div>
-              )}
+              {selectedDate
+                ? (() => {
+                    const games =
+                      groupGamesByDay(getGamesForMonth(viewYear, viewMonth))[
+                        selectedDate
+                      ] || [];
+                    return (
+                      <GamesListSection
+                        title="Jogos do dia"
+                        items={games}
+                        emptyMessage="Nenhum jogo neste dia."
+                        selectedTypes={selectedTypes}
+                        fetchUserGames={fetchUserGames}
+                        showHeader={false}
+                      />
+                    );
+                  })()
+                : (() => {
+                    const monthGames = getGamesForMonth(
+                      viewYear,
+                      viewMonth
+                    ).filter((g) =>
+                      selectedTypes.length
+                        ? selectedTypes.includes(g.gameType)
+                        : true
+                    );
+                    return monthGames.length > 0 ? (
+                      <div className="flex flex-col gap-6">
+                        {monthGames.map((g) => (
+                          <GameCard
+                            key={g.id}
+                            game={g}
+                            onGameUpdate={fetchUserGames}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-surface-muted border-2 border-dashed border-default rounded-xl p-8 text-center">
+                        <p className="text-secondary text-lg">
+                          Nenhum jogo agendado para este mês.
+                        </p>
+                        <a
+                          href="/games"
+                          className="inline-block mt-4 bg-accent hover:bg-accent-strong text-on-brand font-bold py-2 px-4 rounded-md"
+                        >
+                          Ver Jogos Disponíveis
+                        </a>
+                      </div>
+                    );
+                  })()}
+            </section>
           </>
         )}
       </main>

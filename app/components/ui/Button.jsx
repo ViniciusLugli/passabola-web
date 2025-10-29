@@ -19,10 +19,10 @@ export default function Button({
   const base = `inline-flex items-center justify-center font-bold rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`;
 
   const variants = {
-    primary: `w-full bg-accent text-on-brand px-5 py-3 sm:py-4 hover:bg-accent-strong shadow-elevated ${
+    primary: `w-full text-white px-5 py-3 sm:py-4 shadow-elevated bg-gradient-to-br from-purple-600 to-indigo-700 ${
       isDisabled
         ? "opacity-70 cursor-not-allowed"
-        : "hover:scale-105 active:scale-95"
+        : "hover:from-purple-700 hover:to-indigo-800 transition-colors hover:scale-105 active:scale-95"
     }`,
     secondary: `w-full bg-surface border border-default text-primary px-4 py-3 ${
       isDisabled
