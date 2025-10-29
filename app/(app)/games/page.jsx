@@ -5,12 +5,34 @@ import GameCard from "@/app/components/cards/GameCard";
 import Link from "next/link";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
+import { getGameTypeLabel } from "@/app/lib/gameUtils";
 
 function Games() {
   const [games, setGames] = useState([]);
+  const [availableTypes, setAvailableTypes] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user: loggedInUser, isAuthenticated } = useAuth();
+
+  const toggleType = (type) => {
+    setSelectedTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
+
+  const clearFilters = () => setSelectedTypes([]);
+
+  const groupGamesByDay = (gamesList) => {
+    const map = {};
+    gamesList.forEach((g) => {
+      const d = new Date(g.gameDate);
+      const key = d.toISOString().slice(0, 10);
+      if (!map[key]) map[key] = [];
+      map[key].push(g);
+    });
+    return map;
+  };
 
   const fetchGames = async () => {
     try {
@@ -56,6 +78,10 @@ function Games() {
       }
 
       setGames(fetchedGames);
+      const types = Array.from(
+        new Set(fetchedGames.map((g) => g.gameType).filter(Boolean))
+      );
+      setAvailableTypes(types);
     } catch (err) {
       console.error("Erro ao buscar jogos:", err);
       setError(err.message || "Falha ao carregar os jogos.");
@@ -137,14 +163,137 @@ function Games() {
 
           {!loading && !error && (
             <section className="space-y-4 sm:space-y-5 md:space-y-6">
+              {/* Filters */}
+              {availableTypes.length > 0 && (
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  {availableTypes.map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => toggleType(t)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+                        selectedTypes.includes(t)
+                          ? "bg-accent text-on-brand border-accent"
+                          : "bg-surface text-primary border-default"
+                      }`}
+                    >
+                      {getGameTypeLabel(t)}
+                    </button>
+                  ))}
+
+                  {availableTypes.length > 0 && (
+                    <button
+                      onClick={clearFilters}
+                      className="text-sm text-secondary underline ml-2"
+                    >
+                      Limpar filtros
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Mini calendar (next 7 days) */}
+              {games.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-primary mb-3">
+                    Próximos 7 dias
+                  </h3>
+                  <div className="overflow-x-auto -mx-4 px-4">
+                    <div className="inline-flex gap-3">
+                      {(() => {
+                        const grouped = groupGamesByDay(games);
+                        const now = new Date();
+                        const days = [];
+                        for (let i = 0; i < 7; i++) {
+                          const d = new Date(now);
+                          d.setDate(now.getDate() + i);
+                          const key = d.toISOString().slice(0, 10);
+                          days.push({
+                            date: d,
+                            key,
+                            games: grouped[key] || [],
+                          });
+                        }
+
+                        return days.map((day) => (
+                          <div
+                            key={day.key}
+                            className="min-w-[190px] bg-surface rounded-xl p-3 border border-default shadow-sm"
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div>
+                                <div className="text-sm text-secondary">
+                                  {day.date.toLocaleDateString("pt-BR", {
+                                    weekday: "short",
+                                  })}
+                                </div>
+                                <div className="font-bold text-base">
+                                  {day.date.toLocaleDateString("pt-BR", {
+                                    day: "2-digit",
+                                    month: "short",
+                                  })}
+                                </div>
+                              </div>
+                              <div className="text-sm text-secondary">
+                                {day.games.length} partidas
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                              {day.games.length > 0 ? (
+                                day.games
+                                  .filter((g) =>
+                                    selectedTypes.length
+                                      ? selectedTypes.includes(g.gameType)
+                                      : true
+                                  )
+                                  .map((g) => (
+                                    <div
+                                      key={g.id}
+                                      className="block text-sm text-primary truncate"
+                                      title={
+                                        g.gameName ||
+                                        g.championship ||
+                                        "Partida"
+                                      }
+                                    >
+                                      {new Date(g.gameDate).toLocaleTimeString(
+                                        "pt-BR",
+                                        { hour: "2-digit", minute: "2-digit" }
+                                      )}{" "}
+                                      —{" "}
+                                      {g.gameName ||
+                                        g.championship ||
+                                        "Partida"}
+                                    </div>
+                                  ))
+                              ) : (
+                                <div className="text-sm text-tertiary">
+                                  Sem partidas
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {games.length > 0 ? (
-                games.map((game) => (
-                  <GameCard
-                    key={game.id}
-                    game={game}
-                    onGameUpdate={handleGameUpdate}
-                  />
-                ))
+                games
+                  .filter((g) =>
+                    selectedTypes.length
+                      ? selectedTypes.includes(g.gameType)
+                      : true
+                  )
+                  .map((game) => (
+                    <GameCard
+                      key={game.id}
+                      game={game}
+                      onGameUpdate={handleGameUpdate}
+                    />
+                  ))
               ) : (
                 <div className="bg-surface-muted border-2 border-default rounded-xl p-8 sm:p-12 text-center">
                   <span className="text-5xl sm:text-6xl mb-4 block">🎮</span>
