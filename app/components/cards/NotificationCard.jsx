@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
 import InviteNotificationActions from "./InviteNotificationActions";
 
 export default function NotificationCard({
@@ -73,13 +74,13 @@ export default function NotificationCard({
         duration-200
         ${
           notification.read
-            ? "bg-gray-50 border-gray-200"
-            : "bg-blue-50 border-blue-300"
+            ? "bg-surface border-default"
+            : "bg-accent-soft border-accent"
         }
         ${
           ["GAME_INVITE", "TEAM_INVITE"].includes(notification.type)
             ? ""
-            : "hover:shadow-md cursor-pointer"
+            : "hover:shadow-elevated cursor-pointer"
         }
       `}
       onClick={
@@ -89,20 +90,20 @@ export default function NotificationCard({
       }
     >
       {!notification.read && (
-        <div className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full"></div>
+        <div className="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full"></div>
       )}
 
       <div className="flex items-start gap-3">
         <div className="text-3xl flex-shrink-0">{getNotificationIcon()}</div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 text-sm md:text-base">
+          <h3 className="font-semibold text-primary text-sm md:text-base">
             {notification.title}
           </h3>
-          <p className="text-gray-600 text-xs md:text-sm mt-1 break-words">
+          <p className="text-secondary text-xs md:text-sm mt-1 break-words">
             {notification.message}
           </p>
-          <p className="text-gray-400 text-xs mt-2">
+          <p className="text-tertiary text-xs mt-2">
             {formatDate(notification.createdAt)}
           </p>
 
@@ -121,8 +122,10 @@ export default function NotificationCard({
             onDelete(notification.id);
           }}
           className="
-            text-gray-400
+            text-gray-800
+            dark:text-gray-300
             hover:text-red-500
+            dark:hover:text-red-400
             transition-colors
             duration-200
             p-1
@@ -130,20 +133,7 @@ export default function NotificationCard({
           "
           title="Deletar notificação"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <X className="w-5 h-5" strokeWidth={2} />
         </button>
       </div>
     </div>

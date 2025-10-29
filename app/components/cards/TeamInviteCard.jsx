@@ -49,19 +49,19 @@ export default function TeamInviteCard({ invite, onUpdate }) {
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-4 mb-4">
-      <h3 className="text-lg font-semibold text-gray-800">
+    <div className="bg-surface border border-default shadow-elevated rounded-lg p-4 mb-4">
+      <h3 className="text-lg font-semibold text-primary">
         Convite para o Time:{" "}
         {invite?.teamName ?? invite?.team?.name ?? "(time)"}
       </h3>
-      <p className="text-gray-600">
+      <p className="text-secondary">
         Enviado por:{" "}
         {invite?.senderUsername ?? invite?.sender?.username ?? "(remetente)"} em{" "}
         {invite?.createdAt
           ? new Date(invite.createdAt).toLocaleDateString()
           : "(data)"}
       </p>
-      <p className="text-gray-600">
+      <p className="text-secondary">
         Status: {invite?.status ?? invite?.inviteStatus ?? "(status)"}
       </p>
 

@@ -148,14 +148,14 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <div className="bg-gray-100 min-h-screen">
+      <div className="bg-page min-h-screen">
         
         <main className="container mx-auto p-4 mt-8 max-w-4xl">
-          <div className="relative bg-white rounded-2xl shadow-lg p-8 flex flex-col gap-6">
-            <h1 className="text-4xl font-bold text-gray-900 text-center mt-4">
+          <div className="relative bg-surface border border-default rounded-2xl shadow-elevated p-8 flex flex-col gap-6">
+            <h1 className="text-4xl font-bold text-primary text-center mt-4">
               Notificações
             </h1>
-            <p className="text-center text-gray-600">
+            <p className="text-center text-secondary">
               Carregando notificações...
             </p>
           </div>
@@ -165,13 +165,13 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="transparent min-h-screen">
+    <div className="min-h-screen">
       
       <main className="container mx-auto p-4 mt-8 max-w-4xl">
-        <div className="relative bg-white border border-zinc-300 rounded-2xl shadow-lg p-4 md:p-8 flex flex-col gap-6">
+        <div className="relative bg-surface border border-default rounded-2xl shadow-elevated p-4 md:p-8 flex flex-col gap-6">
           <button
             onClick={() => router.back()}
-            className="absolute top-4 md:top-8 right-4 md:right-8 text-gray-500 hover:text-gray-800 transition-colors duration-200"
+            className="absolute top-4 md:top-8 right-4 md:right-8 text-tertiary hover:text-secondary transition-colors duration-200"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -191,11 +191,11 @@ export default function NotificationsPage() {
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              <h1 className="text-3xl md:text-4xl font-bold text-primary">
                 Notificações
               </h1>
               {unreadCount > 0 && (
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-secondary mt-1">
                   {unreadCount} {unreadCount === 1 ? "nova" : "novas"}
                 </p>
               )}
@@ -209,7 +209,7 @@ export default function NotificationsPage() {
                 `}
                 title={isConnected ? "Conectado" : "Desconectado"}
               ></div>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-secondary">
                 {isConnected ? "Online" : "Offline"}
               </span>
             </div>
@@ -220,52 +220,33 @@ export default function NotificationsPage() {
           {/* Filtros e Ações */}
           <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
             <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => setFilter("all")}
-                className={`
-                  px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-                  ${
-                    filter === "all"
-                      ? "bg-purple-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }
-                `}
-              >
-                Todas
-              </button>
-              <button
-                onClick={() => setFilter("unread")}
-                className={`
-                  px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-                  ${
-                    filter === "unread"
-                      ? "bg-purple-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }
-                `}
-              >
-                Não Lidas
-              </button>
-              <button
-                onClick={() => setFilter("read")}
-                className={`
-                  px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-                  ${
-                    filter === "read"
-                      ? "bg-purple-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }
-                `}
-              >
-                Lidas
-              </button>
+              {["all", "unread", "read"].map((key) => (
+                <button
+                  key={key}
+                  onClick={() => setFilter(key)}
+                  className={`
+                    px-3 py-1.5 rounded-md text-sm font-medium transition-all
+                    ${
+                      filter === key
+                        ? "bg-accent text-on-brand shadow-elevated"
+                        : "bg-surface-muted text-secondary border border-default hover:bg-surface-elevated"
+                    }
+                  `}
+                >
+                  {key === "all"
+                    ? "Todas"
+                    : key === "unread"
+                    ? "Não Lidas"
+                    : "Lidas"}
+                </button>
+              ))}
             </div>
 
             <div className="flex gap-2 flex-wrap">
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                  className="px-3 py-1.5 text-sm font-medium text-accent hover:text-accent-strong transition-colors"
                 >
                   Marcar todas como lidas
                 </button>
@@ -273,7 +254,7 @@ export default function NotificationsPage() {
               {liveNotifications.some((n) => n.read) && (
                 <button
                   onClick={handleDeleteAllRead}
-                  className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
+                  className="px-3 py-1.5 text-sm font-medium text-red-400 hover:text-red-500 transition-colors"
                 >
                   Limpar lidas
                 </button>
@@ -285,7 +266,7 @@ export default function NotificationsPage() {
           <div className="flex flex-col gap-3">
             {filteredNotifications.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">
+                <p className="text-secondary text-lg">
                   {filter === "unread"
                     ? "Nenhuma notificação não lida"
                     : filter === "read"

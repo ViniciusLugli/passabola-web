@@ -25,9 +25,9 @@ const GameForm = ({
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-8">
       {/* Seção: Tipo de Jogo */}
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
-        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <span className="text-purple-600">⚽</span>
+      <div className="bg-surface border border-default rounded-2xl p-6 shadow-elevated transition-all duration-300">
+        <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+          <span className="text-accent">⚽</span>
           Tipo de Jogo
         </h3>
         <SelectInput
@@ -44,9 +44,9 @@ const GameForm = ({
       formData.gameType === "CHAMPIONSHIP" ? (
         <div className="animate-in fade-in slide-in-from-top-4 duration-500">
           {/* Seção: Informações Básicas */}
-          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-200 shadow-sm hover:shadow-md transition-all duration-300 mb-8">
-            <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
-              <span className="text-purple-600">📋</span>
+          <div className="bg-surface border border-default rounded-2xl p-6 shadow-elevated transition-all duration-300 mb-8">
+            <h3 className="text-lg font-bold text-primary mb-5 flex items-center gap-2">
+              <span className="text-accent">📋</span>
               Informações Básicas
             </h3>
             <div className="space-y-5">
@@ -81,9 +81,9 @@ const GameForm = ({
           </div>
 
           {/* Seção: Jogadoras */}
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200 shadow-sm hover:shadow-md transition-all duration-300 mb-8">
-            <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
-              <span className="text-green-600">👥</span>
+          <div className="bg-surface border border-default rounded-2xl p-6 shadow-elevated transition-all duration-300 mb-8">
+            <h3 className="text-lg font-bold text-primary mb-5 flex items-center gap-2">
+              <span className="text-[rgb(34_197_94)]">👥</span>
               Jogadoras
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -113,13 +113,13 @@ const GameForm = ({
           </div>
 
           {/* Seção: Espectadores */}
-          <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-200 shadow-sm hover:shadow-md transition-all duration-300 mb-8">
-            <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
-              <span className="text-orange-600">👀</span>
+          <div className="bg-surface border border-default rounded-2xl p-6 shadow-elevated transition-all duration-300 mb-8">
+            <h3 className="text-lg font-bold text-primary mb-5 flex items-center gap-2">
+              <span className="text-orange-500">👀</span>
               Espectadores
             </h3>
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-orange-100 hover:border-orange-300 transition-all duration-200">
+              <div className="flex items-center gap-3 p-4 bg-surface-muted rounded-xl border border-default hover:border-accent transition-all duration-200">
                 <input
                   type="checkbox"
                   name="hasSpectators"
@@ -133,21 +133,21 @@ const GameForm = ({
                       },
                     })
                   }
-                  className="w-6 h-6 text-purple-600 bg-gray-100 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 cursor-pointer transition-all duration-200"
+                  className="w-6 h-6 text-accent bg-surface border-2 border-default rounded-lg focus:ring-2 focus:ring-accent focus:ring-offset-2 cursor-pointer transition-all duration-200"
                 />
                 <label
                   htmlFor="hasSpectators"
-                  className="text-base font-semibold text-gray-700 cursor-pointer select-none flex-1"
+                  className="text-base font-semibold text-secondary cursor-pointer select-none flex-1"
                 >
                   Permitir espectadores neste jogo
                 </label>
               </div>
 
               {formData.hasSpectators && (
-                <div className="animate-in fade-in slide-in-from-top-2 duration-300 p-4 bg-white rounded-xl border border-orange-100">
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300 p-4 bg-surface-muted rounded-xl border border-default">
                   <label
                     htmlFor="maxSpectators"
-                    className="block text-sm font-medium text-gray-700 mb-3"
+                    className="block text-sm font-medium text-secondary mb-3"
                   >
                     Quantidade máxima de espectadores
                   </label>
@@ -170,9 +170,9 @@ const GameForm = ({
       {formData.gameType === "CUP" ? (
         <div className="animate-in fade-in slide-in-from-top-4 duration-500">
           {/* Seção: Informações da Copa */}
-          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 border border-yellow-200 shadow-sm hover:shadow-md transition-all duration-300 mb-8">
-            <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
-              <span className="text-yellow-600">🏆</span>
+          <div className="bg-surface border border-default rounded-2xl p-6 shadow-elevated transition-all duration-300 mb-8">
+            <h3 className="text-lg font-bold text-primary mb-5 flex items-center gap-2">
+              <span className="text-yellow-500">🏆</span>
               Informações da Copa
             </h3>
             <div className="space-y-5">
@@ -207,9 +207,9 @@ const GameForm = ({
           </div>
 
           {/* Seção: Times */}
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300 mb-8">
-            <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
-              <span className="text-blue-600">⚔️</span>
+          <div className="bg-surface border border-default rounded-2xl p-6 shadow-elevated transition-all duration-300 mb-8">
+            <h3 className="text-lg font-bold text-primary mb-5 flex items-center gap-2">
+              <span className="text-blue-500">⚔️</span>
               Times do Confronto
             </h3>
             {loadingTeams ? (
@@ -241,12 +241,12 @@ const GameForm = ({
                 />
               </div>
             ) : (
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-center">
+              <div className="bg-surface-muted border-2 border-red-400 rounded-xl p-6 text-center">
                 <span className="text-4xl mb-3 block">⚠️</span>
-                <p className="text-red-700 font-semibold text-lg">
+                <p className="text-red-400 font-semibold text-lg">
                   Nenhuma equipe disponível
                 </p>
-                <p className="text-red-600 text-sm mt-2">
+                <p className="text-red-300 text-sm mt-2">
                   Crie equipes antes de criar um jogo de copa.
                 </p>
               </div>
@@ -256,9 +256,9 @@ const GameForm = ({
       ) : null}
 
       {/* Seção: Data e Hora */}
-      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-200 shadow-sm hover:shadow-md transition-all duration-300">
-        <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
-          <span className="text-indigo-600">📅</span>
+      <div className="bg-surface border border-default rounded-2xl p-6 shadow-elevated transition-all duration-300">
+        <h3 className="text-lg font-bold text-primary mb-5 flex items-center gap-2">
+          <span className="text-indigo-500">📅</span>
           Quando será o jogo?
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

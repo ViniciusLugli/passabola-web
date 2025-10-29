@@ -3,19 +3,40 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import dynamic from "next/dynamic";
+import {
+  Home,
+  Trophy,
+  Calendar,
+  Users,
+  User,
+  Bell,
+  MessageCircle,
+  Bot,
+  LogOut,
+  Menu,
+} from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useNotifications } from "@/app/context/NotificationContext";
 import { useChat } from "@/app/context/ChatContext";
 
+// Import dinâmico para evitar SSR
+const ThemeToggle = dynamic(() => import("@/app/components/ui/ThemeToggle"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-10 h-10 rounded-full bg-surface-muted shadow-elevated" />
+  ),
+});
+
 const iconMap = {
-  Feed: "/icons/feed.svg",
-  Jogos: "/icons/games.svg",
-  Calendário: "/icons/calendario.svg",
-  Equipes: "/icons/equipe.svg",
-  Perfil: "/icons/perfil.svg",
-  Notificações: "/icons/mail.svg",
-  Chat: "/icons/chat.svg",
-  Chatbot: "/icons/chatbot.svg",
+  Feed: Home,
+  Jogos: Trophy,
+  Calendário: Calendar,
+  Equipes: Users,
+  Perfil: User,
+  Notificações: Bell,
+  Chat: MessageCircle,
+  Chatbot: Bot,
 };
 
 export default function Header() {
@@ -49,72 +70,72 @@ export default function Header() {
   return (
     <header
       className="
-      sticky 
-      top-0 
-      z-50 
-      bg-purple-700 
-      backdrop-blur-sm 
-      shadow-lg 
-      w-full 
-      p-4 
+      sticky
+      top-0
+      z-50
+      bg-brand-gradient
+      backdrop-blur-sm
+      shadow-elevated
+      w-full
+      p-4
       md:px-8
-      flex 
-      justify-between 
+      flex
+      justify-between
       items-center
+      transition-colors
     "
     >
-      <Image
-        src="/logo.svg"
-        alt="Logo do Passa a Bola"
-        width={40}
-        height={40}
-        className="
-            w-10 h-10 
-            rounded-full 
-          "
-        priority
-      />
+      <div className="flex items-center gap-3">
+        <Image
+          src="/logo.svg"
+          alt="Logo do Passa a Bola"
+          width={40}
+          height={40}
+          className="w-10 h-10 rounded-full"
+          priority
+        />
+        <ThemeToggle />
+      </div>
 
       <nav className="hidden md:flex gap-1 lg:gap-2 items-center">
-        {navLinks.map((link) => (
-          <Link
-            key={link.name}
-            href={link.href}
-            className="
-              flex
-              flex-col
-              items-center
-              justify-center
-              gap-1
-              text-white
-              hover:text-purple-400 
-              transition-colors 
-              duration-200 
-              font-semibold
-              w-20
-              relative
-            "
-          >
-            <Image
-              src={iconMap[link.name]}
-              alt={link.name}
-              width={24}
-              height={24}
-              className="w-6 h-6"
-            />
-            <span className="text-xs">{link.name}</span>
-            {link.name === "Notificações" && unreadCount > 0 && (
-              <span className="absolute top-0 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-            {link.name === "Chat" && chatUnreadCount > 0 && (
-              <span className="absolute top-0 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
-              </span>
-            )}
-          </Link>
-        ))}
+        {navLinks.map((link) => {
+          const Icon = iconMap[link.name];
+          return (
+            <Link
+              key={link.name}
+              href={link.href}
+              className="
+                flex
+                flex-col
+                items-center
+                justify-center
+                gap-1
+                text-white
+                hover:text-white/90
+                transition-all
+                duration-200
+                font-semibold
+                w-20
+                relative
+                opacity-90
+                hover:opacity-100
+              "
+            >
+              <Icon className="w-6 h-6" strokeWidth={2} />
+              <span className="text-xs">{link.name}</span>
+              {link.name === "Notificações" && unreadCount > 0 && (
+                <span className="absolute top-0 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+              {link.name === "Chat" && chatUnreadCount > 0 && (
+                <span className="absolute top-0 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                </span>
+              )}
+            </Link>
+          );
+        })}
         {isAuthenticated ? (
           <button
             onClick={logout}
@@ -125,25 +146,21 @@ export default function Header() {
               justify-center
               gap-1
               text-white
-              hover:text-purple-400 
-              transition-colors 
-              duration-200 
+              hover:text-white/90
+              transition-all
+              duration-200
               font-semibold
               w-20
+              opacity-90
+              hover:opacity-100
             "
           >
-            <Image
-              src="/icons/log-out.svg"
-              alt="Sair"
-              width={24}
-              height={24}
-              className="w-6 h-6"
-            />
+            <LogOut className="w-6 h-6" strokeWidth={2} />
             <span className="text-xs">Sair</span>
           </button>
         ) : (
           <Link href="/login" passHref>
-            <button className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors font-semibold">
+            <button className="bg-accent hover:bg-accent-strong px-4 py-2 rounded-md transition-all duration-200 font-semibold shadow-elevated hover:shadow-lg">
               Entrar
             </button>
           </Link>
@@ -151,23 +168,11 @@ export default function Header() {
       </nav>
 
       <button
-        className="md:hidden text-white"
+        className="md:hidden text-white hover:text-white/90 transition-all duration-200"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
+        aria-label="Menu"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-8 h-8"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" // Código para o icone do menu hamburger
-          />
-        </svg>
+        <Menu className="w-8 h-8" strokeWidth={2} />
       </button>
 
       {isMenuOpen && (
@@ -178,51 +183,54 @@ export default function Header() {
           top-full
           right-0
           w-64
-          bg-purple-700
-          shadow-lg
+          mt-2
+          bg-surface-elevated
+          border
+          border-strong
+          rounded-xl
+          shadow-elevated
           p-4
+          text-primary
         "
         >
           <nav className="flex flex-col gap-4">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="
-                flex
-                items-center
-                gap-3
-                text-white
-                hover:text-purple-400 
-                transition-colors 
-                duration-200 
-                font-semibold
-                p-2
-                rounded-lg
-                relative
-              "
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Image
-                  src={iconMap[link.name]}
-                  alt={link.name}
-                  width={24}
-                  height={24}
-                  className="w-6 h-6"
-                />
-                <span>{link.name}</span>
-                {link.name === "Notificações" && unreadCount > 0 && (
-                  <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-                {link.name === "Chat" && chatUnreadCount > 0 && (
-                  <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
-                  </span>
-                )}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const Icon = iconMap[link.name];
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="
+                  flex
+                  items-center
+                  gap-3
+                  text-primary
+                  hover:text-accent
+                  transition-colors
+                  duration-200
+                  font-semibold
+                  p-2
+                  rounded-lg
+                  relative
+                  hover:bg-surface-muted
+                "
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Icon className="w-6 h-6" strokeWidth={2} />
+                  <span>{link.name}</span>
+                  {link.name === "Notificações" && unreadCount > 0 && (
+                    <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                  {link.name === "Chat" && chatUnreadCount > 0 && (
+                    <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
             {isAuthenticated ? (
               <button
                 onClick={() => {
@@ -233,39 +241,28 @@ export default function Header() {
                 flex
                 items-center
                 gap-3
-                text-white
-                hover:text-purple-400 
-                transition-colors 
-                duration-200 
+                text-primary
+                hover:text-accent
+                transition-colors
+                duration-200
                 font-semibold
                 p-2
                 rounded-lg
                 w-full
                 text-left
+                hover:bg-surface-muted
               "
               >
-                <Image
-                  src="/icons/log-out.svg"
-                  alt="Sair"
-                  width={24}
-                  height={24}
-                  className="w-6 h-6"
-                />
+                <LogOut className="w-6 h-6" strokeWidth={2} />
                 <span>Sair</span>
               </button>
             ) : (
               <Link href="/login" passHref>
                 <span
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex items-center gap-3 text-white hover:text-purple-400 transition-colors duration-200 font-semibold p-2 rounded-lg"
+                  className="flex items-center gap-3 text-primary hover:text-accent transition-colors duration-200 font-semibold p-2 rounded-lg hover:bg-surface-muted"
                 >
-                  <Image
-                    src="/icons/log-out.svg"
-                    alt="Entrar"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6"
-                  />
+                  <LogOut className="w-6 h-6" strokeWidth={2} />
                   <span>Entrar</span>
                 </span>
               </Link>

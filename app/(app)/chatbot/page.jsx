@@ -52,18 +52,20 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
+    <div className="flex flex-col h-screen bg-page">
       
       <main className="flex-1 flex flex-col p-4 overflow-hidden">
-        <h1 className="text-2xl font-bold mb-4 text-center">Chatbot</h1>
-        <div className="flex-1 overflow-y-auto p-4 bg-white rounded-lg shadow-md mb-4">
+        <h1 className="text-2xl font-bold mb-4 text-center text-primary">
+          Chatbot
+        </h1>
+        <div className="flex-1 overflow-y-auto p-4 bg-surface border border-default rounded-lg shadow-elevated mb-4">
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`mb-2 p-2 rounded-lg max-w-[70%] ${
+              className={`mb-2 p-3 rounded-lg max-w-[70%] text-sm ${
                 msg.sender === "user"
-                  ? "bg-blue-500 text-white self-end ml-auto"
-                  : "bg-gray-300 text-gray-800 self-start mr-auto"
+                  ? "bg-accent text-on-brand self-end ml-auto shadow-elevated"
+                  : "bg-surface-muted border border-default text-primary self-start mr-auto"
               }`}
             >
               {msg.text}
@@ -78,12 +80,9 @@ export default function ChatbotPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Digite sua mensagem..."
-            className="flex-1 p-2 border rounded-lg"
+            className="flex-1"
           />
-          <Button
-            type="submit"
-            className="px-4 py-2 bg-green-500 text-white rounded-lg"
-          >
+          <Button type="submit" className="px-5">
             Enviar
           </Button>
         </form>

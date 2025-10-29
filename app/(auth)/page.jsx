@@ -74,7 +74,8 @@ export default function HomePage() {
     <div
       className="
         min-h-screen 
-        bg-purple-700 
+        bg-brand-gradient
+        text-on-brand
         relative 
         overflow-hidden 
         flex 
@@ -116,10 +117,12 @@ export default function HomePage() {
             relative 
             z-10 
             w-full 
-            bg-white 
+            bg-surface 
+            border 
+            border-default 
             rounded-3xl 
             p-6 sm:p-8 md:p-10 lg:p-12
-            shadow-2xl 
+            shadow-elevated 
             flex 
             flex-col 
             items-center 
@@ -135,7 +138,7 @@ export default function HomePage() {
               sm:text-5xl 
               md:text-6xl 
               lg:text-7xl
-              text-gray-900
+              text-primary
               mb-4 sm:mb-6
             "
           >
@@ -147,7 +150,7 @@ export default function HomePage() {
               text-base 
               sm:text-lg 
               md:text-xl 
-              text-gray-700 
+              text-secondary 
               max-w-2xl 
               leading-relaxed
               mb-6 sm:mb-8
@@ -163,15 +166,14 @@ export default function HomePage() {
               href="/register"
               className="
                 px-8 py-4 
-                bg-purple-800 
-                hover:bg-purple-900 
-                text-white 
+                bg-accent 
+                hover:bg-accent-strong 
                 text-lg 
                 font-bold 
                 rounded-full 
                 transition-all 
                 duration-300
-                shadow-lg
+                shadow-elevated
                 hover:scale-105 active:scale-95
               "
             >
@@ -184,10 +186,10 @@ export default function HomePage() {
                 px-8 py-4 
                 bg-transparent 
                 border-2 
-                border-purple-600 
-                hover:bg-purple-600
-                hover:text-white
-                text-purple-600 
+                border-accent 
+                text-accent 
+                hover:bg-accent
+                hover:text-on-brand
                 text-lg 
                 font-bold 
                 rounded-full 

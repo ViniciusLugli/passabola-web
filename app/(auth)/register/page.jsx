@@ -28,13 +28,15 @@ export default function RegisterPage() {
     <AuthLayout>
       <div
         className="
-          bg-white 
-          rounded-3xl 
-          p-6 sm:p-8 md:p-10 lg:p-12 
-          shadow-2xl 
-          text-center 
-          flex 
-          flex-col 
+          bg-surface
+          border
+          border-default
+          rounded-3xl
+          p-6 sm:p-8 md:p-10 lg:p-12
+          shadow-elevated
+          text-center
+          flex
+          flex-col
           gap-6 sm:gap-8 md:gap-10
           w-full
           transition-transform duration-300 ease-in-out
@@ -44,18 +46,18 @@ export default function RegisterPage() {
           className="
             text-4xl sm:text-5xl md:text-6xl 
             font-extrabold 
-            text-gray-900 
+            text-primary 
             leading-tight
             mb-4 sm:mb-6
           "
         >
-          Bem-vindo ao <span className="text-purple-700">Passa a Bola</span>
+          Bem-vindo ao <span className="text-accent">Passa a Bola</span>
         </h1>
 
         <p
           className="
             text-lg sm:text-xl md:text-2xl 
-            text-gray-700 
+            text-secondary 
             font-semibold 
             mb-4 sm:mb-6
           "
@@ -81,8 +83,8 @@ export default function RegisterPage() {
                   hover:scale-105 active:scale-95
                   ${
                     selectedRole === role
-                      ? "border-purple-600 bg-purple-50 text-purple-800 font-semibold"
-                      : "border-gray-200 bg-white text-gray-800 hover:border-purple-300 hover:bg-purple-10"
+                      ? "border-accent bg-accent-soft text-accent-strong font-semibold"
+                      : "border-default bg-surface text-primary hover:border-accent hover:bg-accent-soft hover:text-accent"
                   }
                 `}
               >
@@ -107,14 +109,14 @@ export default function RegisterPage() {
                   border-2 
                   rounded-full 
                   mr-3
-                  peer-checked:border-purple-600
-                  peer-checked:bg-purple-600
+                  peer-checked:border-accent
+                  peer-checked:bg-accent
                   peer-checked:after:content-['']
                   peer-checked:after:block
                   peer-checked:after:w-3
                   peer-checked:after:h-3
                   peer-checked:after:rounded-full
-                  peer-checked:after:bg-white
+                  peer-checked:after:bg-[rgb(var(--color-accent-contrast))]
                   transition-all
                   duration-200
                 "
@@ -129,16 +131,15 @@ export default function RegisterPage() {
               type="submit"
               className="
                 w-full 
-                bg-purple-800 
-                hover:bg-purple-900 
-                text-white 
+                bg-accent 
+                hover:bg-accent-strong 
                 font-bold 
                 py-4 sm:py-5 
                 rounded-xl 
                 text-xl sm:text-2xl 
                 transition-all 
                 duration-300 
-                shadow-lg
+                shadow-elevated
                 hover:scale-105 active:scale-95
               "
             >
@@ -152,21 +153,21 @@ export default function RegisterPage() {
             mt-6 sm:mt-8 md:mt-10 
             pt-6 
             border-t 
-            border-gray-200 
+            border-default 
             flex 
             flex-col 
             items-center 
             gap-3
           "
         >
-          <p className="text-lg sm:text-xl font-semibold text-gray-700">
+          <p className="text-lg sm:text-xl font-semibold text-secondary">
             Já tem cadastro?
           </p>
           <Link
             href="/login"
             className="
-              text-purple-600 
-              hover:text-purple-800 
+              text-accent 
+              hover:text-accent-strong 
               font-bold 
               text-lg sm:text-xl
               transition-all 

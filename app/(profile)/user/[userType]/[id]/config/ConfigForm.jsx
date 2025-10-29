@@ -3,6 +3,7 @@
 import Input from "@/app/components/ui/Input";
 import ConfirmSaveModal from "./ConfirmSaveModal";
 import { useConfigForm } from "./useConfigForm";
+import { X } from "lucide-react";
 
 export default function ConfigForm({ userId, userType }) {
   const {
@@ -31,31 +32,19 @@ export default function ConfigForm({ userId, userType }) {
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-xl p-6 md:p-10 relative">
+      <div className="bg-surface border border-default rounded-2xl shadow-elevated p-6 md:p-10 relative">
         <button
-          onClick={() => router.back()}
-          className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
+          onClick={handleClose}
+          className="absolute top-6 right-6 text-gray-800 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+          aria-label="Fechar"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-7 h-7"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <X className="w-6 h-6" strokeWidth={2} />
         </button>
 
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+        <h1 className="text-3xl font-bold text-primary mb-2">
           Configurações do Perfil
         </h1>
-        <p className="text-gray-500 mb-8">
+        <p className="text-secondary mb-8">
           Atualize suas informações pessoais.
         </p>
 
@@ -107,8 +96,8 @@ export default function ConfigForm({ userId, userType }) {
             />
           </div>
 
-          <div className="md:col-span-2 border-t border-gray-200 pt-6 mt-4">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="md:col-span-2 border-t border-default pt-6 mt-4">
+            <h2 className="text-xl font-semibold text-primary mb-4">
               Segurança
             </h2>
             <Input
@@ -125,13 +114,13 @@ export default function ConfigForm({ userId, userType }) {
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors cursor-pointer"
+              className="px-6 py-3 bg-surface-muted text-secondary font-semibold rounded-lg border border-default hover:bg-surface-elevated transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-8 py-3 bg-purple-800 text-white font-bold rounded-lg hover:bg-purple-900 transition-colors shadow-md cursor-pointer"
+              className="px-8 py-3 bg-accent hover:bg-accent-strong font-bold rounded-lg transition-all duration-200 shadow-elevated cursor-pointer"
             >
               Salvar Alterações
             </button>

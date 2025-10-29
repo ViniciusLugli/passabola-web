@@ -125,7 +125,7 @@ function randomOffset(min, max) {
 
 export default function BackgroundDecorations({
   children,
-  bgColor = "bg-gray-100",
+  bgColor = "bg-page",
 }) {
   const [isMounted, setIsMounted] = React.useState(false);
   const [vw, setVw] = React.useState(1200);

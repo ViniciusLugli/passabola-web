@@ -1,5 +1,248 @@
 @import "tailwindcss";
 
+:root {
+  color-scheme: light;
+
+  /* Superfícies */
+  --color-page: 244 247 252; /* #f4f7fc */
+  --color-surface: 255 255 255; /* #ffffff */
+  --color-surface-muted: 246 248 252; /* #f6f8fc */
+  --color-surface-elevated: 249 244 255; /* #f9f4ff */
+
+  /* Bordas */
+  --color-border-subtle: 224 227 235; /* #e0e3eb */
+  --color-border-strong: 203 208 221; /* #cbd0dd */
+
+  /* Tipografia */
+  --color-text-primary: 17 24 39; /* #111827 */
+  --color-text-secondary: 79 86 105; /* #4f5669 */
+  --color-text-tertiary: 113 121 137; /* #717989 */
+  --color-text-inverse: 255 255 255; /* #ffffff */
+
+  /* Marca */
+  --color-accent: 109 40 217; /* #6d28d9 */
+  --color-accent-strong: 88 28 180; /* #581cb4 */
+  --color-accent-soft: 229 219 255; /* #e5dbff */
+  --color-accent-contrast: 255 255 255; /* texto sobre o roxo */
+  --color-onbrand-hover: 233 224 255; /* tom claro para hover no topo */
+
+  /* Estados */
+  --color-success: 16 185 129; /* #10b981 */
+  --color-danger: 239 68 68; /* #ef4444 */
+
+  /* Sombras */
+  --shadow-color: 15 23 42; /* #0f172a */
+}
+
+html.dark {
+  color-scheme: dark;
+
+  --color-page: 9 11 22; /* #090b16 */
+  --color-surface: 21 27 46; /* #151b2e */
+  --color-surface-muted: 30 38 60; /* #1e263c */
+  --color-surface-elevated: 46 58 88; /* #2e3a58 */
+
+  --color-border-subtle: 37 46 68; /* #252e44 */
+  --color-border-strong: 74 90 120; /* #4a5a78 */
+
+  --color-text-primary: 233 238 255; /* #e9eeff */
+  --color-text-secondary: 187 196 222; /* #bbc4de */
+  --color-text-tertiary: 146 157 186; /* #929dba */
+  --color-text-inverse: 12 16 24; /* #0c1018 */
+
+  --color-accent: 109 40 217; /* #6d28d9 */
+  --color-accent-strong: 88 28 180; /* #581cb4 */
+  --color-accent-soft: 50 26 93; /* #321a5d */
+  --color-accent-contrast: 245 245 255; /* texto sobre o roxo */
+  --color-onbrand-hover: 206 189 255; /* hover mais claro sobre o topo */
+
+  --color-success: 34 197 94; /* #22c55e */
+  --color-danger: 248 113 113; /* #f87171 */
+
+  --shadow-color: 4 7 16; /* #040710 */
+}
+
+.dark .dark\:bg-gray-750 {
+  background-color: rgb(var(--color-surface-elevated));
+}
+
+@layer base {
+  body {
+    background-color: rgb(var(--color-page));
+    color: rgb(var(--color-text-primary));
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  a {
+    color: rgb(var(--color-accent));
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    color: color-mix(
+      in srgb,
+      rgb(var(--color-accent)),
+      rgb(var(--color-text-inverse)) 18%
+    );
+  }
+
+  ::selection {
+    background-color: rgb(var(--color-accent));
+    color: rgb(var(--color-accent-contrast));
+  }
+
+  html.dark .bg-white {
+    background-color: rgb(var(--color-surface));
+  }
+
+  html.dark .hover\:bg-white:hover {
+    background-color: rgb(var(--color-surface-elevated));
+  }
+
+  html.dark .bg-gray-50,
+  html.dark .bg-gray-100,
+  html.dark .bg-gray-200 {
+    background-color: rgb(var(--color-surface-muted));
+  }
+
+  html.dark .hover\:bg-gray-50:hover,
+  html.dark .hover\:bg-gray-100:hover {
+    background-color: rgb(var(--color-surface-elevated));
+  }
+
+  html.dark .border-gray-200,
+  html.dark .border-gray-300,
+  html.dark .border-zinc-300,
+  html.dark .border-zinc-200 {
+    border-color: rgb(var(--color-border-strong));
+  }
+
+  html.dark .text-gray-900,
+  html.dark .text-gray-800 {
+    color: rgb(var(--color-text-primary));
+  }
+
+  html.dark .text-gray-700,
+  html.dark .text-gray-600,
+  html.dark .text-gray-500 {
+    color: rgb(var(--color-text-secondary));
+  }
+
+  html.dark .text-gray-400,
+  html.dark .text-zinc-400 {
+    color: rgb(var(--color-text-tertiary));
+  }
+
+  html.dark .bg-gray-300 {
+    background-color: rgb(var(--color-surface-elevated));
+  }
+
+  /* Força cor zinc-500 para elementos específicos no modo claro */
+  html:not(.dark) .text-zinc-500 {
+    color: #71717a !important;
+  }
+
+  html:not(.dark) .text-zinc-700 {
+    color: #3f3f46 !important;
+  }
+}
+
+@layer utilities {
+  .bg-page {
+    background-color: rgb(var(--color-page));
+  }
+
+  .bg-surface {
+    background-color: rgb(var(--color-surface));
+  }
+
+  .bg-surface-muted {
+    background-color: rgb(var(--color-surface-muted));
+  }
+
+  .bg-surface-elevated {
+    background-color: rgb(var(--color-surface-elevated));
+  }
+
+  .border-default {
+    border-color: rgb(var(--color-border-subtle));
+  }
+
+  .border-strong {
+    border-color: rgb(var(--color-border-strong));
+  }
+
+  .text-primary {
+    color: rgb(var(--color-text-primary));
+  }
+
+  .text-secondary {
+    color: rgb(var(--color-text-secondary));
+  }
+
+  .text-tertiary {
+    color: rgb(var(--color-text-tertiary));
+  }
+
+  .text-inverse {
+    color: rgb(var(--color-text-inverse));
+  }
+
+  .text-accent {
+    color: rgb(var(--color-accent));
+  }
+
+  .text-accent-strong {
+    color: rgb(var(--color-accent-strong));
+  }
+
+  .text-on-brand {
+    color: rgb(var(--color-accent-contrast));
+  }
+
+  .hover-text-on-brand:hover {
+    color: rgb(var(--color-onbrand-hover));
+  }
+
+  .bg-accent {
+    background-color: rgb(var(--color-accent));
+    color: rgb(var(--color-accent-contrast));
+  }
+
+  .bg-accent-strong {
+    background-color: rgb(var(--color-accent-strong));
+    color: rgb(var(--color-accent-contrast));
+  }
+
+  .bg-accent-soft {
+    background-color: rgb(var(--color-accent-soft));
+  }
+
+  .ring-accent {
+    --tw-ring-color: rgb(var(--color-accent));
+  }
+
+  .border-accent {
+    border-color: rgb(var(--color-accent));
+  }
+
+  .border-accent-strong {
+    border-color: rgb(var(--color-accent-strong));
+  }
+
+  .shadow-elevated {
+    box-shadow: 0 25px 50px -24px rgb(var(--shadow-color) / 0.6);
+  }
+
+  .bg-brand-gradient {
+    background-image: linear-gradient(135deg, #581cb4 0%, #6d28d9 100%);
+    color: rgb(var(--color-accent-contrast));
+  }
+}
+
+/* ================================
+   Animações customizadas
+   ================================ */
 @keyframes slide-in-right {
   from {
     transform: translateX(100%);

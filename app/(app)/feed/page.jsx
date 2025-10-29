@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import PostCard from "@/app/components/cards/PostCard";
 import SearchBar from "@/app/components/ui/SearchBar";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
 
@@ -179,14 +180,14 @@ function Feed() {
   };
 
   return (
-    <div className="transparent min-h-screen">
-      
+    <>
       <main
         className="
         container 
         mx-auto 
         p-4 md:p-8 lg:p-12 
         max-w-4xl
+        min-h-screen
       "
       >
         <h1
@@ -194,6 +195,7 @@ function Feed() {
           text-4xl 
           font-extrabold 
           text-gray-900 
+          dark:text-gray-50
           leading-tight
           mb-8
           text-center
@@ -217,8 +219,8 @@ function Feed() {
         {!loading && !error && (
           <section className="flex flex-col gap-6">
             {userResults.length > 0 && (
-              <div className="bg-white p-4 rounded-md shadow-sm">
-                <h3 className="font-semibold mb-2">Usuários</h3>
+              <div className="bg-surface border border-default p-4 rounded-md shadow-elevated">
+                <h3 className="font-semibold text-primary mb-2">Usuários</h3>
                 <div className="flex flex-col gap-3">
                   {userResults.map((u) => (
                     <div
@@ -233,11 +235,11 @@ function Feed() {
                       <div>
                         <a
                           href={`/user/${u._type}/${u.id}`}
-                          className="font-medium text-purple-600"
+                          className="font-medium text-accent hover:text-accent-strong transition-colors"
                         >
                           {u.name || u.username}
                         </a>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-secondary">
                           {getUserTypeLabel(u._type)}
                         </div>
                       </div>
@@ -250,7 +252,7 @@ function Feed() {
             {posts.length > 0 ? (
               posts.map((post) => <PostCard key={post.id} post={post} />)
             ) : (
-              <p className="text-center text-gray-500">
+              <p className="text-center text-secondary">
                 Nenhum post encontrado.
               </p>
             )}
@@ -270,30 +272,19 @@ function Feed() {
         sm:p-4 
         rounded-full 
         bg-purple-600 
+        dark:bg-purple-500
         text-white 
         shadow-lg
         hover:bg-purple-700
+        dark:hover:bg-purple-600
         transition-colors
         duration-200
         z-40
       "
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={2}
-          stroke="currentColor"
-          className="w-6 h-6 sm:w-8 sm:h-8"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 4.5v15m7.5-7.5h-15"
-          />
-        </svg>
+        <Plus className="w-6 h-6 sm:w-8 sm:h-8" strokeWidth={2} />
       </Link>
-    </div>
+    </>
   );
 }
 

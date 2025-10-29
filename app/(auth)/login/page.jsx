@@ -6,6 +6,7 @@ import AuthLayout from "@/app/components/layout/AuthLayout";
 import Input from "@/app/components/ui/Input";
 import Link from "next/link";
 import Alert from "@/app/components/ui/Alert";
+import { ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -28,13 +29,15 @@ export default function LoginPage() {
     <AuthLayout>
       <div
         className="
-          bg-white 
-          rounded-3xl 
-          p-6 sm:p-8 md:p-10 lg:p-12 
-          shadow-2xl 
-          text-center 
-          flex 
-          flex-col 
+          bg-surface
+          border
+          border-default
+          rounded-3xl
+          p-6 sm:p-8 md:p-10 lg:p-12
+          shadow-elevated
+          text-center
+          flex
+          flex-col
           gap-6 sm:gap-8 md:gap-10
           w-full
           transition-transform duration-300 ease-in-out
@@ -44,7 +47,7 @@ export default function LoginPage() {
           className="
             text-4xl sm:text-5xl md:text-6xl 
             font-extrabold 
-            text-gray-900 
+            text-primary
             leading-tight
             mb-4 sm:mb-6
           "
@@ -55,7 +58,7 @@ export default function LoginPage() {
         <p
           className="
             text-lg sm:text-xl md:text-2xl 
-            text-gray-700 
+            text-secondary
             font-semibold 
             mt-[-10px]
             mb-4 sm:mb-6
@@ -100,8 +103,8 @@ export default function LoginPage() {
               href="#"
               className="
                 text-sm sm:text-base 
-                text-purple-600 
-                hover:text-purple-800 
+                text-accent 
+                hover:text-accent-strong
                 transition-all 
                 duration-200 
                 self-end
@@ -120,18 +123,17 @@ export default function LoginPage() {
               disabled={loading}
               className="
                 w-full 
-                bg-purple-800 
-                hover:bg-purple-900 
-                text-white 
+                bg-accent 
+                hover:bg-accent-strong
                 font-bold 
                 py-4 sm:py-5 
                 rounded-xl 
                 text-xl sm:text-2xl 
                 transition-all 
                 duration-300 
-                shadow-lg
+                shadow-elevated
                 hover:scale-105 active:scale-95
-                disabled:bg-purple-400
+                disabled:opacity-70
                 disabled:cursor-not-allowed
               "
             >
@@ -145,21 +147,21 @@ export default function LoginPage() {
             mt-6 sm:mt-8 md:mt-10 
             pt-6 
             border-t 
-            border-gray-200 
+            border-default
             flex 
             flex-col 
             items-center 
             gap-3
           "
         >
-          <p className="text-lg sm:text-xl font-semibold text-gray-700">
+          <p className="text-lg sm:text-xl font-semibold text-secondary">
             Ainda não tem login?
           </p>
           <Link
             href="/register"
             className="
-              text-purple-600 
-              hover:text-purple-800 
+              text-accent 
+              hover:text-accent-strong
               font-bold 
               text-lg sm:text-xl
               transition-all 
@@ -169,20 +171,7 @@ export default function LoginPage() {
             "
           >
             Faça seu cadastro!
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            <ArrowRight className="h-6 w-6" strokeWidth={2} />
           </Link>
         </div>
       </div>

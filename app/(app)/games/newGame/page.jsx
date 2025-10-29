@@ -50,7 +50,7 @@ export default function NewGamePage() {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="bg-page min-h-screen">
       
       <main
         className="
@@ -64,9 +64,11 @@ export default function NewGamePage() {
         <div
           className="
           relative 
-          bg-white 
+          bg-surface 
+          border 
+          border-default 
           rounded-2xl 
-          shadow-lg 
+          shadow-elevated 
           p-8
           flex 
           flex-col 
@@ -105,7 +107,7 @@ export default function NewGamePage() {
             className="
             text-4xl 
             font-bold 
-            text-gray-900 
+            text-primary 
             text-center 
             mt-4
           "
@@ -133,7 +135,7 @@ export default function NewGamePage() {
         onClose={() => setShowHostParticipationModal(false)}
         title="Participar do Jogo?"
       >
-        <p className="text-gray-700 mb-6">
+        <p className="text-secondary mb-6">
           Deseja participar do jogo que você acabou de criar?
         </p>
         <div className="flex gap-4">
@@ -142,7 +144,7 @@ export default function NewGamePage() {
               e.stopPropagation();
               handleHostParticipationResponse(false);
             }}
-            className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors"
+            className="flex-1 bg-surface-muted border border-default hover:bg-surface-elevated text-secondary font-bold py-2 px-4 rounded-lg transition-colors"
           >
             Não
           </button>
@@ -151,7 +153,7 @@ export default function NewGamePage() {
               e.stopPropagation();
               handleHostWantsToJoin();
             }}
-            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+            className="flex-1 bg-accent hover:bg-accent-strong font-bold py-2 px-4 rounded-lg transition-colors shadow-elevated"
           >
             Sim
           </button>

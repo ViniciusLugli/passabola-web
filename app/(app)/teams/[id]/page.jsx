@@ -23,15 +23,15 @@ function PlayerRow({ player, leaderId, currentUserId }) {
   const statusLabel = isLeader ? "Líder" : "Jogador";
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-white rounded shadow-sm">
+    <div className="flex items-center gap-3 p-3 bg-surface border border-default rounded shadow-elevated">
       <img
         src={avatar}
         alt={name}
         className="w-10 h-10 rounded-full object-cover"
       />
       <div className="flex-1">
-        <div className="text-sm font-medium text-gray-800">{name}</div>
-        <div className="text-xs text-gray-500">{statusLabel}</div>
+        <div className="text-sm font-medium text-primary">{name}</div>
+        <div className="text-xs text-secondary">{statusLabel}</div>
       </div>
     </div>
   );
@@ -104,7 +104,7 @@ export default function TeamDetailsPage({ params }) {
   };
 
   return (
-    <div>
+    <div className="bg-page min-h-screen">
       
       <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-3xl">
         {loading && <p>Carregando detalhes do time...</p>}
@@ -113,13 +113,13 @@ export default function TeamDetailsPage({ params }) {
 
         {team && (
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow flex items-start justify-between">
+            <div className="bg-surface border border-default p-6 rounded-lg shadow-elevated flex items-start justify-between">
               <div>
-                <h1 className="text-2xl font-bold">
+                <h1 className="text-2xl font-bold text-primary">
                   {team?.name ?? team?.nameTeam ?? "Equipe"}
                 </h1>
-                {team?.bio && <p className="text-gray-600 mt-2">{team.bio}</p>}
-                <div className="text-sm text-gray-500 mt-3">
+                {team?.bio && <p className="text-secondary mt-2">{team.bio}</p>}
+                <div className="text-sm text-tertiary mt-3">
                   Criado em: {new Date(team.createdAt).toLocaleString()}
                 </div>
               </div>
@@ -128,7 +128,7 @@ export default function TeamDetailsPage({ params }) {
                   <button
                     disabled={actionLoading}
                     onClick={leaveTeam}
-                    className="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded"
+                    className="text-sm bg-surface-muted border border-default hover:bg-surface-elevated px-3 py-1 rounded transition-colors"
                   >
                     Sair do time
                   </button>
@@ -137,7 +137,7 @@ export default function TeamDetailsPage({ params }) {
             </div>
 
             <section>
-              <h2 className="text-lg font-semibold mb-3">
+              <h2 className="text-lg font-semibold text-primary mb-3">
                 Jogadores ({team?.playerCount ?? team?.players?.length ?? 0})
               </h2>
               <div className="grid grid-cols-1 gap-3">

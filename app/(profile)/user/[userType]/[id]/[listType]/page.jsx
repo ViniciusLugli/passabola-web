@@ -92,14 +92,14 @@ export default function UserListPage() {
     <div>
       
       <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-primary mb-6">
           {title}
         </h1>
         <div className="mb-6">
           <SearchBar value={searchTerm} onChange={handleSearchChange} />
         </div>
         {filteredUsers.length === 0 ? (
-          <p className="text-gray-600">Nenhum usuário encontrado.</p>
+          <p className="text-secondary">Nenhum usuário encontrado.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredUsers.map((userItem) => (
@@ -108,7 +108,7 @@ export default function UserListPage() {
                 href={`/user/${userItem.userType.toLowerCase()}/${userItem.id}`}
                 passHref
               >
-                <div className="flex items-center bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer">
+                <div className="flex items-center bg-surface border border-default p-4 rounded-lg shadow-elevated hover:shadow-lg transition-shadow cursor-pointer">
                   <div className="relative w-12 h-12 rounded-full overflow-hidden mr-4">
                     <Image
                       src={
@@ -121,10 +121,10 @@ export default function UserListPage() {
                     />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900 leading-tight">
+                    <h3 className="font-bold text-lg text-primary leading-tight">
                       {userItem.name}
                     </h3>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-tertiary text-sm">
                       @{userItem.username}
                     </p>
                   </div>
