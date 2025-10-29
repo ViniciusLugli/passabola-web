@@ -1,166 +1,228 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthLayout from "@/app/components/layout/AuthLayout";
 import Link from "next/link";
+import StepIndicator from "@/app/components/ui/StepIndicator";
+import Button from "@/app/components/ui/Button";
+import { ArrowRight, ShieldCheck, Trophy, UserRound } from "lucide-react";
+
+const roleOptions = [
+  {
+    value: "organizacao",
+    label: "Organização",
+    description: "Gerencie equipes, jogos e torneios.",
+    icon: ShieldCheck,
+  },
+  {
+    value: "jogadora",
+    label: "Jogadora",
+    description: "Mostre seu talento e encontre novos jogos.",
+    icon: Trophy,
+  },
+  {
+    value: "espectador",
+    label: "Espectador",
+    description: "Acompanhe partidas e apoie o futebol feminino.",
+    icon: UserRound,
+  },
+];
 
 export default function RegisterPage() {
-  const [selectedRole, setSelectedRole] = useState(null);
+  const [selectedRole, setSelectedRole] = useState("");
+  const [formError, setFormError] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (selectedRole) {
-      const roleParam =
-        selectedRole === "Organização"
-          ? "organizacao"
-          : selectedRole.toLowerCase();
-      router.push(`/register/info?role=${roleParam}`);
-    } else {
-      alert("Por favor, selecione uma opção!");
+  const steps = useMemo(
+    () => [
+      {
+        title: "Passo 1",
+        description: "Selecione o seu perfil",
+      },
+      {
+        title: "Passo 2",
+        description: "Preencha suas informações",
+      },
+    ],
+    []
+  );
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!selectedRole) {
+      setFormError("Selecione o perfil que melhor representa você.");
+      return;
     }
+
+    router.push(`/register/info?role=${selectedRole}`);
   };
 
-  const roles = ["Organização", "Jogadora", "Espectador"];
+  const handleSelectRole = (value) => {
+    setSelectedRole(value);
+    if (formError) setFormError("");
+  };
 
   return (
     <AuthLayout>
       <div
         className="
+          w-full
+          max-w-3xl
+          mx-auto
           bg-surface
           border
           border-default
           rounded-3xl
-          p-6 sm:p-8 md:p-10 lg:p-12
+          p-6 sm:p-8 md:p-10
           shadow-elevated
-          text-center
           flex
           flex-col
-          gap-6 sm:gap-8 md:gap-10
-          w-full
+          gap-6 sm:gap-8
           transition-transform duration-300 ease-in-out
         "
       >
-        <h1
-          className="
-            text-4xl sm:text-5xl md:text-6xl 
-            font-extrabold 
-            text-primary 
-            leading-tight
-            mb-4 sm:mb-6
-          "
+        <header className="flex flex-col gap-4 text-left">
+          <p className="text-sm font-medium uppercase tracking-wide text-secondary">
+            Passa a Bola
+          </p>
+          <h1
+            className="
+              text-3xl sm:text-4xl md:text-5xl 
+              font-extrabold 
+              text-primary 
+              leading-tight
+            "
+          >
+            Crie sua conta
+          </h1>
+          <p className="text-base sm:text-lg text-secondary">
+            Escolha como você quer participar da comunidade.
+          </p>
+          <StepIndicator steps={steps} currentStep={1} />
+        </header>
+
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-5"
+          noValidate
         >
-          Bem-vindo ao <span className="text-accent">Passa a Bola</span>
-        </h1>
+          <div
+            className="grid gap-4"
+            role="radiogroup"
+            aria-label="Selecione seu perfil"
+          >
+            {roleOptions.map(
+              ({ value, label, description, icon: Icon }, idx) => {
+                const isSelected = selectedRole === value;
+                const cardId = `role-${value}`;
 
-        <p
-          className="
-            text-lg sm:text-xl md:text-2xl 
-            text-secondary 
-            font-semibold 
-            mb-4 sm:mb-6
-          "
-        >
-          Quero me cadastrar como...
-        </p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:gap-6">
-          {roles.map((role) => (
-            <div key={role}>
-              <label
-                className={`
-                  flex 
-                  items-center 
-                  justify-center 
-                  p-4 sm:p-5 
-                  rounded-xl 
-                  border-2 
-                  cursor-pointer 
-                  transition-all 
-                  duration-200 
-                  shadow-sm
-                  hover:scale-105 active:scale-95
-                  ${
-                    selectedRole === role
-                      ? "border-accent bg-accent-soft text-accent-strong font-semibold"
-                      : "border-default bg-surface text-primary hover:border-accent hover:bg-accent-soft hover:text-accent"
-                  }
-                `}
-              >
-                <input
-                  type="radio"
-                  name="userRole"
-                  value={role}
-                  checked={selectedRole === role}
-                  onChange={() => setSelectedRole(role)}
-                  className="
-                    hidden 
-                    peer
-                  "
-                />
-                <span
-                  className="
-                  relative 
-                  flex 
-                  items-center 
-                  justify-center 
-                  w-6 h-6 
-                  border-2 
-                  rounded-full 
-                  mr-3
-                  peer-checked:border-accent
-                  peer-checked:bg-accent
-                  peer-checked:after:content-['']
-                  peer-checked:after:block
-                  peer-checked:after:w-3
-                  peer-checked:after:h-3
-                  peer-checked:after:rounded-full
-                  peer-checked:after:bg-[rgb(var(--color-accent-contrast))]
-                  transition-all
-                  duration-200
-                "
-                ></span>
-                <span className="text-lg sm:text-xl">{role}</span>
-              </label>
-            </div>
-          ))}
-
-          <div className="mt-4 sm:mt-6">
-            <button
-              type="submit"
-              className="
-                w-full 
-                bg-accent 
-                hover:bg-accent-strong 
-                font-bold 
-                py-4 sm:py-5 
-                rounded-xl 
-                text-xl sm:text-2xl 
-                transition-all 
-                duration-300 
-                shadow-elevated
-                hover:scale-105 active:scale-95
-              "
-            >
-              CONTINUAR
-            </button>
+                return (
+                  <label
+                    key={value}
+                    htmlFor={cardId}
+                    role="radio"
+                    aria-checked={isSelected}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === " " || e.key === "Enter") {
+                        e.preventDefault();
+                        handleSelectRole(value);
+                      }
+                    }}
+                    className={`
+                    flex flex-col sm:flex-row sm:items-center
+                    gap-4
+                    p-4 sm:p-5 
+                    rounded-2xl 
+                    border-2 
+                    transition-all 
+                    duration-200 
+                    shadow-sm
+                    cursor-pointer
+                    focus-visible:ring-2
+                    focus-visible:ring-accent
+                    focus-visible:ring-offset-2
+                    ${
+                      isSelected
+                        ? "border-accent bg-accent-soft text-accent-strong"
+                        : "border-default bg-surface text-primary hover:border-accent hover:bg-accent-soft/50"
+                    }
+                  `}
+                  >
+                    <input
+                      id={cardId}
+                      type="radio"
+                      name="userRole"
+                      value={value}
+                      checked={isSelected}
+                      onChange={() => handleSelectRole(value)}
+                      className="sr-only"
+                    />
+                    <div
+                      className={`
+                      flex items-center justify-center
+                      h-12 w-12 rounded-xl
+                      transition-colors duration-200
+                      ${
+                        isSelected
+                          ? "bg-accent text-on-brand"
+                          : "bg-surface-muted text-accent"
+                      }
+                    `}
+                      aria-hidden="true"
+                    >
+                      <Icon className="h-6 w-6" strokeWidth={2.2} />
+                    </div>
+                    <div className="flex flex-col gap-1 text-left">
+                      <span className="text-lg sm:text-xl font-semibold">
+                        {label}
+                      </span>
+                      <span className="text-sm sm:text-base text-secondary">
+                        {description}
+                      </span>
+                    </div>
+                    <ArrowRight
+                      className={`
+                      h-5 w-5 sm:h-6 sm:w-6
+                      ml-auto
+                      transition-transform duration-200
+                      ${
+                        isSelected
+                          ? "translate-x-1 text-accent-strong"
+                          : "text-secondary"
+                      }
+                    `}
+                      aria-hidden="true"
+                    />
+                  </label>
+                );
+              }
+            )}
           </div>
+
+          {formError && (
+            <p
+              className="text-sm text-danger"
+              role="alert"
+              aria-live="assertive"
+            >
+              {formError}
+            </p>
+          )}
+
+          <Button
+            type="submit"
+            disabled={!selectedRole}
+            variant={selectedRole ? "primary" : "secondary"}
+            ariaLabel="Continuar"
+          >
+            Continuar
+          </Button>
         </form>
 
-        <div
-          className="
-            mt-6 sm:mt-8 md:mt-10 
-            pt-6 
-            border-t 
-            border-default 
-            flex 
-            flex-col 
-            items-center 
-            gap-3
-          "
-        >
-          <p className="text-lg sm:text-xl font-semibold text-secondary">
+        <div className="pt-4 sm:pt-6 border-t border-default flex flex-col items-center gap-3 text-center">
+          <p className="text-base sm:text-lg font-medium text-secondary">
             Já tem cadastro?
           </p>
           <Link
@@ -168,29 +230,16 @@ export default function RegisterPage() {
             className="
               text-accent 
               hover:text-accent-strong 
-              font-bold 
-              text-lg sm:text-xl
+              font-semibold 
+              text-base sm:text-lg
               transition-all 
               duration-200
               flex items-center gap-2
               hover:scale-105 active:scale-95
             "
           >
-            Faça seu login!
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            Faça seu login
+            <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2} />
           </Link>
         </div>
       </div>

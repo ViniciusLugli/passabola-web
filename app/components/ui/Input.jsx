@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useRef, useState, useId } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 const Input = ({
@@ -11,9 +11,15 @@ const Input = ({
   value,
   onChange,
   className = "",
+  description,
+  hint,
+  error,
+  success,
+  required = false,
   ...props
 }) => {
-  const inputId = name;
+  const generatedId = useId();
+  const inputId = props.id ?? name ?? `input-${generatedId}`;
   const [showPassword, setShowPassword] = useState(false);
   const textareaRef = useRef(null);
 
@@ -29,30 +35,64 @@ const Input = ({
     p-4 sm:p-5
     rounded-xl
     border
-    border-default
     bg-surface
     text-lg sm:text-xl
     text-primary
     placeholder:text-tertiary
     transition-colors duration-200
     focus:outline-none
-    focus:ring-2
-    focus:ring-accent
-    focus:border-accent
-    ${className}
   `;
+
+  const stateClasses = error
+    ? `
+        border-danger
+        focus:border-danger
+        ring-danger
+        focus:ring-danger
+        focus:ring-2
+        `
+    : success
+    ? `
+        border-success
+        focus:border-success
+        ring-success
+        focus:ring-success
+        focus:ring-2
+      `
+    : `
+        border-default
+        focus:ring-2
+        focus:ring-accent
+        focus:border-accent
+      `;
 
   const isPasswordField = type === "password";
   const inputType = isPasswordField && showPassword ? "text" : type;
+  const describedByIds = [];
+
+  if (description) describedByIds.push(`${inputId}-description`);
+  if (hint) describedByIds.push(`${inputId}-hint`);
+  if (error) describedByIds.push(`${inputId}-error`);
+  if (!error && success) describedByIds.push(`${inputId}-success`);
+
+  const mergedClassName = `
+    ${baseClasses}
+    ${stateClasses}
+    ${className}
+    ${props.disabled ? "opacity-70 cursor-not-allowed" : ""}
+  `;
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full gap-1.5">
       {label && (
         <label
           htmlFor={inputId}
-          className="mb-2 text-base font-medium text-secondary"
+          className="text-base font-medium text-secondary flex items-center gap-1"
         >
           {label}
+          {required && (
+            <span className="text-danger text-sm leading-none">*</span>
+          )}
         </label>
       )}
       {type === "textarea" ? (
@@ -63,7 +103,12 @@ const Input = ({
           value={value}
           onChange={onChange}
           ref={textareaRef}
-          className={`${baseClasses} resize-none overflow-hidden`}
+          className={`${mergedClassName} resize-none overflow-hidden`}
+          aria-invalid={Boolean(error)}
+          aria-describedby={
+            describedByIds.length ? describedByIds.join(" ") : undefined
+          }
+          required={required}
           rows="1"
           {...props}
         />
@@ -76,7 +121,12 @@ const Input = ({
             placeholder={placeholder}
             value={value}
             onChange={onChange}
-            className={`${baseClasses} ${isPasswordField ? "pr-14" : ""}`}
+            className={`${mergedClassName} ${isPasswordField ? "pr-14" : ""}`}
+            aria-invalid={Boolean(error)}
+            aria-describedby={
+              describedByIds.length ? describedByIds.join(" ") : undefined
+            }
+            required={required}
             {...props}
           />
           {isPasswordField && (
@@ -95,8 +145,10 @@ const Input = ({
                 transition-colors
                 duration-200
                 focus:outline-none
+                disabled:cursor-not-allowed
               "
               aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              disabled={props.disabled}
             >
               {showPassword ? (
                 <EyeOff className="h-6 w-6" strokeWidth={2} />
@@ -106,6 +158,29 @@ const Input = ({
             </button>
           )}
         </div>
+      )}
+      {description && (
+        <p
+          id={`${inputId}-description`}
+          className="text-sm text-secondary"
+        >
+          {description}
+        </p>
+      )}
+      {hint && !error && (
+        <p id={`${inputId}-hint`} className="text-sm text-secondary">
+          {hint}
+        </p>
+      )}
+      {error && (
+        <p id={`${inputId}-error`} className="text-sm text-danger">
+          {error}
+        </p>
+      )}
+      {!error && success && (
+        <p id={`${inputId}-success`} className="text-sm text-success">
+          {success}
+        </p>
       )}
     </div>
   );

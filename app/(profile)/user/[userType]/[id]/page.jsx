@@ -146,7 +146,6 @@ export default function ProfilePage() {
   if (authLoading || loading) {
     return (
       <div>
-        
         <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
           <p>Carregando perfil...</p>
         </main>
@@ -157,7 +156,6 @@ export default function ProfilePage() {
   if (error) {
     return (
       <div>
-        
         <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
           <h1 className="text-red-500 text-2xl">Erro: {error}</h1>
         </main>
@@ -168,7 +166,6 @@ export default function ProfilePage() {
   if (!profileUser) {
     return (
       <div>
-        
         <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
           <h1 className="text-red-500 text-2xl">Perfil não encontrado.</h1>
         </main>
@@ -182,7 +179,6 @@ export default function ProfilePage() {
 
   return (
     <div>
-      
       <main
         className="
         container
@@ -200,7 +196,7 @@ export default function ProfilePage() {
         />
 
         <section className="mt-8">
-          <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">
+          <h3 className="text-xl md:text-2xl font-bold text-primary mb-4">
             Publicações
           </h3>
           <PostList posts={posts} profileUser={profileUser} />

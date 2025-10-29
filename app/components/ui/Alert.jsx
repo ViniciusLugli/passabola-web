@@ -52,6 +52,8 @@ export default function Alert({
       <div
         className={`relative ${alertStyles[type]} border-t-4 ${borderStyles[type]} rounded-b text-gray-900 px-4 py-3 shadow-md max-w-sm w-full`}
         role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
       >
         <div className="flex items-center">
           <div className="py-1">
@@ -98,16 +100,19 @@ export default function Alert({
           </div>
         </div>
         <button
-          onClick={onClose}
+          onClick={() => {
+            setIsOpen(false);
+            if (typeof onClose === "function") onClose();
+          }}
           className="absolute top-0 bottom-0 right-0 px-4 py-3"
+          aria-label="Fechar alerta"
         >
           <svg
             className="fill-current h-6 w-6 text-gray-500 hover:text-gray-700"
-            role="button"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
+            aria-hidden="true"
           >
-            <title>Close</title>
             <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
           </svg>
         </button>

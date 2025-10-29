@@ -1,20 +1,30 @@
 "use client";
 
-import { useState, memo, useRef, useEffect } from "react";
+import { useState, memo, useRef, useEffect, useId } from "react";
 import { ChevronDown } from "lucide-react";
 
 const SelectInput = ({
   label,
   name,
-  options,
+  options = [],
   value,
   onChange,
   required = false,
   placeholder = "Selecione uma opção",
+  description,
+  hint,
+  error,
+  success,
+  disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const searchInputRef = useRef(null);
+  const generatedId = useId();
+  const selectId = name ?? `select-${generatedId}`;
+  const triggerId = `${selectId}-trigger`;
+  const listboxId = `${selectId}-listbox`;
+  const labelId = `${selectId}-label`;
 
   const defaultLabel = required ? `${placeholder} *` : placeholder;
   const selectedOption = options.find((opt) => opt.value === value) || {
@@ -34,45 +44,101 @@ const SelectInput = ({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchTerm("");
+    }
+  }, [isOpen]);
+
   const handleSelect = (option) => {
+    if (disabled) return;
     onChange({ target: { name: name, value: option.value } });
     setIsOpen(false);
     setSearchTerm("");
   };
 
   const handleToggle = () => {
-    setIsOpen(!isOpen);
-    if (isOpen) {
-      setSearchTerm("");
+    if (disabled) return;
+    setIsOpen((prev) => !prev);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleToggle();
+    }
+    if (event.key === "Escape") {
+      setIsOpen(false);
     }
   };
 
+  const describedByIds = [];
+  if (description) describedByIds.push(`${selectId}-description`);
+  if (hint) describedByIds.push(`${selectId}-hint`);
+  if (error) describedByIds.push(`${selectId}-error`);
+  if (!error && success) describedByIds.push(`${selectId}-success`);
+
+  const triggerClasses = `
+    w-full 
+    p-4 sm:p-5 
+    rounded-xl 
+    border-2 
+    bg-surface
+    text-lg sm:text-xl
+    text-primary
+    flex 
+    justify-between 
+    items-center 
+    transition-colors 
+    duration-200
+    ${disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}
+    ${
+      error
+        ? "border-danger focus:border-danger focus:ring-2 focus:ring-danger"
+        : success
+        ? "border-success focus:border-success focus:ring-2 focus:ring-success"
+        : "border-default hover:border-accent focus:border-accent focus:ring-2 focus:ring-accent"
+    }
+  `;
+
   return (
-    <div className="relative w-full">
-      <label className="block text-md font-medium text-secondary mb-2">
+    <div className="relative w-full flex flex-col gap-1.5">
+      {label && (
+        <label
+          id={labelId}
+          htmlFor={triggerId}
+          className="block text-md font-medium text-secondary"
+        >
         {label}
-      </label>
-      <div
-        className="
-          w-full 
-          p-4 sm:p-5 
-          rounded-xl 
-          border-2 
-          border-default 
-          bg-surface
-          text-lg sm:text-xl
-          text-primary
-          flex 
-          justify-between 
-          items-center 
-          cursor-pointer
-          transition-colors 
-          duration-200
-          hover:border-accent
-        "
+          {required && (
+            <span className="text-danger text-sm leading-none ml-1">*</span>
+          )}
+        </label>
+      )}
+      <button
+        type="button"
+        id={triggerId}
+        data-testid={triggerId}
+        className={triggerClasses}
         onClick={handleToggle}
+        onKeyDown={handleKeyDown}
+        aria-haspopup="listbox"
+        aria-controls={listboxId}
+        aria-expanded={isOpen}
+        aria-labelledby={label ? `${labelId} ${triggerId}` : undefined}
+        aria-describedby={
+          describedByIds.length ? describedByIds.join(" ") : undefined
+        }
+        aria-invalid={Boolean(error)}
+        disabled={disabled}
       >
-        <span>{selectedOption.label}</span>
+        <span
+          className={`truncate ${
+            !selectedOption.value ? "text-tertiary" : "text-primary"
+          }`}
+        >
+          {selectedOption.label}
+        </span>
         <ChevronDown
           className={`
             w-5 h-5 
@@ -84,7 +150,7 @@ const SelectInput = ({
           `}
           strokeWidth={2}
         />
-      </div>
+      </button>
 
       {isOpen && (
         <div
@@ -104,8 +170,8 @@ const SelectInput = ({
           flex
           flex-col
         "
+          role="presentation"
         >
-          {/* Barra de busca */}
           <div className="p-3 border-b border-default sticky top-0 bg-surface rounded-t-xl">
             <input
               ref={searchInputRef}
@@ -119,7 +185,7 @@ const SelectInput = ({
                 p-2 sm:p-3
                 text-base sm:text-lg
                 border 
-                border-default 
+                border-default
                 rounded-lg 
                 focus:outline-none 
                 focus:border-accent
@@ -130,11 +196,15 @@ const SelectInput = ({
             />
           </div>
 
-          {/* Lista de opções filtradas */}
-          <div className="overflow-y-auto max-h-48">
+          <div
+            className="overflow-y-auto max-h-48"
+            role="listbox"
+            id={listboxId}
+            aria-labelledby={label ? labelId : undefined}
+          >
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
-                <div
+                <button
                   key={option.value}
                   className="
                     p-4 sm:p-5 
@@ -144,11 +214,15 @@ const SelectInput = ({
                     hover:bg-surface-muted 
                     transition-colors 
                     duration-200
+                    text-left
                   "
+                  type="button"
                   onClick={() => handleSelect(option)}
+                  role="option"
+                  aria-selected={option.value === selectedOption.value}
                 >
                   {option.label}
-                </div>
+                </button>
               ))
             ) : (
               <div className="p-4 sm:p-5 text-lg sm:text-xl text-secondary text-center">
@@ -157,6 +231,26 @@ const SelectInput = ({
             )}
           </div>
         </div>
+      )}
+      {description && (
+        <p id={`${selectId}-description`} className="text-sm text-secondary">
+          {description}
+        </p>
+      )}
+      {hint && !error && (
+        <p id={`${selectId}-hint`} className="text-sm text-secondary">
+          {hint}
+        </p>
+      )}
+      {error && (
+        <p id={`${selectId}-error`} className="text-sm text-danger">
+          {error}
+        </p>
+      )}
+      {!error && success && (
+        <p id={`${selectId}-success`} className="text-sm text-success">
+          {success}
+        </p>
       )}
     </div>
   );

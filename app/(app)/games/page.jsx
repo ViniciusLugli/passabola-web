@@ -20,7 +20,6 @@ function Games() {
       const response = await api.games.getAll();
       let fetchedGames = response.content || [];
 
-      // Se o usuário está logado e for PLAYER ou ORGANIZATION, verificar em quais jogos ele está inscrito
       if (isAuthenticated && loggedInUser) {
         const role = String(loggedInUser.userType || "").toUpperCase();
         if (role === "PLAYER" || role === "ORGANIZATION") {
@@ -77,7 +76,6 @@ function Games() {
 
   return (
     <div className="transparent min-h-screen pb-24 sm:pb-20">
-      
       <main
         className="
         container 
@@ -88,18 +86,38 @@ function Games() {
       "
       >
         <div className="bg-surface border border-default rounded-2xl shadow-elevated p-4 sm:p-6 md:p-8 lg:p-10">
-          <h1
-            className="
-            text-2xl sm:text-3xl md:text-4xl lg:text-5xl
-            font-extrabold 
-            text-primary 
-            leading-tight
-            mb-6 sm:mb-8 md:mb-10
-            text-center
-          "
-          >
-            Jogos Disponíveis
-          </h1>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 md:mb-10">
+            <h1
+              className="
+              text-2xl sm:text-3xl md:text-4xl lg:text-5xl
+              font-extrabold 
+              text-primary 
+              leading-tight
+              text-center sm:text-left
+            "
+            >
+              Jogos Disponíveis
+            </h1>
+
+            <div className="mt-4 sm:mt-0">
+              <div className="sm:hidden">
+                <Link
+                  href="/games/newGame"
+                  className="block w-full text-center bg-gradient-to-br from-purple-600 to-indigo-700 text-white py-3 rounded-lg font-semibold shadow-lg"
+                >
+                  Criar jogo
+                </Link>
+              </div>
+              <div className="hidden sm:block">
+                <Link
+                  href="/games/newGame"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-br from-purple-600 to-indigo-700 text-white font-semibold shadow-lg hover:from-purple-700 hover:to-indigo-800 transition-colors"
+                >
+                  Criar jogo
+                </Link>
+              </div>
+            </div>
+          </div>
 
           {loading && (
             <div className="flex flex-col items-center justify-center py-12">
@@ -143,47 +161,7 @@ function Games() {
         </div>
       </main>
 
-      {(!isAuthenticated ||
-        (loggedInUser &&
-          String(loggedInUser.userType || "").toUpperCase() !==
-            "SPECTATOR")) && (
-        <Link
-          href="/games/newGame"
-          className="
-          fixed 
-          bottom-4 sm:bottom-6 md:bottom-8
-          right-4 sm:right-6 md:right-8
-          p-3 sm:p-4
-          rounded-full 
-          bg-gradient-to-br from-purple-600 to-indigo-700
-          text-white 
-          shadow-2xl
-          hover:shadow-purple-500/50
-          hover:from-purple-700
-          hover:to-indigo-800
-          active:scale-95
-          transition-all
-          duration-300
-          z-50
-          group
-        "
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2.5}
-            stroke="currentColor"
-            className="w-7 h-7 sm:w-8 sm:h-8 group-hover:rotate-90 transition-transform duration-300"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 4.5v15m7.5-7.5h-15"
-            />
-          </svg>
-        </Link>
-      )}
+      {/* Floating FAB removed — CTA moved to header area for accessibility and discoverability */}
     </div>
   );
 }

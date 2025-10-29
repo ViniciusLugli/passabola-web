@@ -1,174 +1,36 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import PostCard from "@/app/components/cards/PostCard";
 import SearchBar from "@/app/components/ui/SearchBar";
-import Link from "next/link";
+import LoadingSkeleton from "@/app/components/ui/LoadingSkeleton";
 import { Plus } from "lucide-react";
-import { api } from "@/app/lib/api";
-import { useAuth } from "@/app/context/AuthContext";
+import Modal from "@/app/components/ui/Modal";
+import NewPostForm from "@/app/components/feed/NewPostForm";
+import useFeed from "@/app/hooks/useFeed";
+import Button from "@/app/components/ui/Button";
 
 function Feed() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
-  const [posts, setPosts] = useState([]);
-  const [userResults, setUserResults] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFilters, setSelectedFilters] = useState([]);
-  const abortRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const {
+    posts,
+    userResults,
+    loading,
+    loadingMore,
+    hasMore,
+    page,
+    setPage,
+    searchTerm,
+    setSearchTerm,
+    selectedFilters,
+    setSelectedFilters,
+    sentinelRef,
+    error,
+    prependPost,
+  } = useFeed({ initialSize: 10 });
 
-  useEffect(() => {
-    const fetchResults = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        if (abortRef.current) {
-          try {
-            abortRef.current.abort();
-          } catch (e) {}
-        }
-        const controller = new AbortController();
-        abortRef.current = controller;
-
-        const q = searchTerm.trim();
-
-        const filters = selectedFilters || [];
-
-        let usersAccum = [];
-        let postsAccum = [];
-
-        const guarded = async (fn) => {
-          const res = await fn();
-          if (controller.signal.aborted) throw new Error("aborted");
-          return res;
-        };
-
-        if (q && filters.length === 0) {
-          const p = await guarded(() =>
-            api.players.search(q, { page: 0, size: 5 })
-          );
-          usersAccum = usersAccum.concat(
-            (p.content || []).map((u) => ({ ...u, _type: "player" }))
-          );
-
-          const s = await guarded(() =>
-            api.spectators.search(q, { page: 0, size: 5 })
-          );
-          usersAccum = usersAccum.concat(
-            (s.content || []).map((u) => ({ ...u, _type: "spectator" }))
-          );
-
-          const o = await guarded(() =>
-            api.organizations.search(q, { page: 0, size: 5 })
-          );
-          usersAccum = usersAccum.concat(
-            (o.content || []).map((u) => ({ ...u, _type: "organization" }))
-          );
-
-          // posts after users
-          const postsRes = await guarded(() =>
-            api.posts.search(q, { page: 0, size: 20 })
-          );
-          postsAccum = postsRes.content || [];
-        } else if (q && filters.length > 0) {
-          // For each selected filter, call respective search
-          const promises = [];
-          if (filters.includes("posts")) {
-            promises.push(
-              guarded(() => api.posts.search(q, { page: 0, size: 20 })).then(
-                (r) => ({ kind: "posts", data: r.content || [] })
-              )
-            );
-          }
-          if (filters.includes("players")) {
-            promises.push(
-              guarded(() => api.players.search(q, { page: 0, size: 20 })).then(
-                (r) => ({
-                  kind: "players",
-                  data: (r.content || []).map((u) => ({
-                    ...u,
-                    _type: "player",
-                  })),
-                })
-              )
-            );
-          }
-          if (filters.includes("spectators")) {
-            promises.push(
-              guarded(() =>
-                api.spectators.search(q, { page: 0, size: 20 })
-              ).then((r) => ({
-                kind: "spectators",
-                data: (r.content || []).map((u) => ({
-                  ...u,
-                  _type: "spectator",
-                })),
-              }))
-            );
-          }
-          if (filters.includes("organizations")) {
-            promises.push(
-              guarded(() =>
-                api.organizations.search(q, { page: 0, size: 20 })
-              ).then((r) => ({
-                kind: "organizations",
-                data: (r.content || []).map((u) => ({
-                  ...u,
-                  _type: "organization",
-                })),
-              }))
-            );
-          }
-
-          const results = await Promise.all(promises);
-          results.forEach((res) => {
-            if (res.kind === "posts") postsAccum = postsAccum.concat(res.data);
-            else usersAccum = usersAccum.concat(res.data);
-          });
-        } else {
-          const postsRes = await guarded(() => api.posts.getAll());
-          postsAccum = postsRes.content || [];
-        }
-
-        setUserResults(usersAccum);
-        setPosts(postsAccum);
-      } catch (err) {
-        if (err.message === "aborted") return;
-        console.error("Erro ao carregar resultados:", err);
-        setError(err.message || "Falha ao carregar resultados.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (!authLoading && isAuthenticated) {
-      const handler = setTimeout(() => {
-        fetchResults();
-      }, 1000);
-
-      return () => {
-        clearTimeout(handler);
-        if (abortRef.current) {
-          try {
-            abortRef.current.abort();
-          } catch (e) {}
-        }
-      };
-    } else if (!authLoading && !isAuthenticated) {
-      setError("Você precisa estar logado para ver o feed.");
-      setLoading(false);
-    }
-  }, [searchTerm, isAuthenticated, authLoading, selectedFilters]);
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleFiltersChange = (filters) => {
-    setSelectedFilters(filters || []);
-  };
+  const handleSearchChange = (e) => setSearchTerm(e.target.value);
+  const handleFiltersChange = (filters) => setSelectedFilters(filters || []);
 
   const getUserTypeLabel = (type) => {
     const types = {
@@ -180,22 +42,22 @@ function Feed() {
   };
 
   return (
-    <>
+    <div>
       <main
         className="
         container 
         mx-auto 
-        p-4 md:p-8 lg:p-12 
-        max-w-4xl
+        p-3 sm:p-4 md:p-8 lg:p-12 
+        max-w-md sm:max-w-4xl
         min-h-screen
       "
+        aria-busy={loading}
       >
         <h1
           className="
           text-4xl 
           font-extrabold 
-          text-gray-900 
-          dark:text-gray-50
+          text-primary
           leading-tight
           mb-8
           text-center
@@ -204,20 +66,44 @@ function Feed() {
           Feed
         </h1>
 
-        <div className="mb-8">
-          <SearchBar
-            value={searchTerm}
-            onChange={handleSearchChange}
-            onFiltersChange={handleFiltersChange}
-            selectedFilters={selectedFilters}
-          />
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="flex-1">
+            <SearchBar
+              value={searchTerm}
+              onChange={handleSearchChange}
+              onFiltersChange={handleFiltersChange}
+              selectedFilters={selectedFilters}
+            />
+          </div>
+
+          <div className="flex-shrink-0 self-start">
+            <div className="sm:hidden mt-2">
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                variant="primary"
+                className="w-full"
+                ariaLabel="Criar nova publicação"
+              >
+                Criar publicação
+              </Button>
+            </div>
+            <div className="hidden sm:block">
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                variant="primary"
+                ariaLabel="Criar nova publicação"
+              >
+                Criar
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {loading && <p className="text-center">Carregando...</p>}
+        {loading && <LoadingSkeleton count={3} />}
         {error && <p className="text-center text-red-500">{error}</p>}
 
         {!loading && !error && (
-          <section className="flex flex-col gap-6">
+          <section className="flex flex-col gap-6" aria-live="polite">
             {userResults.length > 0 && (
               <div className="bg-surface border border-default p-4 rounded-md shadow-elevated">
                 <h3 className="font-semibold text-primary mb-2">Usuários</h3>
@@ -248,7 +134,6 @@ function Feed() {
                 </div>
               </div>
             )}
-
             {posts.length > 0 ? (
               posts.map((post) => <PostCard key={post.id} post={post} />)
             ) : (
@@ -256,35 +141,25 @@ function Feed() {
                 Nenhum post encontrado.
               </p>
             )}
+            <div ref={sentinelRef} />
+            {loadingMore && <LoadingSkeleton count={1} />}
           </section>
         )}
       </main>
 
-      <Link
-        href="/feed/newPost"
-        className="
-        fixed 
-        bottom-4 
-        right-4 
-        sm:bottom-6 
-        sm:right-6
-        p-3 
-        sm:p-4 
-        rounded-full 
-        bg-purple-600 
-        dark:bg-purple-500
-        text-white 
-        shadow-lg
-        hover:bg-purple-700
-        dark:hover:bg-purple-600
-        transition-colors
-        duration-200
-        z-40
-      "
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Criar Nova Publicação"
       >
-        <Plus className="w-6 h-6 sm:w-8 sm:h-8" strokeWidth={2} />
-      </Link>
-    </>
+        <NewPostForm
+          onSuccess={(created) => {
+            if (created) prependPost(created);
+            setIsModalOpen(false);
+          }}
+        />
+      </Modal>
+    </div>
   );
 }
 
