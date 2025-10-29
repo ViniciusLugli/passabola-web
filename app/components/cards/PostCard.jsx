@@ -64,7 +64,9 @@ function PostCard({ post }) {
         </div>
       </div>
 
-      <p className="text-primary mb-4">{post.content}</p>
+      <div className="text-primary mb-4 whitespace-pre-wrap break-words">
+        {post.content}
+      </div>
 
       {post.imageUrl && (
         <div className="relative w-full h-60 rounded-lg overflow-hidden mb-4">
