@@ -222,6 +222,70 @@ html.dark {
     --tw-ring-color: rgb(var(--color-accent));
   }
 
+  .text-success {
+    color: rgb(var(--color-success));
+  }
+
+  .text-danger {
+    color: rgb(var(--color-danger));
+  }
+
+  .bg-success-soft {
+    background-color: color-mix(
+      in srgb,
+      rgb(var(--color-success)),
+      white 85%
+    );
+  }
+
+  .bg-danger-soft {
+    background-color: color-mix(
+      in srgb,
+      rgb(var(--color-danger)),
+      white 90%
+    );
+  }
+
+  .border-success {
+    border-color: rgb(var(--color-success));
+  }
+
+  .border-danger {
+    border-color: rgb(var(--color-danger));
+  }
+
+  .ring-success {
+    --tw-ring-color: rgb(var(--color-success));
+  }
+
+  .ring-danger {
+    --tw-ring-color: rgb(var(--color-danger));
+  }
+
+  .focus\:border-accent:focus {
+    border-color: rgb(var(--color-accent));
+  }
+
+  .focus\:ring-accent:focus {
+    --tw-ring-color: rgb(var(--color-accent));
+  }
+
+  .focus\:border-danger:focus {
+    border-color: rgb(var(--color-danger));
+  }
+
+  .focus\:ring-danger:focus {
+    --tw-ring-color: rgb(var(--color-danger));
+  }
+
+  .focus\:border-success:focus {
+    border-color: rgb(var(--color-success));
+  }
+
+  .focus\:ring-success:focus {
+    --tw-ring-color: rgb(var(--color-success));
+  }
+
   .border-accent {
     border-color: rgb(var(--color-accent));
   }

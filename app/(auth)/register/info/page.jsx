@@ -1,11 +1,20 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useMemo, useEffect } from "react";
 import AuthLayout from "@/app/components/layout/AuthLayout";
 import Link from "next/link";
+import StepIndicator from "@/app/components/ui/StepIndicator";
+// LoadingSpinner used via Button component; no direct import needed here
+import Button from "@/app/components/ui/Button";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRegisterForm } from "./useRegisterForm";
 import PlayerSpectatorFormFields from "./PlayerSpectatorFormFields";
 import OrganizationFormFields from "./OrganizationFormFields";
+
+const stepLabels = [
+  { title: "Passo 1", description: "Informações básicas" },
+  { title: "Passo 2", description: "Detalhes do perfil" },
+];
 
 function RegisterForm() {
   const {
@@ -14,115 +23,180 @@ function RegisterForm() {
     error,
     loading,
     formData,
-    passwordError,
     isOrganization,
     step1Fields,
     step2Fields,
-    orgStep1Fields,
-    orgStep2Fields,
+    fieldErrors,
     handleInputChange,
     handleNextStep,
+    handlePreviousStep,
     brazilianStates,
   } = useRegisterForm();
+
+  const isSecondStep = currentStep === 2;
+
+  const roleLabel = useMemo(() => {
+    if (role === "organizacao") return "organização";
+    if (role === "jogadora") return "jogadora";
+    return "espectador";
+  }, [role]);
 
   if (!role) {
     return <div>Carregando...</div>;
   }
 
+  // when fieldErrors appear, focus the first invalid field to help mobile users
   return (
     <AuthLayout>
-      <div className="bg-surface border border-default rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12 shadow-elevated text-center flex flex-col gap-6 sm:gap-8 md:gap-10 w-full transition-transform duration-300 ease-in-out">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-primary leading-tight mb-4 sm:mb-6">
-          Bem-vindo ao <span className="text-accent">Passa a Bola</span>
-        </h1>
-
-        <p className="text-lg sm:text-xl md:text-2xl text-secondary font-semibold mb-4 sm:mb-6">
-          Insira suas informações de{" "}
-          {role === "organizacao" ? "organização" : role}...
-        </p>
+      <div
+        className="
+          w-full
+          max-w-3xl
+          mx-auto
+          bg-surface
+          border
+          border-default
+          rounded-3xl
+          p-6 sm:p-8 md:p-10
+          shadow-elevated
+          flex
+          flex-col
+          gap-6 sm:gap-8
+          transition-transform duration-300 ease-in-out
+        "
+      >
+        <header className="flex flex-col gap-4 text-left">
+          <p className="text-sm font-medium uppercase tracking-wide text-secondary">
+            Passa a Bola
+          </p>
+          <h1
+            className="
+              text-3xl sm:text-4xl md:text-5xl 
+              font-extrabold 
+              text-primary 
+              leading-tight
+            "
+          >
+            Crie sua conta
+          </h1>
+          <p className="text-base sm:text-lg text-secondary">
+            Preencha os campos abaixo para criar sua conta no Passa a Bola.
+          </p>
+          <div className="flex flex-col gap-3">
+            <StepIndicator steps={stepLabels} currentStep={currentStep} />
+            <p className="text-sm text-secondary">Passo {currentStep} de 2</p>
+          </div>
+        </header>
 
         <form
           onSubmit={handleNextStep}
-          className="flex flex-col gap-4 sm:gap-6"
+          className="flex flex-col gap-6"
+          noValidate
         >
           {error && (
             <div
-              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              className="bg-danger-soft border border-danger text-danger px-4 py-3 rounded-xl"
               role="alert"
+              aria-live="assertive"
             >
-              <strong className="font-bold">Oops! </strong>
-              <span className="block sm:inline">{error}</span>
+              {error}
             </div>
-          )}
-          {passwordError && currentStep === 1 && (
-            <div
-              className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative"
-              role="alert"
-            >
-              <span className="block sm:inline">{passwordError}</span>
-            </div>
-          )}
-          {isOrganization ? (
-            <OrganizationFormFields
-              currentStep={currentStep}
-              formData={formData}
-              handleInputChange={handleInputChange}
-              loading={loading}
-              orgStep1Fields={orgStep1Fields}
-              orgStep2Fields={orgStep2Fields}
-              brazilianStates={brazilianStates}
-            />
-          ) : (
-            <PlayerSpectatorFormFields
-              currentStep={currentStep}
-              formData={formData}
-              handleInputChange={handleInputChange}
-              loading={loading}
-              step1Fields={step1Fields}
-              step2Fields={step2Fields}
-            />
           )}
 
-          <div className="mt-4 sm:mt-6">
-            <button
+          <div className="grid gap-4">
+            {isOrganization ? (
+              <OrganizationFormFields
+                currentStep={currentStep}
+                formData={formData}
+                handleInputChange={handleInputChange}
+                loading={loading}
+                fieldsStep1={step1Fields}
+                fieldsStep2={step2Fields}
+                fieldErrors={fieldErrors}
+                brazilianStates={brazilianStates}
+              />
+            ) : (
+              <PlayerSpectatorFormFields
+                currentStep={currentStep}
+                formData={formData}
+                handleInputChange={handleInputChange}
+                loading={loading}
+                fieldsStep1={step1Fields}
+                fieldsStep2={step2Fields}
+                fieldErrors={fieldErrors}
+              />
+            )}
+          </div>
+
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center gap-3 justify-between pt-2">
+            {isSecondStep ? (
+              <button
+                type="button"
+                onClick={handlePreviousStep}
+                className="
+                  w-full sm:w-auto
+                  inline-flex
+                  items-center
+                  justify-center
+                  gap-2
+                  px-4 py-3
+                  rounded-xl
+                  border
+                  border-default
+                  text-primary
+                  font-medium
+                  transition-all
+                  duration-200
+                  hover:border-accent
+                  hover:text-accent
+                  focus-visible:outline-none
+                  focus-visible:ring-2
+                  focus-visible:ring-offset-2
+                  focus-visible:ring-accent
+                "
+              >
+                <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+                Voltar
+              </button>
+            ) : (
+              <span />
+            )}
+
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full bg-accent hover:bg-accent-strong font-bold py-4 sm:py-5 rounded-xl text-xl sm:text-2xl transition-all duration-300 shadow-elevated hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+              loading={loading}
+              ariaLabel={isSecondStep ? "Criar conta" : "Continuar"}
+              className="w-full sm:w-auto px-5"
             >
-              {loading
-                ? "CRIANDO..."
-                : currentStep === 1
-                ? "CONTINUAR"
-                : "CRIAR CONTA"}
-            </button>
+              <span className="font-semibold">
+                {isSecondStep ? "Criar conta" : "Continuar"}
+              </span>
+              <ArrowRight className="h-5 w-5 ml-2" aria-hidden="true" />
+            </Button>
           </div>
         </form>
 
-        <div className="mt-6 sm:mt-8 md:mt-10 pt-6 border-t border-default flex flex-col items-center gap-3">
-          <p className="text-lg sm:text-xl font-semibold text-secondary">
+        <footer className="pt-4 sm:pt-6 border-t border-default flex flex-col items-center gap-3 text-center">
+          <p className="text-base sm:text-lg font-medium text-secondary">
             Já tem cadastro?
           </p>
           <Link
             href="/login"
-            className="text-accent hover:text-accent-strong font-bold text-lg sm:text-xl transition-all duration-200 flex items-center gap-2 hover:scale-105 active:scale-95"
+            className="
+              text-accent 
+              hover:text-accent-strong 
+              font-semibold 
+              text-base sm:text-lg
+              transition-all 
+              duration-200
+              flex items-center gap-2
+              hover:scale-105 active:scale-95
+            "
           >
-            Faça seu login!
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            Faça seu login
+            <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={2} />
           </Link>
-        </div>
+        </footer>
       </div>
     </AuthLayout>
   );

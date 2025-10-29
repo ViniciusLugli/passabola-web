@@ -194,8 +194,7 @@ function Feed() {
           className="
           text-4xl 
           font-extrabold 
-          text-gray-900 
-          dark:text-gray-50
+          text-primary
           leading-tight
           mb-8
           text-center

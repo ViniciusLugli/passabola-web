@@ -1,41 +1,66 @@
 "use client";
 
 import React from "react";
+import LoadingSpinner from "./LoadingSpinner";
 
 export default function Button({
   children,
-  onClick,
   type = "button",
+  onClick,
+  loading = false,
   disabled = false,
-  variant = "primary",
+  variant = "primary", // primary | secondary | ghost
   className = "",
+  ariaLabel,
   ...props
 }) {
-  const baseStyle =
-    "px-4 py-2 rounded-lg font-semibold transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[rgb(var(--color-page))]";
+  const isDisabled = disabled || loading;
+
+  const base = `inline-flex items-center justify-center font-bold rounded-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`;
 
   const variants = {
-    primary:
-      "bg-accent text-on-brand hover:bg-accent-strong focus:ring-accent shadow-elevated",
-    secondary:
-      "bg-surface-muted text-secondary border border-default hover:bg-surface-elevated focus:ring-accent",
-    danger:
-      "bg-red-500 text-white hover:bg-red-600 focus:ring-red-400 shadow-elevated",
+    primary: `w-full bg-accent text-on-brand px-5 py-3 sm:py-4 hover:bg-accent-strong shadow-elevated ${
+      isDisabled
+        ? "opacity-70 cursor-not-allowed"
+        : "hover:scale-105 active:scale-95"
+    }`,
+    secondary: `w-full bg-surface border border-default text-primary px-4 py-3 ${
+      isDisabled
+        ? "opacity-70 cursor-not-allowed"
+        : "hover:border-accent hover:text-accent"
+    }`,
+    ghost: `bg-transparent text-accent px-3 py-2 ${
+      isDisabled ? "opacity-70 cursor-not-allowed" : "hover:underline"
+    }`,
   };
 
-  const disabledStyle = "opacity-60 cursor-not-allowed";
+  const variantClass = variants[variant] ?? variants.primary;
 
   return (
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled}
-      className={`${baseStyle} ${variants[variant]} ${
-        disabled ? disabledStyle : ""
-      } ${className}`}
+      disabled={isDisabled}
+      aria-disabled={isDisabled}
+      aria-busy={loading}
+      aria-label={ariaLabel}
+      className={`${base} ${variantClass} ${className}`}
       {...props}
     >
-      {children}
+      {loading ? (
+        // when children (text) present, keep visible text and make spinner srOnly to avoid double announce
+        <span className="flex items-center justify-center gap-3">
+          <LoadingSpinner
+            label={typeof children === "string" ? children : "Carregando"}
+            srOnly={true}
+            size={20}
+            iconClassName="text-on-brand"
+          />
+          {children && <span className="font-semibold">{children}</span>}
+        </span>
+      ) : (
+        children
+      )}
     </button>
   );
 }

@@ -5,6 +5,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { brazilianStates } from "@/app/lib/brazilianStates";
 
+const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
 export const useRegisterForm = () => {
   const router = useRouter();
   const { register } = useAuth();
@@ -14,7 +16,7 @@ export const useRegisterForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -35,27 +37,159 @@ export const useRegisterForm = () => {
     }
   }, [role, router]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  const isOrganization = role === "organizacao";
 
-    // Limpar erro ao começar a digitar
-    if (error) setError(null);
+  const step1Fields = [
+    {
+      name: "name",
+      type: "text",
+      placeholder: isOrganization
+        ? "Nome da Organização *"
+        : "Nome Completo *",
+      required: true,
+    },
+    {
+      name: "email",
+      type: "email",
+      placeholder: "Email *",
+      required: true,
+    },
+    ...(isOrganization
+      ? [
+          { name: "cnpj", type: "text", placeholder: "CNPJ *", required: true },
+          { name: "city", type: "text", placeholder: "Cidade *", required: true },
+          {
+            name: "state",
+            type: "select",
+            placeholder: "Estado *",
+            required: true,
+          },
+        ]
+      : []),
+    {
+      name: "password",
+      type: "password",
+      placeholder: "Senha *",
+      required: true,
+    },
+    {
+      name: "confirmPassword",
+      type: "password",
+      placeholder: "Confirme sua senha *",
+      required: true,
+    },
+  ];
 
-    // Validação em tempo real das senhas
-    if (name === "password" || name === "confirmPassword") {
-      const password = name === "password" ? value : formData.password;
-      const confirmPassword =
-        name === "confirmPassword" ? value : formData.confirmPassword;
+  const step2Fields = isOrganization
+    ? [
+        {
+          name: "username",
+          type: "text",
+          placeholder: "Nome de usuário *",
+          required: true,
+        },
+        {
+          name: "phone",
+          type: "tel",
+          placeholder: "Telefone (opcional)",
+          required: false,
+        },
+        {
+          name: "bio",
+          type: "text",
+          placeholder: "Bio da organização (opcional)",
+          required: false,
+        },
+      ]
+    : [
+        {
+          name: "username",
+          type: "text",
+          placeholder: "Nome de usuário *",
+          required: true,
+        },
+        {
+          name: "birthDate",
+          type: "date",
+          placeholder: "Data de nascimento *",
+          required: true,
+        },
+        {
+          name: "phone",
+          type: "tel",
+          placeholder: "Telefone (opcional)",
+          required: false,
+        },
+        {
+          name: "bio",
+          type: "text",
+          placeholder: "Sua bio (opcional)",
+          required: false,
+        },
+      ];
 
-      if (password.length > 0 && password.length < 8) {
-        setPasswordError("A senha deve ter no mínimo 8 caracteres");
-      } else if (confirmPassword.length > 0 && password !== confirmPassword) {
-        setPasswordError("As senhas não coincidem");
-      } else {
-        setPasswordError("");
-      }
+  const resetFieldError = (field) => {
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const { [field]: _removed, ...rest } = prev;
+      return rest;
+    });
+  };
+
+  const validateEmail = (value) => {
+    if (!value) return "Informe um email.";
+    return emailRegex.test(value) ? "" : "Informe um email válido.";
+  };
+
+  const validatePasswordValue = (value) => {
+    if (!value) return "Informe uma senha.";
+    if (value.length < 8) {
+      return "A senha deve ter no mínimo 8 caracteres.";
     }
+    return "";
+  };
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    const updatedData = { ...formData, [name]: value };
+    setFormData(updatedData);
+
+    if (error) setError(null);
+    resetFieldError(name);
+
+    setFieldErrors((prev) => {
+      const nextErrors = { ...prev };
+
+      if (name === "email") {
+        const message = validateEmail(value);
+        if (message) nextErrors.email = message;
+        else delete nextErrors.email;
+      }
+
+      if (name === "password") {
+        const message = validatePasswordValue(value);
+        if (message) nextErrors.password = message;
+        else delete nextErrors.password;
+
+        if (updatedData.confirmPassword) {
+          if (value !== updatedData.confirmPassword) {
+            nextErrors.confirmPassword = "As senhas não coincidem.";
+          } else {
+            delete nextErrors.confirmPassword;
+          }
+        }
+      }
+
+      if (name === "confirmPassword") {
+        if (value !== updatedData.password) {
+          nextErrors.confirmPassword = "As senhas não coincidem.";
+        } else {
+          delete nextErrors.confirmPassword;
+        }
+      }
+
+      return nextErrors;
+    });
   };
 
   const removeEmptyFields = (obj) => {
@@ -71,18 +205,62 @@ export const useRegisterForm = () => {
     );
   };
 
+  const validateStep = (step) => {
+    const errors = {};
+    const requiredMessage = "Campo obrigatório.";
+
+    if (step === 1) {
+      step1Fields.forEach((field) => {
+        if (field.required) {
+          const value = formData[field.name];
+          if (!value || (typeof value === "string" && value.trim() === "")) {
+            errors[field.name] = requiredMessage;
+          }
+        }
+      });
+
+      const emailMessage = validateEmail(formData.email);
+      if (emailMessage) errors.email = emailMessage;
+
+      const passwordMessage = validatePasswordValue(formData.password);
+      if (passwordMessage) errors.password = passwordMessage;
+
+      if (!errors.confirmPassword) {
+        if (formData.password !== formData.confirmPassword) {
+          errors.confirmPassword = "As senhas não coincidem.";
+        }
+      }
+    }
+
+    if (step === 2) {
+      step2Fields.forEach((field) => {
+        if (field.required) {
+          const value = formData[field.name];
+          if (!value || (typeof value === "string" && value.trim() === "")) {
+            errors[field.name] = requiredMessage;
+          }
+        }
+      });
+
+      if (!isOrganization && formData.birthDate) {
+        const dateValue = new Date(formData.birthDate);
+        if (Number.isNaN(dateValue.getTime())) {
+          errors.birthDate = "Informe uma data válida.";
+        }
+      }
+    }
+
+    return errors;
+  };
+
   const handleFinalSubmit = async () => {
     setError(null);
     setLoading(true);
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("As senhas não coincidem.");
-      setLoading(false);
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError("A senha deve ter no mínimo 8 caracteres.");
+    const stepErrors = validateStep(2);
+    if (Object.keys(stepErrors).length > 0) {
+      setFieldErrors(stepErrors);
+      setError("Revise os campos destacados antes de continuar.");
       setLoading(false);
       return;
     }
@@ -135,8 +313,6 @@ export const useRegisterForm = () => {
         return;
     }
 
-    // debug logs removed
-
     try {
       const res = await register(payload, apiRole);
       router.push("/login");
@@ -149,11 +325,9 @@ export const useRegisterForm = () => {
         message: err.message,
       });
 
-      // Mensagem de erro mais detalhada
       let errorMessage = "Falha no cadastro. ";
 
       if (err.body?.errors) {
-        // Se houver erros de validação específicos
         const errors = err.body.errors;
         errorMessage += Object.values(errors).join(", ");
       } else if (err.body?.message) {
@@ -171,52 +345,18 @@ export const useRegisterForm = () => {
     }
   };
 
-  const handleNextStep = (e) => {
-    e.preventDefault();
+  const handleNextStep = (event) => {
+    event.preventDefault();
+    const stepErrors = validateStep(currentStep);
 
-    // Validar senhas no step 1 antes de avançar
-    if (currentStep === 1) {
-      // Validações do step 1
-      if (!formData.name || !formData.email || !formData.password) {
-        setError("Por favor, preencha todos os campos obrigatórios.");
-        return;
-      }
-
-      if (formData.password.length < 8) {
-        setError("A senha deve ter no mínimo 8 caracteres");
-        return;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setError("As senhas não coincidem");
-        return;
-      }
-
-      // Validações específicas para organização no step 1
-      if (isOrganization) {
-        if (!formData.cnpj) {
-          setError("CNPJ é obrigatório para organizações.");
-          return;
-        }
-        if (!formData.city || !formData.state) {
-          setError("Cidade e Estado são obrigatórios para organizações.");
-          return;
-        }
-      }
+    if (Object.keys(stepErrors).length > 0) {
+      setFieldErrors(stepErrors);
+      setError("Revise os campos destacados antes de continuar.");
+      return;
     }
 
-    // Validações do step 2
-    if (currentStep === 2) {
-      if (!formData.username) {
-        setError("Nome de usuário é obrigatório.");
-        return;
-      }
-
-      // Validações específicas para jogadora e espectador
-      if (!isOrganization && !formData.birthDate) {
-        setError("Data de nascimento é obrigatória.");
-        return;
-      }
-    }
+    setFieldErrors({});
+    setError(null);
 
     if (currentStep < 2) {
       setCurrentStep((prev) => prev + 1);
@@ -225,107 +365,10 @@ export const useRegisterForm = () => {
     }
   };
 
-  const isOrganization = role === "organizacao";
-
-  const step1Fields = [
-    {
-      name: "name",
-      type: "text",
-      placeholder: "Nome Completo *",
-      required: true,
-    },
-    { name: "email", type: "email", placeholder: "Email *", required: true },
-    {
-      name: "password",
-      type: "password",
-      placeholder: "Senha *",
-      required: true,
-    },
-    {
-      name: "confirmPassword",
-      type: "password",
-      placeholder: "Confirme sua senha *",
-      required: true,
-    },
-  ];
-
-  const step2Fields = [
-    {
-      name: "username",
-      type: "text",
-      placeholder: "Nome de usuário *",
-      required: true,
-    },
-    {
-      name: "birthDate",
-      type: "date",
-      placeholder: "Data de nascimento *",
-      required: true,
-    },
-    {
-      name: "phone",
-      type: "tel",
-      placeholder: "Telefone (opcional)",
-      required: false,
-    },
-    {
-      name: "bio",
-      type: "text",
-      placeholder: "Sua bio (opcional)",
-      required: false,
-    },
-  ];
-
-  const orgStep1Fields = [
-    {
-      name: "name",
-      type: "text",
-      placeholder: "Nome da Organização *",
-      required: true,
-    },
-    {
-      name: "email",
-      type: "email",
-      placeholder: "Email de Contato *",
-      required: true,
-    },
-    { name: "cnpj", type: "text", placeholder: "CNPJ *", required: true },
-    { name: "city", type: "text", placeholder: "Cidade *", required: true },
-    { name: "state", type: "select", placeholder: "Estado *", required: true },
-    {
-      name: "password",
-      type: "password",
-      placeholder: "Senha *",
-      required: true,
-    },
-    {
-      name: "confirmPassword",
-      type: "password",
-      placeholder: "Confirme sua senha *",
-      required: true,
-    },
-  ];
-
-  const orgStep2Fields = [
-    {
-      name: "username",
-      type: "text",
-      placeholder: "Nome de usuário *",
-      required: true,
-    },
-    {
-      name: "phone",
-      type: "tel",
-      placeholder: "Telefone (opcional)",
-      required: false,
-    },
-    {
-      name: "bio",
-      type: "text",
-      placeholder: "Bio da organização (opcional)",
-      required: false,
-    },
-  ];
+  const handlePreviousStep = () => {
+    setCurrentStep((prev) => Math.max(1, prev - 1));
+    setError(null);
+  };
 
   return {
     role,
@@ -333,14 +376,13 @@ export const useRegisterForm = () => {
     error,
     loading,
     formData,
-    passwordError,
     isOrganization,
     step1Fields,
     step2Fields,
-    orgStep1Fields,
-    orgStep2Fields,
+    fieldErrors,
     handleInputChange,
     handleNextStep,
+    handlePreviousStep,
     brazilianStates,
   };
 };
