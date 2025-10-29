@@ -8,6 +8,7 @@ import { Plus } from "lucide-react";
 import Modal from "@/app/components/ui/Modal";
 import NewPostForm from "@/app/components/feed/NewPostForm";
 import useFeed from "@/app/hooks/useFeed";
+import Button from "@/app/components/ui/Button";
 
 function Feed() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,13 +66,37 @@ function Feed() {
           Feed
         </h1>
 
-        <div className="mb-8">
-          <SearchBar
-            value={searchTerm}
-            onChange={handleSearchChange}
-            onFiltersChange={handleFiltersChange}
-            selectedFilters={selectedFilters}
-          />
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="flex-1">
+            <SearchBar
+              value={searchTerm}
+              onChange={handleSearchChange}
+              onFiltersChange={handleFiltersChange}
+              selectedFilters={selectedFilters}
+            />
+          </div>
+
+          <div className="flex-shrink-0 self-start">
+            <div className="sm:hidden mt-2">
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                variant="primary"
+                className="w-full"
+                ariaLabel="Criar nova publicação"
+              >
+                Criar publicação
+              </Button>
+            </div>
+            <div className="hidden sm:block">
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                variant="primary"
+                ariaLabel="Criar nova publicação"
+              >
+                Criar
+              </Button>
+            </div>
+          </div>
         </div>
 
         {loading && <LoadingSkeleton count={3} />}
@@ -121,30 +146,6 @@ function Feed() {
           </section>
         )}
       </main>
-
-      <button
-        onClick={() => setIsModalOpen(true)}
-        aria-label="Criar novo post"
-        className="
-        fixed 
-        bottom-4 
-        right-4 
-        sm:bottom-6 
-        sm:right-6
-        p-3 
-        sm:p-4 
-        rounded-full 
-        bg-accent 
-        text-on-brand 
-        shadow-lg
-        hover:bg-accent-strong
-        transition-colors
-        duration-200
-        z-40
-      "
-      >
-        <Plus className="w-6 h-6 sm:w-8 sm:h-8" strokeWidth={2} />
-      </button>
 
       <Modal
         isOpen={isModalOpen}
