@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import PostCard from "@/app/components/cards/PostCard";
 import SearchBar from "@/app/components/ui/SearchBar";
+import LoadingSkeleton from "@/app/components/ui/LoadingSkeleton";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { api } from "@/app/lib/api";
@@ -11,6 +12,10 @@ import { useAuth } from "@/app/context/AuthContext";
 function Feed() {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState([]);
+  const [page, setPage] = useState(0);
+  const [size] = useState(10);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [userResults, setUserResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,9 +24,10 @@ function Feed() {
   const abortRef = useRef(null);
 
   useEffect(() => {
-    const fetchResults = async () => {
+    const fetchResults = async (pageToLoad = 0, replace = false) => {
       try {
-        setLoading(true);
+        if (pageToLoad === 0 && !replace) setLoading(true);
+        if (pageToLoad > 0) setLoadingMore(true);
         setError(null);
 
         if (abortRef.current) {
@@ -72,6 +78,8 @@ function Feed() {
             api.posts.search(q, { page: 0, size: 20 })
           );
           postsAccum = postsRes.content || [];
+          // disable infinite scroll when searching
+          setHasMore(false);
         } else if (q && filters.length > 0) {
           // For each selected filter, call respective search
           const promises = [];
@@ -128,25 +136,45 @@ function Feed() {
             else usersAccum = usersAccum.concat(res.data);
           });
         } else {
-          const postsRes = await guarded(() => api.posts.getAll());
+          // paginated fetch when no search/filters
+          const postsRes = await guarded(() =>
+            api.posts.getAll({ page: pageToLoad, size })
+          );
           postsAccum = postsRes.content || [];
+          // determine hasMore
+          if (postsRes.totalPages != null && postsRes.number != null) {
+            setHasMore(postsRes.number < postsRes.totalPages - 1);
+          } else {
+            setHasMore((postsRes.content || []).length === size);
+          }
         }
 
         setUserResults(usersAccum);
-        setPosts(postsAccum);
+        setPosts((prev) =>
+          pageToLoad === 0 ? postsAccum : prev.concat(postsAccum)
+        );
       } catch (err) {
         if (err.message === "aborted") return;
         console.error("Erro ao carregar resultados:", err);
         setError(err.message || "Falha ao carregar resultados.");
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     };
 
     if (!authLoading && isAuthenticated) {
       const handler = setTimeout(() => {
-        fetchResults();
-      }, 1000);
+        // if searching or filtering, do a fresh fetch
+        if (searchTerm.trim() || selectedFilters.length > 0) {
+          setPage(0);
+          fetchResults(0, true);
+        } else {
+          setPage(0);
+          setPosts([]);
+          fetchResults(0, true);
+        }
+      }, 500);
 
       return () => {
         clearTimeout(handler);
@@ -161,6 +189,45 @@ function Feed() {
       setLoading(false);
     }
   }, [searchTerm, isAuthenticated, authLoading, selectedFilters]);
+
+  // infinite scroll observer
+  const sentinelRef = useRef(null);
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    if (!hasMore) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !loadingMore && !loading) {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            // fetch next page
+            (async () => {
+              try {
+                setLoadingMore(true);
+                const res = await api.posts.getAll({ page: nextPage, size });
+                const nextPosts = res.content || [];
+                setPosts((prev) => prev.concat(nextPosts));
+                if (res.totalPages != null && res.number != null) {
+                  setHasMore(res.number < res.totalPages - 1);
+                } else {
+                  setHasMore(nextPosts.length === size);
+                }
+              } catch (err) {
+                console.error(err);
+              } finally {
+                setLoadingMore(false);
+              }
+            })();
+          }
+        });
+      },
+      { rootMargin: "200px" }
+    );
+
+    obs.observe(sentinelRef.current);
+    return () => obs.disconnect();
+  }, [sentinelRef.current, hasMore, loadingMore, loading, page, size]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -213,21 +280,7 @@ function Feed() {
           />
         </div>
 
-        {loading && (
-          <div role="status" aria-live="polite" className="space-y-4">
-            <span className="sr-only">Carregando feed</span>
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="animate-pulse bg-surface border border-default rounded-xl p-4"
-              >
-                <div className="h-4 bg-default rounded w-1/3 mb-3" />
-                <div className="h-3 bg-default rounded w-full mb-2" />
-                <div className="h-3 bg-default rounded w-5/6" />
-              </div>
-            ))}
-          </div>
-        )}
+        {loading && <LoadingSkeleton count={3} />}
         {error && <p className="text-center text-red-500">{error}</p>}
 
         {!loading && !error && (
@@ -270,6 +323,9 @@ function Feed() {
                 Nenhum post encontrado.
               </p>
             )}
+            {/* sentinel for infinite scroll */}
+            <div ref={sentinelRef} />
+            {loadingMore && <LoadingSkeleton count={1} />}
           </section>
         )}
       </main>
