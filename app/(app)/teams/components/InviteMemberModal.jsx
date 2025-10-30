@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import Modal from "@/app/components/ui/Modal";
 import Input from "@/app/components/ui/Input";
-import Button from "@/app/components/ui/Button";
+import InviteResultsList from "./InviteResultsList";
+import InviteSelectedFooter from "./InviteSelectedFooter";
 import { api } from "@/app/lib/api";
 import { useToast } from "@/app/context/ToastContext";
 
@@ -23,7 +24,6 @@ export default function InviteMemberModal({
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // helper: fetch all pages of a paginated endpoint
   const fetchAllPages = async (fn, size = 50) => {
     let page = 0;
     const all = [];
@@ -71,7 +71,6 @@ export default function InviteMemberModal({
   }, [isOpen, teamId]);
 
   useEffect(() => {
-    // fetch mutual follows (followers ∩ following). use pagination to get full lists
     let mounted = true;
     const loadMutualFollows = async () => {
       if (!isOpen) return;
@@ -256,89 +255,24 @@ export default function InviteMemberModal({
           onChange={(e) => setQuery(e.target.value)}
         />
 
-        {error && <p className="text-sm text-danger">{error}</p>}
+        <InviteResultsList
+          results={results}
+          loading={loading}
+          invitedIds={invitedIds}
+          selectedPlayers={selectedPlayers}
+          toggleSelect={toggleSelect}
+          handleInvite={handleInvite}
+          actionLoading={actionLoading}
+          query={query}
+          error={error}
+        />
 
-        <div className="max-h-64 overflow-auto space-y-2">
-          {loading && <div className="text-sm text-secondary">Buscando...</div>}
-          {!loading && results.length === 0 && query.trim().length >= 2 && (
-            <div className="text-sm text-secondary">
-              Nenhuma jogadora encontrada.
-            </div>
-          )}
-
-          {results.map((p) => (
-            <div
-              key={p.id ?? p.playerId}
-              className="flex items-center justify-between gap-3 p-2 bg-surface border border-default rounded"
-            >
-              <div className="flex items-center gap-3">
-                {invitedIds.has(p.id) ? (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    Pendente
-                  </span>
-                ) : (
-                  <input
-                    type="checkbox"
-                    aria-label={`Selecionar ${p.name || p.username}`}
-                    checked={selectedPlayers.some(
-                      (s) => String(s.id) === String(p.id)
-                    )}
-                    onChange={() => toggleSelect(p)}
-                    className="w-4 h-4 mr-2"
-                  />
-                )}
-
-                <img
-                  src={
-                    p.profilePhoto ||
-                    p.avatarUrl ||
-                    p.photo ||
-                    "/icons/user-default.png"
-                  }
-                  alt={p.name || p.username}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div>
-                  <div className="text-sm font-medium text-primary">
-                    {p.name || p.fullName || p.username}
-                  </div>
-                  <div className="text-xs text-secondary">
-                    {p.username ? `@${p.username}` : p.email || ""}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => handleInvite(p)}
-                  loading={actionLoading}
-                  disabled={actionLoading || invitedIds.has(p.id)}
-                  className="w-auto px-3 py-1"
-                >
-                  {invitedIds.has(p.id) ? "Convidado" : "Convidar"}
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {selectedPlayers.length > 0 && (
-          <div className="pt-3 border-t border-default/40 flex items-center justify-between gap-3">
-            <div className="text-sm text-secondary">
-              Selecionadas: {selectedPlayers.length}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => setSelectedPlayers([])}
-              >
-                Limpar
-              </Button>
-              <Button onClick={sendSelectedInvites} loading={actionLoading}>
-                Enviar convites ({selectedPlayers.length})
-              </Button>
-            </div>
-          </div>
-        )}
+        <InviteSelectedFooter
+          selectedPlayers={selectedPlayers}
+          clearSelected={() => setSelectedPlayers([])}
+          sendSelectedInvites={sendSelectedInvites}
+          actionLoading={actionLoading}
+        />
       </div>
     </Modal>
   );
