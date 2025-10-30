@@ -1,12 +1,16 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
+import { useToast } from "@/app/context/ToastContext";
 
 function PostCard({ post }) {
   const { isAuthenticated } = useAuth(); // Obter estado de autenticação
+  const { showToast } = useToast();
   const [hasLiked, setHasLiked] = useState(post.isLikedByCurrentUser || false);
   const [currentLikes, setCurrentLikes] = useState(
     post.totalLikes || post.likes || 0
@@ -19,7 +23,7 @@ function PostCard({ post }) {
 
   const handleLikeToggle = async () => {
     if (!isAuthenticated) {
-      alert("Você precisa estar logado para curtir posts!");
+      showToast("Você precisa estar logado para curtir posts!", "error");
       return;
     }
 
@@ -34,7 +38,7 @@ function PostCard({ post }) {
       setHasLiked(!hasLiked);
     } catch (error) {
       console.error("Erro ao curtir/descurtir post:", error);
-      alert("Falha ao processar sua curtida. Tente novamente.");
+      showToast("Falha ao processar sua curtida. Tente novamente.", "error");
     }
   };
 

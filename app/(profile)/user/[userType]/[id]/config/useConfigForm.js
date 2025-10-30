@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import { api } from "@/app/lib/api";
+import { useToast } from "@/app/context/ToastContext";
 
 export const useConfigForm = (userId, userType) => {
   const router = useRouter();
@@ -12,6 +13,7 @@ export const useConfigForm = (userId, userType) => {
     isAuthenticated,
     loading: authLoading,
   } = useAuth();
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -91,7 +93,7 @@ export const useConfigForm = (userId, userType) => {
 
   const handleConfirmSave = async () => {
     if (!passwordConfirm) {
-      alert("Por favor, insira sua senha para confirmar.");
+      showToast("Por favor, insira sua senha para confirmar.", "error");
       return;
     }
 
@@ -117,7 +119,7 @@ export const useConfigForm = (userId, userType) => {
           throw new Error("Unknown user type");
       }
 
-      alert("Informações salvas com sucesso!");
+      showToast("Informações salvas com sucesso!", "success");
       setIsModalOpen(false);
       setNewPassword("");
       setPasswordConfirm("");
@@ -128,7 +130,7 @@ export const useConfigForm = (userId, userType) => {
         err.message ||
           "Falha ao salvar dados do usuário. Por favor, tente novamente."
       );
-      alert(err.message || "Falha ao salvar dados do usuário.");
+      showToast(err.message || "Falha ao salvar dados do usuário.", "error");
     } finally {
       setLoading(false);
     }

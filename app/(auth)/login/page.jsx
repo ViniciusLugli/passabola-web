@@ -5,7 +5,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import AuthLayout from "@/app/components/layout/AuthLayout";
 import Input from "@/app/components/ui/Input";
 import Link from "next/link";
-import Alert from "@/app/components/ui/Alert";
+import { useToast } from "@/app/context/ToastContext";
 import { ArrowRight } from "lucide-react";
 // LoadingSpinner is intentionally not imported here — use Button (which uses LoadingSpinner internally)
 import Button from "@/app/components/ui/Button";
@@ -31,6 +31,7 @@ export default function LoginPage() {
   const [touched, setTouched] = useState({ email: false, password: false });
   const [errors, setErrors] = useState({ email: "", password: "" });
   const { login, loginErrorMessage, clearLoginError } = useAuth();
+  const { showToast } = useToast();
 
   // autofocus on desktop / non-touch devices to improve UX,
   // avoid opening virtual keyboard on mobile devices.
@@ -53,6 +54,14 @@ export default function LoginPage() {
       // fail silently
     }
   }, []);
+
+  // mostrar erro de login via toast quando a mensagem chegar do contexto
+  useEffect(() => {
+    if (loginErrorMessage) {
+      // passa clearLoginError como callback para ser executado quando o toast fechar
+      showToast(loginErrorMessage, "error", 4000, clearLoginError);
+    }
+  }, [loginErrorMessage, showToast, clearLoginError]);
 
   const handleFieldBlur = (field) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -177,12 +186,7 @@ export default function LoginPage() {
           className="flex flex-col gap-5 text-left"
           noValidate
         >
-          <Alert
-            isOpen={!!loginErrorMessage}
-            onClose={clearLoginError}
-            message={loginErrorMessage}
-            type="error"
-          />
+          {/* Mostrar erro de login via Toast */}
 
           <Input
             label="Email"

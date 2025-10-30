@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Alert from "@/app/components/ui/Alert";
+import { useToast } from "@/app/context/ToastContext";
 import Modal from "@/app/components/ui/Modal";
 import JoinGameModal from "@/app/components/ui/JoinGameModal";
 import GameForm from "./components/GameForm";
@@ -28,6 +28,8 @@ export default function NewGamePage() {
     loadingTeams,
   } = useNewGameForm();
 
+  const { showToast } = useToast();
+
   const [showJoinModal, setShowJoinModal] = useState(false);
 
   // Redirecionar SPECTATORs que acessarem a página de criação
@@ -40,6 +42,13 @@ export default function NewGamePage() {
     }
   }, [isAuthenticated, loggedInUser]);
 
+  // exibir alert (do useNewGameForm) via toast
+  useEffect(() => {
+    if (alert && alert.message) {
+      showToast(alert.message, alert.type || "info");
+    }
+  }, [alert, showToast]);
+
   const handleHostWantsToJoin = () => {
     setShowHostParticipationModal(false);
     setShowJoinModal(true);
@@ -51,7 +60,6 @@ export default function NewGamePage() {
 
   return (
     <div className="bg-page min-h-screen">
-      
       <main
         className="
         container 
@@ -114,8 +122,6 @@ export default function NewGamePage() {
           >
             Novo Jogo
           </h1>
-
-          {alert && <Alert type={alert.type} message={alert.message} />}
 
           <GameForm
             formData={formData}
