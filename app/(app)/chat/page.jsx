@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import ConversationItem from "@/app/components/chat/ConversationItem";
 import MessageBubble from "@/app/components/chat/MessageBubble";
 import MessageInput from "@/app/components/chat/MessageInput";
-import Alert from "@/app/components/ui/Alert";
+import { useToast } from "@/app/context/ToastContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { useChat } from "@/app/context/ChatContext";
 import { api } from "@/app/lib/api";
@@ -27,13 +27,12 @@ export default function ChatPage() {
     setConversationMessages,
   } = useChat();
 
-  const [alert, setAlert] = useState(null);
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Scroll para o final das mensagens
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -42,7 +41,6 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages, activeConversation]);
 
-  // Carregar conversas
   useEffect(() => {
     if (!user) {
       router.push("/login");
@@ -52,7 +50,6 @@ export default function ChatPage() {
     fetchConversations();
   }, [user, router]);
 
-  // Subscrever à conversa ativa
   useEffect(() => {
     if (activeConversation && isConnected) {
       // WebSocket usa otherUserId para identificar a conversa
@@ -72,10 +69,7 @@ export default function ChatPage() {
       setConversations(Array.isArray(conversations) ? conversations : []);
     } catch (err) {
       console.error("Erro ao buscar conversas:", err);
-      setAlert({
-        type: "error",
-        message: err.message || "Erro ao carregar conversas.",
-      });
+      showToast(err.message || "Erro ao carregar conversas.", "error");
     } finally {
       setLoading(false);
     }
@@ -95,10 +89,7 @@ export default function ChatPage() {
       await api.chats.markAsRead(otherUserId);
     } catch (err) {
       console.error("Erro ao buscar mensagens:", err);
-      setAlert({
-        type: "error",
-        message: "Erro ao carregar mensagens.",
-      });
+      showToast("Erro ao carregar mensagens.", "error");
     } finally {
       setLoadingMessages(false);
     }
@@ -146,10 +137,7 @@ export default function ChatPage() {
       }
     } catch (err) {
       console.error("Erro ao enviar mensagem:", err);
-      setAlert({
-        type: "error",
-        message: "Erro ao enviar mensagem.",
-      });
+      showToast("Erro ao enviar mensagem.", "error");
 
       // Remover mensagem otimista em caso de erro
       // (idealmente implementar lógica de retry ou marcação de falha)
@@ -165,7 +153,6 @@ export default function ChatPage() {
   if (loading) {
     return (
       <div className="bg-page min-h-screen">
-        
         <main className="container mx-auto p-4 mt-8">
           <div className="bg-surface rounded-2xl border border-default shadow-elevated p-8">
             <p className="text-center text-secondary">
@@ -179,7 +166,6 @@ export default function ChatPage() {
 
   return (
     <div className="min-h-screen">
-      
       <main
         className="container mx-auto p-4 mt-8"
         style={{ height: "calc(100vh - 140px)" }}
@@ -199,11 +185,7 @@ export default function ChatPage() {
               </div>
             </div>
 
-            {alert && (
-              <div className="p-4">
-                <Alert type={alert.type} message={alert.message} />
-              </div>
-            )}
+            {/* notifications handled by ToastProvider via useToast */}
 
             <div className="flex-1 overflow-y-auto">
               {conversations.length === 0 ? (

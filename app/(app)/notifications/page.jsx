@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Alert from "@/app/components/ui/Alert";
+import { useToast } from "@/app/context/ToastContext";
 import NotificationCard from "@/app/components/cards/NotificationCard";
 import { useAuth } from "@/app/context/AuthContext";
 import { useNotifications } from "@/app/context/NotificationContext";
@@ -23,7 +23,7 @@ export default function NotificationsPage() {
     updateUnreadCount,
   } = useNotifications();
 
-  const [alert, setAlert] = useState(null);
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
 
@@ -52,10 +52,7 @@ export default function NotificationsPage() {
       updateUnreadCount(countResponse.unreadCount || 0);
     } catch (err) {
       console.error("Erro ao buscar notificações:", err);
-      setAlert({
-        type: "error",
-        message: err.message || "Erro ao carregar notificações.",
-      });
+      showToast(err.message || "Erro ao carregar notificações.", "error");
     } finally {
       setLoading(false);
     }
@@ -67,10 +64,7 @@ export default function NotificationsPage() {
       markAsReadLocally(notificationId);
     } catch (err) {
       console.error("Erro ao marcar como lida:", err);
-      setAlert({
-        type: "error",
-        message: "Erro ao marcar notificação como lida.",
-      });
+      showToast("Erro ao marcar notificação como lida.", "error");
     }
   };
 
@@ -79,18 +73,13 @@ export default function NotificationsPage() {
       // PATCH /api/notifications/read-all retorna { message: "...", count: 10 }
       const response = await api.notifications.markAllAsRead();
       markAllAsReadLocally();
-      setAlert({
-        type: "success",
-        message:
-          response.message ||
-          "Todas as notificações foram marcadas como lidas!",
-      });
+      showToast(
+        response.message || "Todas as notificações foram marcadas como lidas!",
+        "success"
+      );
     } catch (err) {
       console.error("Erro ao marcar todas como lidas:", err);
-      setAlert({
-        type: "error",
-        message: "Erro ao marcar todas as notificações como lidas.",
-      });
+      showToast("Erro ao marcar todas as notificações como lidas.", "error");
     }
   };
 
@@ -99,21 +88,15 @@ export default function NotificationsPage() {
       // DELETE /api/notifications/{id}
       await api.notifications.delete(notificationId);
       removeNotificationLocally(notificationId);
-      setAlert({
-        type: "success",
-        message: "Notificação deletada!",
-      });
+      showToast("Notificação deletada!", "success");
     } catch (err) {
       console.error("Erro ao deletar notificação:", err);
-      setAlert({
-        type: "error",
-        message: "Erro ao deletar notificação.",
-      });
+      showToast("Erro ao deletar notificação.", "error");
     }
   };
 
   const handleActionComplete = (type, message) => {
-    setAlert({ type, message });
+    showToast(message, type);
   };
 
   const handleDeleteAllRead = async () => {
@@ -127,16 +110,13 @@ export default function NotificationsPage() {
       );
 
       clearReadNotificationsLocally();
-      setAlert({
-        type: "success",
-        message: `${readNotifications.length} notificações lidas foram deletadas!`,
-      });
+      showToast(
+        `${readNotifications.length} notificações lidas foram deletadas!`,
+        "success"
+      );
     } catch (err) {
       console.error("Erro ao deletar notificações lidas:", err);
-      setAlert({
-        type: "error",
-        message: "Erro ao deletar notificações lidas.",
-      });
+      showToast("Erro ao deletar notificações lidas.", "error");
     }
   };
 
@@ -149,7 +129,6 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <div className="bg-page min-h-screen">
-        
         <main className="container mx-auto p-4 mt-8 max-w-4xl">
           <div className="relative bg-surface border border-default rounded-2xl shadow-elevated p-8 flex flex-col gap-6">
             <h1 className="text-4xl font-bold text-primary text-center mt-4">
@@ -166,7 +145,6 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen">
-      
       <main className="container mx-auto p-4 mt-8 max-w-4xl">
         <div className="relative bg-surface border border-default rounded-2xl shadow-elevated p-4 md:p-8 flex flex-col gap-6">
           <button
@@ -215,7 +193,7 @@ export default function NotificationsPage() {
             </div>
           </div>
 
-          {alert && <Alert type={alert.type} message={alert.message} />}
+          {/* notifications shown via ToastProvider */}
 
           {/* Filtros e Ações */}
           <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">

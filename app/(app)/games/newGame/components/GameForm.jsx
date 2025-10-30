@@ -4,14 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Input from "@/app/components/ui/Input";
 import SelectInput from "@/app/components/ui/SelectInput";
-import Alert from "@/app/components/ui/Alert";
+// Using toasts for notifications instead of inline Alert component
 import { getGameTypeLabel } from "@/app/lib/gameUtils";
 
 const GameForm = ({
   formData,
   handleInputChange,
   handleSubmit,
-  alert,
   loading,
   gameTypeOptions,
   teams = [],

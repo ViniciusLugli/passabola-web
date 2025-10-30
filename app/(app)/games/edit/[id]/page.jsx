@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
-import Alert from "@/app/components/ui/Alert";
+import { useToast } from "@/app/context/ToastContext";
 import Modal from "@/app/components/ui/Modal";
 import EditGameForm from "./components/EditGameForm";
 import { useEditGameForm } from "./useEditGameForm";
@@ -26,10 +27,18 @@ export default function EditGamePage() {
     loadingTeams,
   } = useEditGameForm(id);
 
+  const { showToast } = useToast();
+
+  // show alerts via toast
+  useEffect(() => {
+    if (alert && alert.message) {
+      showToast(alert.message, alert.type || "info");
+    }
+  }, [alert, showToast]);
+
   if (loading) {
     return (
       <div className="bg-page min-h-screen">
-        
         <main className="container mx-auto p-4 mt-8 max-w-2xl">
           <div className="relative bg-surface border border-default rounded-2xl shadow-elevated p-8 flex flex-col gap-6">
             <h1 className="text-4xl font-bold text-primary text-center mt-4">
@@ -44,7 +53,6 @@ export default function EditGamePage() {
   if (!gameData) {
     return (
       <div className="bg-page min-h-screen">
-        
         <main className="container mx-auto p-4 mt-8 max-w-2xl">
           <div className="relative bg-surface border border-default rounded-2xl shadow-elevated p-8 flex flex-col gap-6">
             <h1 className="text-4xl font-bold text-primary text-center mt-4">
@@ -59,7 +67,6 @@ export default function EditGamePage() {
   if (!isGameCreator) {
     return (
       <div className="bg-page min-h-screen">
-        
         <main className="container mx-auto p-4 mt-8 max-w-2xl">
           <div className="relative bg-surface border border-default rounded-2xl shadow-elevated p-8 flex flex-col gap-6">
             <h1 className="text-4xl font-bold text-primary text-center mt-4">
@@ -76,7 +83,6 @@ export default function EditGamePage() {
 
   return (
     <div className="bg-page min-h-screen">
-      
       <main
         className="
         container 
@@ -140,7 +146,7 @@ export default function EditGamePage() {
             Editar Jogo
           </h1>
 
-          {alert && <Alert type={alert.type} message={alert.message} />}
+          {/* alerts shown via toast */}
 
           <EditGameForm
             formData={formData}

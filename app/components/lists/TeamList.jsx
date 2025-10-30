@@ -5,7 +5,7 @@ import { api } from "@/app/lib/api";
 import TeamCard from "@/app/components/cards/TeamCard";
 import { useAuth } from "@/app/context/AuthContext";
 
-export default function TeamList() {
+export default function TeamList({ query = "" }) {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -119,12 +119,20 @@ export default function TeamList() {
   }, [authLoading]);
 
   if (loading) {
+    // skeleton grid
+    const skeletons = Array.from({ length: 6 });
     return (
-      <div className="flex items-center justify-center py-8 sm:py-12">
-        <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-3 border-purple-500 border-t-transparent"></div>
-        <span className="ml-3 text-gray-600 font-medium text-sm sm:text-base">
-          Carregando equipes...
-        </span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+        {skeletons.map((_, i) => (
+          <div
+            key={`sk-${i}`}
+            className="p-4 rounded-xl bg-surface border border-default animate-pulse"
+          >
+            <div className="h-6 bg-surface-muted rounded mb-3 w-3/4"></div>
+            <div className="h-4 bg-surface-muted rounded mb-2 w-full"></div>
+            <div className="h-4 bg-surface-muted rounded w-1/2"></div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -146,19 +154,39 @@ export default function TeamList() {
     );
   }
 
-  if (teams.length === 0) {
+  // client-side filter by query
+  const normalized = (s) => (s || "").toString().toLowerCase().trim();
+  const filtered = query
+    ? teams.filter((t) =>
+        normalized(t.name ?? t.nameTeam ?? t.teamName).includes(
+          normalized(query)
+        )
+      )
+    : teams;
+
+  if (filtered.length === 0) {
     return (
       <div className="text-center py-8 sm:py-12">
-        <p className="text-gray-500 text-sm sm:text-base">
-          📋 Nenhuma equipe encontrada.
+        <p className="text-gray-500 text-sm sm:text-base mb-3">
+          📋 Nenhuma equipe encontrada para "{query}".
         </p>
+        {user?.userType === "PLAYER" ? (
+          <Link
+            href="/teams/newTeam"
+            className="inline-block bg-accent text-on-brand px-4 py-2 rounded-lg font-semibold"
+          >
+            Criar nova equipe
+          </Link>
+        ) : (
+          <p className="text-secondary">Tente outro termo de busca.</p>
+        )}
       </div>
     );
   }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-      {teams.map((team) => (
+      {filtered.map((team) => (
         <TeamCard key={team.id} team={team} />
       ))}
     </div>

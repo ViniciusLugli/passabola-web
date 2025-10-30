@@ -3,39 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
-
-function PlayerRow({ player, leaderId, currentUserId }) {
-  const isCurrentUser = Boolean(
-    currentUserId &&
-      (String(player?.id) === String(currentUserId) ||
-        String(player?.playerId) === String(currentUserId))
-  );
-  const name = isCurrentUser
-    ? "Eu"
-    : player?.name ?? player?.fullName ?? player?.username ?? "Jogador";
-  const avatar =
-    player?.avatarUrl ?? player?.photo ?? "/icons/user-default.png";
-  const isLeader = Boolean(
-    leaderId &&
-      (String(player?.id) === String(leaderId) ||
-        String(player?.playerId) === String(leaderId))
-  );
-  const statusLabel = isLeader ? "Líder" : "Jogador";
-
-  return (
-    <div className="flex items-center gap-3 p-3 bg-surface border border-default rounded shadow-elevated">
-      <img
-        src={avatar}
-        alt={name}
-        className="w-10 h-10 rounded-full object-cover"
-      />
-      <div className="flex-1">
-        <div className="text-sm font-medium text-primary">{name}</div>
-        <div className="text-xs text-secondary">{statusLabel}</div>
-      </div>
-    </div>
-  );
-}
+import InviteMemberModal from "../components/InviteMemberModal";
+import ConfirmModal from "@/app/components/ui/ConfirmModal";
+import { useToast } from "@/app/context/ToastContext";
+import MembersAvatars from "../components/MembersAvatars";
+import MemberList from "../components/MemberList";
 
 export default function TeamDetailsPage({ params }) {
   const resolvedParams = React.use(params);
@@ -44,7 +16,15 @@ export default function TeamDetailsPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [confirmState, setConfirmState] = useState({
+    isOpen: false,
+    action: null,
+    payload: null,
+    message: "",
+  });
   const { loading: authLoading, user: currentUser } = useAuth();
+  const { showToast } = useToast();
 
   const fetchTeam = async () => {
     setLoading(true);
@@ -52,6 +32,16 @@ export default function TeamDetailsPage({ params }) {
     try {
       const res = await api.teams.getById(id);
       const teamData = res ?? res?.team ?? res?.content ?? null;
+      try {
+        const invitesRes = await api.teams.getTeamInvites(id);
+        const invitesList = Array.isArray(invitesRes)
+          ? invitesRes
+          : invitesRes?.content || [];
+        teamData.invites = invitesList;
+      } catch (ie) {
+        teamData.invites = teamData.invites || [];
+      }
+
       setTeam(teamData);
     } catch (err) {
       console.error("Erro ao buscar time:", err);
@@ -67,37 +57,40 @@ export default function TeamDetailsPage({ params }) {
   }, [id, authLoading]);
 
   const removePlayer = async (playerId) => {
-    if (
-      !confirm("Remover este jogador do time? Esta ação não pode ser desfeita.")
-    )
-      return;
-    setActionLoading(true);
-    try {
-      await api.teams.removePlayer(id, playerId);
-      await fetchTeam();
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("teams:changed"));
-      }
-    } catch (err) {
-      console.error("Falha ao remover jogador:", err);
-      alert(err?.message || "Falha ao remover jogador");
-    } finally {
-      setActionLoading(false);
-    }
+    setConfirmState({
+      isOpen: true,
+      action: "removePlayer",
+      payload: playerId,
+      message: "Remover este jogador do time? Esta ação não pode ser desfeita.",
+    });
   };
 
   const leaveTeam = async () => {
-    if (!confirm("Tem certeza que deseja sair deste time?")) return;
+    setConfirmState({
+      isOpen: true,
+      action: "leaveTeam",
+      payload: null,
+      message: "Tem certeza que deseja sair deste time?",
+    });
+  };
+
+  const handleConfirm = async () => {
+    const { action, payload } = confirmState;
+    setConfirmState((s) => ({ ...s, isOpen: false }));
     setActionLoading(true);
     try {
-      await api.teams.leaveTeam(id);
+      if (action === "removePlayer") {
+        await api.teams.removePlayer(id, payload);
+      } else if (action === "leaveTeam") {
+        await api.teams.leaveTeam(id);
+      }
       await fetchTeam();
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("teams:changed"));
       }
     } catch (err) {
-      console.error("Falha ao sair do time:", err);
-      alert(err?.message || "Falha ao sair do time");
+      console.error("Falha na ação de confirmação:", err);
+      showToast(err?.message || "Falha ao executar ação", "error");
     } finally {
       setActionLoading(false);
     }
@@ -105,25 +98,49 @@ export default function TeamDetailsPage({ params }) {
 
   return (
     <div className="bg-page min-h-screen">
-      
       <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-3xl">
-        {loading && <p>Carregando detalhes do time...</p>}
+        {loading && (
+          <div className="space-y-4">
+            <div className="h-8 w-1/3 bg-surface-muted rounded animate-pulse"></div>
+            <div className="h-4 w-full bg-surface-muted rounded animate-pulse"></div>
+            <div className="grid grid-cols-4 gap-2 mt-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={`av-${i}`}
+                  className="h-14 w-14 rounded-full bg-surface-muted animate-pulse"
+                />
+              ))}
+            </div>
+          </div>
+        )}
         {error && <p className="text-red-500">Erro: {error}</p>}
         {!loading && !error && !team && <p>Time não encontrado.</p>}
 
         {team && (
           <div className="space-y-6">
-            <div className="bg-surface border border-default p-6 rounded-lg shadow-elevated flex items-start justify-between">
+            <div className="bg-surface border border-default p-6 rounded-lg shadow-elevated">
               <div>
                 <h1 className="text-2xl font-bold text-primary">
                   {team?.name ?? team?.nameTeam ?? "Equipe"}
                 </h1>
                 {team?.bio && <p className="text-secondary mt-2">{team.bio}</p>}
                 <div className="text-sm text-tertiary mt-3">
-                  Criado em: {new Date(team.createdAt).toLocaleString()}
+                  Criado em:{" "}
+                  {team?.createdAt
+                    ? new Date(team.createdAt).toLocaleString()
+                    : "-"}
                 </div>
+
+                {((team.players && team.players.length > 0) ||
+                  (team.invites && team.invites.length > 0)) && (
+                  <MembersAvatars
+                    players={team.players}
+                    invites={team.invites}
+                    playersCount={team.players?.length ?? 0}
+                  />
+                )}
               </div>
-              <div className="ml-4">
+              <div className="mt-4 flex gap-2">
                 {currentUser?.id && currentUser.id !== team?.leader?.id && (
                   <button
                     disabled={actionLoading}
@@ -133,44 +150,73 @@ export default function TeamDetailsPage({ params }) {
                     Sair do time
                   </button>
                 )}
+
+                {String(currentUser?.id) === String(team?.leader?.id) && (
+                  <>
+                    <button
+                      disabled={actionLoading}
+                      onClick={() => setShowInviteModal(true)}
+                      className="text-sm bg-accent text-on-brand px-3 py-1 rounded font-semibold"
+                    >
+                      Convidar
+                    </button>
+                    <InviteMemberModal
+                      isOpen={showInviteModal}
+                      onClose={() => setShowInviteModal(false)}
+                      teamId={team.id || id}
+                      onInviteSuccess={async () => {
+                        await fetchTeam();
+                        if (typeof window !== "undefined") {
+                          window.dispatchEvent(
+                            new CustomEvent("teams:changed")
+                          );
+                        }
+                      }}
+                    />
+                    <ConfirmModal
+                      isOpen={confirmState.isOpen}
+                      title={"Confirmação"}
+                      message={confirmState.message}
+                      onCancel={() =>
+                        setConfirmState((s) => ({ ...s, isOpen: false }))
+                      }
+                      onConfirm={handleConfirm}
+                      confirmLabel={"Sim"}
+                      cancelLabel={"Não"}
+                      loading={actionLoading}
+                    />
+                  </>
+                )}
               </div>
             </div>
 
             <section>
               <h2 className="text-lg font-semibold text-primary mb-3">
-                Jogadores ({team?.playerCount ?? team?.players?.length ?? 0})
+                Jogadoras ({team?.playerCount ?? team?.players?.length ?? 0})
               </h2>
-              <div className="grid grid-cols-1 gap-3">
-                {(team?.players ?? []).map((p) => (
-                  <div
-                    key={p.id ?? p.playerId}
-                    className="flex items-center gap-3"
-                  >
-                    <div className="flex-1">
-                      <PlayerRow
-                        player={p}
-                        leaderId={team?.leader?.id}
-                        currentUserId={currentUser?.id}
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      {currentUser?.id &&
-                        team?.leader?.id &&
-                        String(currentUser.id) === String(team.leader.id) &&
-                        String(p.id ?? p.playerId) !==
-                          String(team.leader.id) && (
-                          <button
-                            disabled={actionLoading}
-                            onClick={() => removePlayer(p.id ?? p.playerId)}
-                            className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                          >
-                            Remover
-                          </button>
-                        )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <MemberList
+                team={team}
+                currentUser={currentUser}
+                actionLoading={actionLoading}
+                onRemovePlayer={(playerId) => removePlayer(playerId)}
+                onCancelInvite={async (inviteId) => {
+                  try {
+                    setActionLoading(true);
+                    await api.teams.cancelInvite(inviteId);
+                    await fetchTeam();
+                    showToast("Convite cancelado.", "success");
+                  } catch (err) {
+                    console.error("Falha ao cancelar convite:", err);
+                    showToast(
+                      err?.message || "Erro ao cancelar convite",
+                      "error"
+                    );
+                  } finally {
+                    setActionLoading(false);
+                  }
+                }}
+                leaderId={team?.leader?.id}
+              />
             </section>
           </div>
         )}

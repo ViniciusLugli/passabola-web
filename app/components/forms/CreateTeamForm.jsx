@@ -31,6 +31,11 @@ export default function CreateTeamForm() {
         onChange={(e) => setTeamName(e.target.value)}
         required
         placeholder="Ex: As Poderosas FC"
+        error={
+          teamName && teamName.trim().length === 0
+            ? "O nome do time não pode ser vazio."
+            : undefined
+        }
       />
 
       <div className="border border-default rounded-xl p-4 bg-surface-muted">
