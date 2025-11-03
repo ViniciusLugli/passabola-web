@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "logs:socket": "node ./scripts/log-socket-server.js",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint",
-    "logs:socket": "node scripts/log-socket-server.js"
+    "lint": "eslint"
   },
   "dependencies": {
     "@stomp/stompjs": "^7.2.1",
@@ -15,7 +15,8 @@
     "next": "15.5.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "sockjs-client": "^1.6.1"
+    "sockjs-client": "^1.6.1",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

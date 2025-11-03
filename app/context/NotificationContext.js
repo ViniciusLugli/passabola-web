@@ -143,9 +143,17 @@ export function NotificationProvider({ children }) {
               message: frame?.message,
             },
           };
-          logError({ route: WS_URL, message: "Erro STOMP (Notifications)", meta: parsed });
+          logError({
+            route: WS_URL,
+            message: "Erro STOMP (Notifications)",
+            meta: parsed,
+          });
         } catch (err) {
-          logError({ route: WS_URL, message: "Erro STOMP (Notifications) (parsing)", meta: { err, frame } });
+          logError({
+            route: WS_URL,
+            message: "Erro STOMP (Notifications) (parsing)",
+            meta: { err, frame },
+          });
         }
         setIsConnected(false);
       },
@@ -165,9 +173,17 @@ export function NotificationProvider({ children }) {
             },
             stack: event?.error?.stack || null,
           };
-          logError({ route: WS_URL, message: "Erro WebSocket (Notifications)", meta: parsed });
+          logError({
+            route: WS_URL,
+            message: "Erro WebSocket (Notifications)",
+            meta: parsed,
+          });
         } catch (err) {
-          logError({ route: WS_URL, message: "Erro WebSocket (Notifications) (parsing)", meta: { err, event } });
+          logError({
+            route: WS_URL,
+            message: "Erro WebSocket (Notifications) (parsing)",
+            meta: { err, event },
+          });
         }
         setIsConnected(false);
       },
