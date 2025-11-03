@@ -33,11 +33,21 @@ export default function TeamDetailsPage({ params }) {
       const res = await api.teams.getById(id);
       const teamData = res ?? res?.team ?? res?.content ?? null;
       try {
-        const invitesRes = await api.teams.getTeamInvites(id);
-        const invitesList = Array.isArray(invitesRes)
-          ? invitesRes
-          : invitesRes?.content || [];
-        teamData.invites = invitesList;
+        // Only fetch team invites if the current user is the team leader.
+        if (
+          currentUser &&
+          teamData?.leader &&
+          String(currentUser.id) === String(teamData.leader.id)
+        ) {
+          const invitesRes = await api.teams.getTeamInvites(id);
+          const invitesList = Array.isArray(invitesRes)
+            ? invitesRes
+            : invitesRes?.content || [];
+          teamData.invites = invitesList;
+        } else {
+          // Not the leader: do not attempt to fetch invites (server returns 400/403)
+          teamData.invites = teamData.invites || [];
+        }
       } catch (ie) {
         teamData.invites = teamData.invites || [];
       }
@@ -137,6 +147,8 @@ export default function TeamDetailsPage({ params }) {
                     players={team.players}
                     invites={team.invites}
                     playersCount={team.players?.length ?? 0}
+                    currentUser={currentUser}
+                    leaderId={team?.leader?.id}
                   />
                 )}
               </div>

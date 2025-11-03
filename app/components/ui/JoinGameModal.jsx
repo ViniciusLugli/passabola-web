@@ -226,10 +226,6 @@ export default function JoinGameModal({
           teamSide: Number(side),
         };
 
-        console.log("📤 Enviando payload:", payload);
-        console.log("👤 User info:", { id: user.id, userType: user.userType });
-        console.log("🎮 Game info:", game);
-        console.log("👥 All players:", allPlayers);
         if (game.status && game.status !== "SCHEDULED") {
           setError(
             `Este jogo já ${game.status === "LIVE" ? "começou" : "terminou"}.`
@@ -249,10 +245,6 @@ export default function JoinGameModal({
               page: 0,
               size: 1,
             });
-          console.log(
-            "Minhas participações (teste de autenticação):",
-            myParticipations
-          );
         } catch (testErr) {
           console.error("Erro ao buscar participações (teste):", testErr);
           if (testErr.status === 401 || testErr.status === 403) {

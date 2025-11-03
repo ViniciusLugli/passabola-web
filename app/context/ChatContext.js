@@ -37,7 +37,6 @@ export function ChatProvider({ children }) {
 
   useEffect(() => {
     if (!ENABLE_CHAT_WEBSOCKET) {
-      console.log("[Chat WebSocket] Desabilitado via configuração");
       setIsConnected(false);
       return;
     }
@@ -66,23 +65,18 @@ export function ChatProvider({ children }) {
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
-      debug: (str) => {
-        if (process.env.NODE_ENV === "development") {
-          console.log("[Chat WebSocket]", str);
-        }
+      debug: (/* str */) => {
+        /* debug suppressed */
       },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: () => {
-        console.log("Chat WebSocket conectado!");
         setIsConnected(true);
 
         stompClient.subscribe(`/user/queue/messages`, (message) => {
           try {
             const newMessage = JSON.parse(message.body);
-            console.log("Nova mensagem recebida:", newMessage);
-
             handleNewMessage(newMessage);
           } catch (error) {
             console.error("Erro ao processar mensagem:", error);
@@ -92,15 +86,48 @@ export function ChatProvider({ children }) {
         clientRef.current = stompClient;
       },
       onDisconnect: () => {
-        console.log("Chat WebSocket desconectado");
         setIsConnected(false);
       },
       onStompError: (frame) => {
-        console.error("Erro STOMP (Chat):", frame);
+        try {
+          const parsedFrame = {
+            time: new Date().toISOString(),
+            url: WS_URL,
+            userId: user?.id,
+            userType: user?.userType,
+            frame: {
+              command: frame?.command,
+              headers: frame?.headers,
+              body: frame?.body,
+              message: frame?.message,
+            },
+          };
+          console.error("Erro STOMP (Chat):", parsedFrame);
+        } catch (err) {
+          console.error("Erro STOMP (Chat) (parsing):", err, { frame });
+        }
         setIsConnected(false);
       },
       onWebSocketError: (event) => {
-        console.error("Erro WebSocket (Chat):", event);
+        try {
+          const parsed = {
+            time: new Date().toISOString(),
+            url: WS_URL,
+            userId: user?.id,
+            userType: user?.userType,
+            type: event?.type,
+            message: event?.message || event?.reason || null,
+            error: event?.error || null,
+            target: {
+              url: event?.target?.url || null,
+              readyState: event?.target?.readyState || null,
+            },
+            stack: event?.error?.stack || null,
+          };
+          console.error("Erro WebSocket (Chat):", parsed);
+        } catch (err) {
+          console.error("Erro WebSocket (Chat) (parsing):", err, { event });
+        }
         setIsConnected(false);
       },
     });
@@ -179,12 +206,12 @@ export function ChatProvider({ children }) {
   // porque a API usa /user/queue/messages global
   const subscribeToChat = useCallback((otherUserId) => {
     // Não faz nada - subscribe já foi feito no onConnect
-    console.log(`[Chat] Conversa com ${otherUserId} ativa`);
+    /* suppressed debug */
   }, []);
 
   const unsubscribeFromChat = useCallback((otherUserId) => {
     // Não faz nada - subscribe é global
-    console.log(`[Chat] Conversa com ${otherUserId} inativa`);
+    /* suppressed debug */
   }, []);
 
   const sendMessageViaWebSocket = useCallback(

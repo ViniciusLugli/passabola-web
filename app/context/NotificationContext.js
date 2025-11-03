@@ -34,9 +34,6 @@ export function NotificationProvider({ children }) {
 
   useEffect(() => {
     if (!ENABLE_WEBSOCKET) {
-      console.log(
-        "[WebSocket] Desabilitado via configuração (NEXT_PUBLIC_ENABLE_WEBSOCKET=false)"
-      );
       setIsConnected(false);
       return;
     }
@@ -57,40 +54,40 @@ export function NotificationProvider({ children }) {
     }
 
     const WS_URL =
-      process.env.NEXT_PUBLIC_NOTIFICATION_WS_URL ||
-      "http://localhost:8080/ws-chat-sockjs";
+      process.env.NEXT_PUBLIC_NOTIFICATION_WS_URL || "http://localhost:8080/ws";
 
     const stompClient = new Client({
       webSocketFactory: () => new SockJS(WS_URL),
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
-      debug: (str) => {
-        if (process.env.NODE_ENV === "development") {
-          console.log("[WebSocket]", str);
-        }
+      debug: (/* str */) => {
+        /* debug suppressed */
       },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: () => {
-        console.log("WebSocket conectado!");
         setIsConnected(true);
 
         const userType = user.userType.toLowerCase(); // player, organization, spectator
+
+        // Subscribe to notification messages for the user
         stompClient.subscribe(
           `/topic/notifications/${userType}/${user.id}`,
           (message) => {
             try {
               const notification = JSON.parse(message.body);
-              console.log("Nova notificação recebida:", notification);
-
               setNotifications((prev) => [notification, ...prev]);
               setUnreadCount((prev) => prev + 1);
 
-              if (Notification.permission === "granted") {
-                new Notification(notification.title, {
-                  body: notification.message,
+              // Browser native notification (optional)
+              if (
+                typeof Notification !== "undefined" &&
+                Notification.permission === "granted"
+              ) {
+                new Notification(notification.title || "Notificação", {
+                  body: notification.message || notification.title || "",
                   icon: "/logo.svg",
                 });
               }
@@ -99,17 +96,82 @@ export function NotificationProvider({ children }) {
             }
           }
         );
+
+        // Subscribe to unread count updates (server can push count updates)
+        stompClient.subscribe(
+          `/topic/notifications/${userType}/${user.id}/count`,
+          (message) => {
+            try {
+              const payload = JSON.parse(message.body);
+              // payload can be { unreadCount: N } or a plain number
+              const count =
+                payload && typeof payload === "object"
+                  ? payload.unreadCount ?? payload.count ?? 0
+                  : Number(payload) || 0;
+              setUnreadCount(count);
+            } catch (err) {
+              // try parse as raw number
+              const raw = message.body;
+              const n = Number(raw);
+              if (!Number.isNaN(n)) {
+                setUnreadCount(n);
+              } else {
+                console.error(
+                  "Erro ao processar contador de notificações:",
+                  err
+                );
+              }
+            }
+          }
+        );
       },
       onDisconnect: () => {
-        console.log("WebSocket desconectado");
         setIsConnected(false);
       },
       onStompError: (frame) => {
-        console.error("Erro STOMP:", frame);
+        try {
+          const parsed = {
+            time: new Date().toISOString(),
+            url: WS_URL,
+            userId: user?.id,
+            userType: user?.userType,
+            frame: {
+              command: frame?.command,
+              headers: frame?.headers,
+              body: frame?.body,
+              message: frame?.message,
+            },
+          };
+          console.error("Erro STOMP (Notifications):", parsed);
+        } catch (err) {
+          console.error("Erro STOMP (Notifications) (parsing):", err, {
+            frame,
+          });
+        }
         setIsConnected(false);
       },
       onWebSocketError: (event) => {
-        console.error("Erro WebSocket:", event);
+        try {
+          const parsed = {
+            time: new Date().toISOString(),
+            url: WS_URL,
+            userId: user?.id,
+            userType: user?.userType,
+            type: event?.type,
+            message: event?.message || event?.reason || null,
+            error: event?.error || null,
+            target: {
+              url: event?.target?.url || null,
+              readyState: event?.target?.readyState || null,
+            },
+            stack: event?.error?.stack || null,
+          };
+          console.error("Erro WebSocket (Notifications):", parsed);
+        } catch (err) {
+          console.error("Erro WebSocket (Notifications) (parsing):", err, {
+            event,
+          });
+        }
         setIsConnected(false);
       },
     });

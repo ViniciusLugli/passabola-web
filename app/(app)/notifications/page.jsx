@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/app/context/ToastContext";
 import NotificationCard from "@/app/components/cards/NotificationCard";
+import ConfirmModal from "@/app/components/ui/ConfirmModal";
+import { Check, Trash2 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useNotifications } from "@/app/context/NotificationContext";
 import { api } from "@/app/lib/api";
@@ -21,11 +23,15 @@ export default function NotificationsPage() {
     markAllAsReadLocally,
     setNotificationsList,
     updateUnreadCount,
+    addNotification,
   } = useNotifications();
 
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [batchActionLoading, setBatchActionLoading] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -95,8 +101,115 @@ export default function NotificationsPage() {
     }
   };
 
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    // Clear selection when filter changes
+    setSelectedIds(new Set());
+  }, [filter]);
+
+  const handleMarkSelectedAsRead = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBatchActionLoading(true);
+    try {
+      await Promise.all(ids.map((id) => api.notifications.markAsRead(id)));
+      ids.forEach((id) => markAsReadLocally(id));
+      showToast(`${ids.length} notificações marcadas como lidas.`, "success");
+      setSelectedIds(new Set());
+    } catch (err) {
+      console.error(
+        "Erro ao marcar notificações selecionadas como lidas:",
+        err
+      );
+      showToast("Erro ao marcar notificações como lidas.", "error");
+    } finally {
+      setBatchActionLoading(false);
+    }
+  };
+
+  const handleDeleteSelectedConfirmed = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) {
+      setConfirmDeleteOpen(false);
+      return;
+    }
+    setBatchActionLoading(true);
+    try {
+      await Promise.all(ids.map((id) => api.notifications.delete(id)));
+      ids.forEach((id) => removeNotificationLocally(id));
+      showToast(`${ids.length} notificações deletadas.`, "success");
+      setSelectedIds(new Set());
+      setConfirmDeleteOpen(false);
+    } catch (err) {
+      console.error("Erro ao deletar notificações selecionadas:", err);
+      showToast("Erro ao deletar notificações.", "error");
+    } finally {
+      setBatchActionLoading(false);
+    }
+  };
+
   const handleActionComplete = (type, message) => {
     showToast(message, type);
+  };
+
+  const addMockNotifications = () => {
+    const now = Date.now();
+    const mocks = [
+      {
+        id: `mock-${now}-1`,
+        title: "Convite para time",
+        message: "Você recebeu um convite para ingressar no time Gêmeas FC",
+        type: "TEAM_INVITE",
+        createdAt: new Date().toISOString(),
+        read: false,
+        link: "/teams/123",
+      },
+      {
+        id: `mock-${now}-2`,
+        title: "Partida atualizada",
+        message: "Horário alterado: Jogo contra Rivais às 18:00",
+        type: "GAME_UPDATE",
+        createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+        read: false,
+        link: "/games/456",
+      },
+      {
+        id: `mock-${now}-3`,
+        title: "Novo post",
+        message: "Time adversário postou um update no feed",
+        type: "NEW_POST",
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+        read: true,
+      },
+      {
+        id: `mock-${now}-4`,
+        title: "Novo seguidor",
+        message: "A usuária Ana começou a te seguir",
+        type: "NEW_FOLLOWER",
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+        read: false,
+      },
+      {
+        id: `mock-${now}-5`,
+        title: "Sistema",
+        message: "Manutenção agendada para domingo às 02:00",
+        type: "SYSTEM",
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+        read: true,
+      },
+    ];
+
+    // add newest first
+    mocks.forEach((m) => addNotification(m));
+    showToast(`${mocks.length} notificações mock adicionadas`, "success");
   };
 
   const handleDeleteAllRead = async () => {
@@ -127,6 +240,7 @@ export default function NotificationsPage() {
   });
 
   if (loading) {
+    // show skeleton cards while loading
     return (
       <div className="bg-page min-h-screen">
         <main className="container mx-auto p-4 mt-8 max-w-4xl">
@@ -137,6 +251,23 @@ export default function NotificationsPage() {
             <p className="text-center text-secondary">
               Carregando notificações...
             </p>
+
+            <div className="flex flex-col gap-3 mt-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="p-2">
+                  <div className="p-4 rounded-lg border bg-surface animate-pulse">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded bg-surface-muted"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-surface-muted rounded w-1/3 mb-2"></div>
+                        <div className="h-3 bg-surface-muted rounded w-full mb-2"></div>
+                        <div className="h-3 bg-surface-muted rounded w-2/3"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </main>
       </div>
@@ -179,6 +310,18 @@ export default function NotificationsPage() {
               )}
             </div>
 
+            {/* Dev helpers: adicionar mocks */}
+            {process.env.NODE_ENV === "development" && (
+              <div className="mt-3 md:mt-0">
+                <button
+                  onClick={addMockNotifications}
+                  className="px-3 py-1.5 text-sm font-medium bg-surface-muted border border-default rounded-md hover:bg-surface-elevated"
+                >
+                  Adicionar mocks
+                </button>
+              </div>
+            )}
+
             <div className="flex items-center gap-2">
               <div
                 className={`
@@ -197,19 +340,25 @@ export default function NotificationsPage() {
 
           {/* Filtros e Ações */}
           <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-            <div className="flex gap-2 flex-wrap">
+            <div
+              role="tablist"
+              aria-label="Filtros de notificações"
+              className="flex gap-2 flex-wrap"
+            >
               {["all", "unread", "read"].map((key) => (
                 <button
                   key={key}
+                  role="tab"
+                  aria-selected={filter === key}
                   onClick={() => setFilter(key)}
                   className={`
-                    px-3 py-1.5 rounded-md text-sm font-medium transition-all
-                    ${
-                      filter === key
-                        ? "bg-accent text-on-brand shadow-elevated"
-                        : "bg-surface-muted text-secondary border border-default hover:bg-surface-elevated"
-                    }
-                  `}
+                      px-3 py-1.5 rounded-md text-sm font-medium transition-all
+                      ${
+                        filter === key
+                          ? "bg-accent text-on-brand shadow-elevated"
+                          : "bg-surface-muted text-secondary border border-default hover:bg-surface-elevated"
+                      }
+                    `}
                 >
                   {key === "all"
                     ? "Todas"
@@ -240,6 +389,51 @@ export default function NotificationsPage() {
             </div>
           </div>
 
+          {/* Barra de ações em lote (quando houver seleção) */}
+          {selectedIds.size > 0 && (
+            <div
+              role="region"
+              aria-live="polite"
+              aria-label="Ações de notificações selecionadas"
+              className="transform transition-all duration-200 ease-out flex flex-col md:flex-row items-center justify-between gap-3 p-3 md:p-4 bg-surface-muted border border-default rounded-md shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <div className="text-sm text-secondary font-medium" aria-hidden>
+                  {selectedIds.size}
+                </div>
+                <div className="text-sm text-secondary">
+                  selecionada{selectedIds.size > 1 ? "s" : ""}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 items-center">
+                <button
+                  onClick={handleMarkSelectedAsRead}
+                  disabled={batchActionLoading}
+                  className="px-2.5 py-1 text-sm md:px-3 md:py-1.5 bg-accent text-on-brand rounded inline-flex items-center gap-2"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Marcar</span>
+                </button>
+                <button
+                  onClick={() => setConfirmDeleteOpen(true)}
+                  disabled={batchActionLoading}
+                  className="px-2.5 py-1 text-sm md:px-3 md:py-1.5 bg-red-500 text-white rounded inline-flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Deletar</span>
+                </button>
+                <button
+                  onClick={() => setSelectedIds(new Set())}
+                  disabled={batchActionLoading}
+                  className="px-2.5 py-1 text-sm text-secondary hover:text-primary"
+                >
+                  Limpar seleção
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Lista de Notificações */}
           <div className="flex flex-col gap-3">
             {filteredNotifications.length === 0 ? (
@@ -260,10 +454,26 @@ export default function NotificationsPage() {
                   onMarkAsRead={handleMarkAsRead}
                   onDelete={handleDelete}
                   onActionComplete={handleActionComplete}
+                  selectable={true}
+                  selected={selectedIds.has(notification.id)}
+                  onToggleSelect={toggleSelect}
                 />
               ))
             )}
           </div>
+          {/* Confirm modal para deletar seleção */}
+          <ConfirmModal
+            isOpen={confirmDeleteOpen}
+            title={"Deletar notificações"}
+            message={`Tem certeza que deseja deletar ${
+              selectedIds.size
+            } notificação${selectedIds.size > 1 ? "s" : ""}?`}
+            onCancel={() => setConfirmDeleteOpen(false)}
+            onConfirm={handleDeleteSelectedConfirmed}
+            confirmLabel={"Sim, deletar"}
+            cancelLabel={"Cancelar"}
+            loading={batchActionLoading}
+          />
         </div>
       </main>
     </div>

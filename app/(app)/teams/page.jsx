@@ -38,7 +38,7 @@ export default function TeamsPage() {
             />
           </div>
 
-          <TeamList query={query} />
+          <TeamList query={query} onlyMine={true} />
         </div>
       </main>
     </div>

@@ -20,35 +20,35 @@ export default function MemberList({
   }));
 
   const mapInvite = (it) => {
+    // API may return nested invitedPlayer object
+    const invited = it?.invitedPlayer ?? it?.player ?? it?.user ?? null;
+
     const name =
-      it?.name ||
-      it?.username ||
-      it?.email ||
+      invited?.name ||
+      invited?.fullName ||
+      invited?.username ||
+      invited?.email ||
       it?.invitedName ||
       it?.inviteeName ||
-      it?.invitedEmail ||
-      it?.inviteeEmail ||
-      it?.player?.name ||
-      it?.player?.username ||
-      it?.player?.email ||
-      it?.user?.name ||
-      it?.user?.username ||
       "Pendente";
 
     const avatar =
+      invited?.profilePhotoUrl ||
+      invited?.profilePhoto ||
+      invited?.avatarUrl ||
+      invited?.photo ||
       it?.profilePhoto ||
-      it?.avatarUrl ||
-      it?.photo ||
-      it?.player?.profilePhoto ||
-      it?.player?.photo ||
-      it?.user?.avatar ||
       "/icons/user-default.png";
 
+    const invitedId =
+      invited?.id ?? it?.invitedPlayerId ?? it?.playerId ?? null;
+
     return {
-      id: it.invitedPlayerId ?? it.playerId ?? `invite-${it.id}`,
+      // Use the invited player's id when present, otherwise a fallback unique key
+      id: invitedId ?? `invite-${it.id}`,
       _inviteId: it.id,
       pending: true,
-      username: it.username ?? null,
+      username: invited?.username ?? it?.username ?? null,
       name: name,
       avatarUrl: avatar,
     };
@@ -83,42 +83,43 @@ export default function MemberList({
         ))}
       </div>
 
-      {console.log("pendingInvites", pendingInvites)}
-
-      {pendingInvites.length > 0 && (
-        <div>
-          <h3 className="text-sm font-medium text-secondary mb-2">
-            Convites pendentes
-          </h3>
-          <div className="grid grid-cols-1 gap-3">
-            {pendingInvites.map((p) => (
-              <PlayerRow
-                key={p.id}
-                player={p}
-                leaderId={leaderId}
-                currentUserId={currentUser?.id}
-                action={
-                  currentUser?.id &&
-                  leaderId &&
-                  String(currentUser.id) === String(leaderId) ? (
-                    <button
-                      disabled={actionLoading}
-                      onClick={() => onCancelInvite?.(p._inviteId)}
-                      className="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded"
-                    >
-                      Cancelar
-                    </button>
-                  ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      Pendente
-                    </span>
-                  )
-                }
-              />
-            ))}
+      {pendingInvites.length > 0 &&
+        currentUser?.id &&
+        leaderId &&
+        String(currentUser.id) === String(leaderId) && (
+          <div>
+            <h3 className="text-sm font-medium text-secondary mb-2">
+              Convites pendentes
+            </h3>
+            <div className="grid grid-cols-1 gap-3">
+              {pendingInvites.map((p) => (
+                <PlayerRow
+                  key={p.id}
+                  player={p}
+                  leaderId={leaderId}
+                  currentUserId={currentUser?.id}
+                  action={
+                    currentUser?.id &&
+                    leaderId &&
+                    String(currentUser.id) === String(leaderId) ? (
+                      <button
+                        disabled={actionLoading}
+                        onClick={() => onCancelInvite?.(p._inviteId)}
+                        className="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded"
+                      >
+                        Cancelar
+                      </button>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        Pendente
+                      </span>
+                    )
+                  }
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

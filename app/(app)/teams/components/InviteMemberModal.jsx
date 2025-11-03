@@ -57,7 +57,13 @@ export default function InviteMemberModal({
         const res = await api.teams.getTeamInvites(teamId);
         const list = Array.isArray(res) ? res : res?.content || [];
         const ids = new Set(
-          list.map((it) => it.invitedPlayerId ?? it.playerId ?? it.id)
+          list.map(
+            (it) =>
+              it?.invitedPlayer?.id ??
+              it?.invitedPlayerId ??
+              it?.playerId ??
+              it?.id
+          )
         );
         if (mounted) setInvitedIds(ids);
       } catch (err) {

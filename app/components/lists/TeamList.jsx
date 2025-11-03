@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { api } from "@/app/lib/api";
 import TeamCard from "@/app/components/cards/TeamCard";
 import { useAuth } from "@/app/context/AuthContext";
 
-export default function TeamList({ query = "" }) {
+export default function TeamList({ query = "", onlyMine = false }) {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,32 +48,51 @@ export default function TeamList({ query = "" }) {
           }
         }
 
-        if (user && teamsData.length > 0) {
-          const currentUserId = String(user.id || user.playerId);
+        const currentUserId = user ? String(user.id || user.playerId) : null;
 
-          const myTeams = teamsData.filter((team) => {
-            if (team.leader) {
-              const leaderId = String(
-                team.leader.id || team.leader.playerId || team.leaderId
-              );
-              if (leaderId === currentUserId) return true;
-            }
+        const isUserInTeam = (team) => {
+          if (!currentUserId) return false;
+          if (team.leader) {
+            const leaderId = String(
+              team.leader.id || team.leader.playerId || team.leaderId || ""
+            );
+            if (leaderId === currentUserId) return true;
+          }
+          if (team.players && Array.isArray(team.players)) {
+            return team.players.some((player) => {
+              const playerId = String(player.id || player.playerId || "");
+              return playerId === currentUserId;
+            });
+          }
+          return false;
+        };
 
-            if (team.players && Array.isArray(team.players)) {
-              const isPlayerInTeam = team.players.some((player) => {
-                const playerId = String(player.id || player.playerId);
-                return playerId === currentUserId;
-              });
-              if (isPlayerInTeam) return true;
-            }
-
-            return false;
+        let uniqueTeams = Array.isArray(teamsData) ? teamsData : [];
+        if (uniqueTeams.length > 0) {
+          const seen = new Map();
+          uniqueTeams.forEach((t) => {
+            const id = t?.id ?? t?.teamId ?? JSON.stringify(t);
+            if (!seen.has(id)) seen.set(id, t);
           });
-
-          setTeams(myTeams);
-        } else {
-          setTeams(teamsData);
+          if (seen.size !== uniqueTeams.length) {
+            console.warn(
+              `Detected duplicate teams from API (original: ${uniqueTeams.length}, unique: ${seen.size}). Deduping client-side.`
+            );
+          }
+          uniqueTeams = Array.from(seen.values());
         }
+
+        const userTeams = uniqueTeams.filter((t) => isUserInTeam(t));
+
+        const sortedUserTeams = userTeams.sort((a, b) => {
+          const aName = (a?.name || a?.nameTeam || "").toString().toLowerCase();
+          const bName = (b?.name || b?.nameTeam || "").toString().toLowerCase();
+          if (aName < bName) return -1;
+          if (aName > bName) return 1;
+          return 0;
+        });
+
+        setTeams(sortedUserTeams);
       } catch (err) {
         console.error("Erro ao buscar equipes:", err);
         if (err && err.status === 403) {
@@ -116,10 +136,9 @@ export default function TeamList({ query = "" }) {
         window.removeEventListener("teams:changed", handleTeamsChanged);
       }
     };
-  }, [authLoading]);
+  }, [authLoading, user]);
 
   if (loading) {
-    // skeleton grid
     const skeletons = Array.from({ length: 6 });
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
@@ -154,9 +173,9 @@ export default function TeamList({ query = "" }) {
     );
   }
 
-  // client-side filter by query
   const normalized = (s) => (s || "").toString().toLowerCase().trim();
-  const filtered = query
+  const hasQuery = normalized(query).length > 0;
+  const filtered = hasQuery
     ? teams.filter((t) =>
         normalized(t.name ?? t.nameTeam ?? t.teamName).includes(
           normalized(query)
@@ -165,21 +184,34 @@ export default function TeamList({ query = "" }) {
     : teams;
 
   if (filtered.length === 0) {
+    if (!hasQuery) {
+      return (
+        <div className="text-center py-8 sm:py-12">
+          <p className="text-gray-500 text-sm sm:text-base mb-3">
+            📋 Você ainda não faz parte de nenhuma equipe.
+          </p>
+          {user?.userType === "PLAYER" ? (
+            <Link
+              href="/teams/newTeam"
+              className="inline-block bg-accent text-on-brand px-4 py-2 rounded-lg font-semibold"
+            >
+              Criar nova equipe
+            </Link>
+          ) : (
+            <p className="text-secondary">
+              Procure por equipes ou peça para alguém te convidar.
+            </p>
+          )}
+        </div>
+      );
+    }
+
     return (
       <div className="text-center py-8 sm:py-12">
         <p className="text-gray-500 text-sm sm:text-base mb-3">
           📋 Nenhuma equipe encontrada para "{query}".
         </p>
-        {user?.userType === "PLAYER" ? (
-          <Link
-            href="/teams/newTeam"
-            className="inline-block bg-accent text-on-brand px-4 py-2 rounded-lg font-semibold"
-          >
-            Criar nova equipe
-          </Link>
-        ) : (
-          <p className="text-secondary">Tente outro termo de busca.</p>
-        )}
+        <p className="text-secondary">Tente outro termo de busca.</p>
       </div>
     );
   }
