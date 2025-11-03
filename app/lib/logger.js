@@ -1,6 +1,6 @@
 const LOG_ENDPOINT =
   (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_LOG_ENDPOINT) ||
-  "http://localhost:8000/log";
+  "http://localhost:3000/log";
 
 function redactHeaders(headers = {}) {
   const h = {};
