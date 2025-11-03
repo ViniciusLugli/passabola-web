@@ -1,16 +1,16 @@
-// Lightweight client-side logger that forwards structured logs to the site's /log endpoint.
-// It redacts sensitive headers (Authorization, Cookie) before sending.
 const LOG_ENDPOINT =
   (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_LOG_ENDPOINT) ||
-  "/log";
+  "http://localhost:8000/log";
 
 function redactHeaders(headers = {}) {
   const h = {};
   try {
-    // headers might be a Headers instance or plain object
     if (typeof Headers !== "undefined" && headers instanceof Headers) {
       headers.forEach((v, k) => {
-        if (k.toLowerCase() === "authorization" || k.toLowerCase() === "cookie") {
+        if (
+          k.toLowerCase() === "authorization" ||
+          k.toLowerCase() === "cookie"
+        ) {
           h[k] = "[REDACTED]";
         } else {
           h[k] = v;
@@ -18,7 +18,10 @@ function redactHeaders(headers = {}) {
       });
     } else if (headers && typeof headers === "object") {
       Object.keys(headers).forEach((k) => {
-        if (k.toLowerCase() === "authorization" || k.toLowerCase() === "cookie") {
+        if (
+          k.toLowerCase() === "authorization" ||
+          k.toLowerCase() === "cookie"
+        ) {
           h[k] = "[REDACTED]";
         } else {
           h[k] = headers[k];
@@ -26,7 +29,6 @@ function redactHeaders(headers = {}) {
       });
     }
   } catch (err) {
-    // fallback: return empty object
     return {};
   }
   return h;
@@ -35,10 +37,8 @@ function redactHeaders(headers = {}) {
 async function sendToServer(payload) {
   try {
     const body = JSON.stringify(payload);
-    // Prefer sendBeacon when available (non-blocking) and fallback to fetch
     if (typeof navigator !== "undefined" && navigator.sendBeacon) {
       const blob = new Blob([body], { type: "application/json" });
-      // sendBeacon ignores CORS preflight; endpoint should accept same-origin requests
       navigator.sendBeacon(LOG_ENDPOINT, blob);
       return;
     }
@@ -50,7 +50,6 @@ async function sendToServer(payload) {
       keepalive: true,
     });
   } catch (err) {
-    // swallow errors - logging should not break app
     console.debug("Logger failed to send", err);
   }
 }
