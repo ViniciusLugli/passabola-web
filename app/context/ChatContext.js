@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { error as logError } from "@/app/lib/logger";
 import { useAuth } from "./AuthContext";
 
 const ChatContext = createContext();
@@ -102,9 +103,9 @@ export function ChatProvider({ children }) {
               message: frame?.message,
             },
           };
-          console.error("Erro STOMP (Chat):", parsedFrame);
+          logError({ route: WS_URL, message: "Erro STOMP (Chat)", meta: parsedFrame });
         } catch (err) {
-          console.error("Erro STOMP (Chat) (parsing):", err, { frame });
+          logError({ route: WS_URL, message: "Erro STOMP (Chat) (parsing)", meta: { err, frame } });
         }
         setIsConnected(false);
       },
@@ -124,9 +125,9 @@ export function ChatProvider({ children }) {
             },
             stack: event?.error?.stack || null,
           };
-          console.error("Erro WebSocket (Chat):", parsed);
+          logError({ route: WS_URL, message: "Erro WebSocket (Chat)", meta: parsed });
         } catch (err) {
-          console.error("Erro WebSocket (Chat) (parsing):", err, { event });
+          logError({ route: WS_URL, message: "Erro WebSocket (Chat) (parsing)", meta: { err, event } });
         }
         setIsConnected(false);
       },

@@ -9,6 +9,7 @@ import {
 } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import { error as logError } from "@/app/lib/logger";
 import { useAuth } from "./AuthContext";
 
 const NotificationContext = createContext();
@@ -142,11 +143,9 @@ export function NotificationProvider({ children }) {
               message: frame?.message,
             },
           };
-          console.error("Erro STOMP (Notifications):", parsed);
+          logError({ route: WS_URL, message: "Erro STOMP (Notifications)", meta: parsed });
         } catch (err) {
-          console.error("Erro STOMP (Notifications) (parsing):", err, {
-            frame,
-          });
+          logError({ route: WS_URL, message: "Erro STOMP (Notifications) (parsing)", meta: { err, frame } });
         }
         setIsConnected(false);
       },
@@ -166,11 +165,9 @@ export function NotificationProvider({ children }) {
             },
             stack: event?.error?.stack || null,
           };
-          console.error("Erro WebSocket (Notifications):", parsed);
+          logError({ route: WS_URL, message: "Erro WebSocket (Notifications)", meta: parsed });
         } catch (err) {
-          console.error("Erro WebSocket (Notifications) (parsing):", err, {
-            event,
-          });
+          logError({ route: WS_URL, message: "Erro WebSocket (Notifications) (parsing)", meta: { err, event } });
         }
         setIsConnected(false);
       },
