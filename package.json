@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "logs:socket": "node scripts/log-socket-server.js"
   },
   "dependencies": {
     "@stomp/stompjs": "^7.2.1",
