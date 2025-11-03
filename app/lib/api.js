@@ -12,6 +12,9 @@ export const clearAuthToken = () => {
 };
 
 async function fetchApi(endpoint, options = {}) {
+  if (!global._pendingFetchRequests) global._pendingFetchRequests = new Map();
+  const pendingMap = global._pendingFetchRequests;
+
   const { body, ...customConfig } = options;
   const headers = { "Content-Type": "application/json" };
 
@@ -32,123 +35,142 @@ async function fetchApi(endpoint, options = {}) {
     config.body = JSON.stringify(body);
   }
 
-  try {
-    const requestHeadersForLog = config.headers;
-    const requestBodyForLog = body ? body : null;
+  const dedupeKey = JSON.stringify({
+    endpoint,
+    method: config.method,
+    body: body ?? null,
+  });
+  if (pendingMap.has(dedupeKey)) {
+    return pendingMap.get(dedupeKey);
+  }
 
-    const response = await fetch(`${API_URL}${endpoint}`, config);
-    if (!response.ok) {
-      const parsedBody = await response.json().catch(() => null);
-      const errorObj = {
-        status: response.status,
-        statusText: response.statusText,
-        body: parsedBody,
-      };
+  const promise = (async () => {
+    try {
+      const requestHeadersForLog = config.headers;
+      const requestBodyForLog = body ? body : null;
 
-      if (parsedBody && typeof parsedBody === "object") {
-        if (parsedBody.message) {
-          errorObj.message = parsedBody.message;
-        } else if (parsedBody.error) {
-          errorObj.message = parsedBody.error;
-        } else if (parsedBody.errors && Array.isArray(parsedBody.errors)) {
-          errorObj.message = parsedBody.errors.join(", ");
+      const response = await fetch(`${API_URL}${endpoint}`, config);
+      if (!response.ok) {
+        const parsedBody = await response.json().catch(() => null);
+        const errorObj = {
+          status: response.status,
+          statusText: response.statusText,
+          body: parsedBody,
+        };
+
+        if (parsedBody && typeof parsedBody === "object") {
+          if (parsedBody.message) {
+            errorObj.message = parsedBody.message;
+          } else if (parsedBody.error) {
+            errorObj.message = parsedBody.error;
+          } else if (parsedBody.errors && Array.isArray(parsedBody.errors)) {
+            errorObj.message = parsedBody.errors.join(", ");
+          } else {
+            errorObj.message = `Erro ${response.status}: ${response.statusText}`;
+          }
         } else {
           errorObj.message = `Erro ${response.status}: ${response.statusText}`;
         }
-      } else {
-        errorObj.message = `Erro ${response.status}: ${response.statusText}`;
+
+        try {
+          const respHeaders = {};
+          response.headers.forEach &&
+            response.headers.forEach((v, k) => (respHeaders[k] = v));
+          logRequestResponse({
+            level: "error",
+            route: endpoint,
+            method: config.method,
+            requestBody: requestBodyForLog,
+            requestHeaders: requestHeadersForLog,
+            responseBody: parsedBody,
+            responseStatus: response.status,
+            responseHeaders: respHeaders,
+            message: errorObj.message,
+          });
+        } catch (_) {}
+
+        return Promise.reject(errorObj);
       }
 
-      // send structured log for failed request
+      if (response.status === 204) {
+        try {
+          const respHeaders = {};
+          response.headers.forEach &&
+            response.headers.forEach((v, k) => (respHeaders[k] = v));
+          logRequestResponse({
+            level: "info",
+            route: endpoint,
+            method: config.method,
+            requestBody: requestBodyForLog,
+            requestHeaders: requestHeadersForLog,
+            responseBody: null,
+            responseStatus: 204,
+            responseHeaders: respHeaders,
+          });
+        } catch (_) {}
+        return null;
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const parsed = await response.json();
+        try {
+          const respHeaders = {};
+          response.headers.forEach &&
+            response.headers.forEach((v, k) => (respHeaders[k] = v));
+          logRequestResponse({
+            level: "info",
+            route: endpoint,
+            method: config.method,
+            requestBody: requestBodyForLog,
+            requestHeaders: requestHeadersForLog,
+            responseBody: parsed,
+            responseStatus: response.status,
+            responseHeaders: respHeaders,
+          });
+        } catch (_) {}
+        return parsed;
+      } else {
+        const text = await response.text();
+        try {
+          const respHeaders = {};
+          response.headers.forEach &&
+            response.headers.forEach((v, k) => (respHeaders[k] = v));
+          logRequestResponse({
+            level: "info",
+            route: endpoint,
+            method: config.method,
+            requestBody: requestBodyForLog,
+            requestHeaders: requestHeadersForLog,
+            responseBody: text,
+            responseStatus: response.status,
+            responseHeaders: respHeaders,
+          });
+        } catch (_) {}
+        return text ? text : null;
+      }
+    } catch (error) {
       try {
-        const respHeaders = {};
-        response.headers.forEach && response.headers.forEach((v, k) => (respHeaders[k] = v));
         logRequestResponse({
           level: "error",
           route: endpoint,
-          method: config.method,
-          requestBody: requestBodyForLog,
-          requestHeaders: requestHeadersForLog,
-          responseBody: parsedBody,
-          responseStatus: response.status,
-          responseHeaders: respHeaders,
-          message: errorObj.message,
-        });
-      } catch (_) {}
-      return Promise.reject(errorObj);
-    }
-    if (response.status === 204) {
-      // log no-content response
-      try {
-        const respHeaders = {};
-        response.headers.forEach && response.headers.forEach((v, k) => (respHeaders[k] = v));
-        logRequestResponse({
-          level: "info",
-          route: endpoint,
-          method: config.method,
-          requestBody: requestBodyForLog,
-          requestHeaders: requestHeadersForLog,
+          method: (options && options.method) || "GET",
+          requestBody: body ?? null,
+          requestHeaders: (options && options.headers) || {},
           responseBody: null,
-          responseStatus: 204,
-          responseHeaders: respHeaders,
+          responseStatus: null,
+          responseHeaders: {},
+          message: error?.message || String(error),
+          meta: { error },
         });
       } catch (_) {}
-      return null;
+      return Promise.reject({ message: error.message || String(error) });
     }
+  })();
 
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
-      const parsed = await response.json();
-      try {
-        const respHeaders = {};
-        response.headers.forEach && response.headers.forEach((v, k) => (respHeaders[k] = v));
-        logRequestResponse({
-          level: "info",
-          route: endpoint,
-          method: config.method,
-          requestBody: requestBodyForLog,
-          requestHeaders: requestHeadersForLog,
-          responseBody: parsed,
-          responseStatus: response.status,
-          responseHeaders: respHeaders,
-        });
-      } catch (_) {}
-      return parsed;
-    } else {
-      const text = await response.text();
-      try {
-        const respHeaders = {};
-        response.headers.forEach && response.headers.forEach((v, k) => (respHeaders[k] = v));
-        logRequestResponse({
-          level: "info",
-          route: endpoint,
-          method: config.method,
-          requestBody: requestBodyForLog,
-          requestHeaders: requestHeadersForLog,
-          responseBody: text,
-          responseStatus: response.status,
-          responseHeaders: respHeaders,
-        });
-      } catch (_) {}
-      return text ? text : null;
-    }
-  } catch (error) {
-    try {
-      logRequestResponse({
-        level: "error",
-        route: endpoint,
-        method: (options && options.method) || "GET",
-        requestBody: body ?? null,
-        requestHeaders: (options && options.headers) || {},
-        responseBody: null,
-        responseStatus: null,
-        responseHeaders: {},
-        message: error?.message || String(error),
-        meta: { error },
-      });
-    } catch (_) {}
-    return Promise.reject({ message: error.message || String(error) });
-  }
+  pendingMap.set(dedupeKey, promise);
+  promise.finally(() => pendingMap.delete(dedupeKey));
+  return promise;
 }
 
 async function fetchApiFormData(endpoint, formData, options = {}) {

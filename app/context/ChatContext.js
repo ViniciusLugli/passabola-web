@@ -103,9 +103,17 @@ export function ChatProvider({ children }) {
               message: frame?.message,
             },
           };
-          logError({ route: WS_URL, message: "Erro STOMP (Chat)", meta: parsedFrame });
+          logError({
+            route: WS_URL,
+            message: "Erro STOMP (Chat)",
+            meta: parsedFrame,
+          });
         } catch (err) {
-          logError({ route: WS_URL, message: "Erro STOMP (Chat) (parsing)", meta: { err, frame } });
+          logError({
+            route: WS_URL,
+            message: "Erro STOMP (Chat) (parsing)",
+            meta: { err, frame },
+          });
         }
         setIsConnected(false);
       },
@@ -125,9 +133,17 @@ export function ChatProvider({ children }) {
             },
             stack: event?.error?.stack || null,
           };
-          logError({ route: WS_URL, message: "Erro WebSocket (Chat)", meta: parsed });
+          logError({
+            route: WS_URL,
+            message: "Erro WebSocket (Chat)",
+            meta: parsed,
+          });
         } catch (err) {
-          logError({ route: WS_URL, message: "Erro WebSocket (Chat) (parsing)", meta: { err, event } });
+          logError({
+            route: WS_URL,
+            message: "Erro WebSocket (Chat) (parsing)",
+            meta: { err, event },
+          });
         }
         setIsConnected(false);
       },
