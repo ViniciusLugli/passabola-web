@@ -335,3 +335,25 @@ html.dark {
 .group:hover .group-hover\:animate-shimmer {
   animation: shimmer 1.5s ease-in-out infinite;
 }
+
+/* Animação shimmer para skeleton loading */
+@keyframes shimmer-skeleton {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    to right,
+    rgb(var(--color-surface-muted)) 0%,
+    rgb(var(--color-surface-elevated)) 50%,
+    rgb(var(--color-surface-muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-skeleton 1.5s infinite linear;
+  will-change: background-position;
+}

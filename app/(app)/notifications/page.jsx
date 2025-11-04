@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/app/context/ToastContext";
 import NotificationCard from "@/app/components/cards/NotificationCard";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
-import { Check, Trash2 } from "lucide-react";
+import EmptyState from "@/app/components/ui/EmptyState";
+import { Check, Trash2, Bell, CheckCircle, Archive } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useNotifications } from "@/app/context/NotificationContext";
 import { api } from "@/app/lib/api";
@@ -32,6 +33,8 @@ export default function NotificationsPage() {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [batchActionLoading, setBatchActionLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleteAllLoading, setDeleteAllLoading] = useState(false);
+  const selectAllCheckboxRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
@@ -39,30 +42,40 @@ export default function NotificationsPage() {
       return;
     }
 
-    fetchNotifications();
-  }, [user, router]);
+    let isMounted = true;
 
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      // GET /api/notifications?page=0&size=50 retorna { content: [...] }
-      const response = await api.notifications.getAll({
-        page: 0,
-        size: 50,
-      });
-      const notificationsList = response.content || [];
-      setNotificationsList(notificationsList);
+    const loadNotifications = async () => {
+      setLoading(true);
+      try {
+        const response = await api.notifications.getAll({ page: 0, size: 50 });
+        const notificationsList = response.content || [];
 
-      // GET /api/notifications/unread/count retorna { unreadCount: 5 }
-      const countResponse = await api.notifications.getUnreadCount();
-      updateUnreadCount(countResponse.unreadCount || 0);
-    } catch (err) {
-      console.error("Erro ao buscar notificações:", err);
-      showToast(err.message || "Erro ao carregar notificações.", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (isMounted) {
+          setNotificationsList(notificationsList);
+        }
+
+        const countResponse = await api.notifications.getUnreadCount();
+        if (isMounted) {
+          updateUnreadCount(countResponse.unreadCount || 0);
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.error("Erro ao buscar notificações:", err);
+          showToast(err.message || "Erro ao carregar notificações.", "error");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadNotifications();
+
+    return () => {
+      isMounted = false; // Cleanup
+    };
+  }, [user, router, setNotificationsList, updateUnreadCount, showToast]);
 
   const handleMarkAsRead = async (notificationId) => {
     try {
@@ -91,7 +104,6 @@ export default function NotificationsPage() {
 
   const handleDelete = async (notificationId) => {
     try {
-      // DELETE /api/notifications/{id}
       await api.notifications.delete(notificationId);
       removeNotificationLocally(notificationId);
       showToast("Notificação deletada!", "success");
@@ -110,10 +122,34 @@ export default function NotificationsPage() {
     });
   };
 
+  const filteredNotifications = useMemo(() => {
+    return liveNotifications.filter((notif) => {
+      if (filter === "unread") return !notif.read;
+      if (filter === "read") return notif.read;
+      return true;
+    });
+  }, [liveNotifications, filter]);
+
+  const notificationCounts = useMemo(() => {
+    return {
+      all: liveNotifications.length,
+      unread: liveNotifications.filter(n => !n.read).length,
+      read: liveNotifications.filter(n => n.read).length,
+    };
+  }, [liveNotifications]);
+
   useEffect(() => {
     // Clear selection when filter changes
     setSelectedIds(new Set());
   }, [filter]);
+
+  useEffect(() => {
+    if (selectAllCheckboxRef.current) {
+      selectAllCheckboxRef.current.indeterminate =
+        selectedIds.size > 0 &&
+        selectedIds.size < filteredNotifications.length;
+    }
+  }, [selectedIds, filteredNotifications]);
 
   const handleMarkSelectedAsRead = async () => {
     const ids = Array.from(selectedIds);
@@ -213,9 +249,8 @@ export default function NotificationsPage() {
   };
 
   const handleDeleteAllRead = async () => {
+    setDeleteAllLoading(true);
     try {
-      // AVISO: A API não tem endpoint para deletar todas as lidas
-      // Vamos deletar uma por uma
       const readNotifications = liveNotifications.filter((n) => n.read);
 
       await Promise.all(
@@ -230,17 +265,12 @@ export default function NotificationsPage() {
     } catch (err) {
       console.error("Erro ao deletar notificações lidas:", err);
       showToast("Erro ao deletar notificações lidas.", "error");
+    } finally {
+      setDeleteAllLoading(false);
     }
   };
 
-  const filteredNotifications = liveNotifications.filter((notif) => {
-    if (filter === "unread") return !notif.read;
-    if (filter === "read") return notif.read;
-    return true;
-  });
-
   if (loading) {
-    // show skeleton cards while loading
     return (
       <div className="bg-page min-h-screen">
         <main className="container mx-auto p-4 mt-8 max-w-4xl">
@@ -248,11 +278,16 @@ export default function NotificationsPage() {
             <h1 className="text-4xl font-bold text-primary text-center mt-4">
               Notificações
             </h1>
-            <p className="text-center text-secondary">
+            <p
+              className="text-center text-secondary"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               Carregando notificações...
             </p>
 
-            <div className="flex flex-col gap-3 mt-2">
+            <div className="flex flex-col gap-3 mt-2" aria-hidden="true">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="p-2">
                   <div className="p-4 rounded-lg border bg-surface animate-pulse">
@@ -343,30 +378,61 @@ export default function NotificationsPage() {
             <div
               role="tablist"
               aria-label="Filtros de notificações"
-              className="flex gap-2 flex-wrap"
+              className="flex gap-2 flex-wrap border-b border-default pb-3"
             >
-              {["all", "unread", "read"].map((key) => (
-                <button
-                  key={key}
-                  role="tab"
-                  aria-selected={filter === key}
-                  onClick={() => setFilter(key)}
-                  className={`
-                      px-3 py-1.5 rounded-md text-sm font-medium transition-all
-                      ${
-                        filter === key
-                          ? "bg-accent text-on-brand shadow-elevated"
-                          : "bg-surface-muted text-secondary border border-default hover:bg-surface-elevated"
-                      }
-                    `}
-                >
-                  {key === "all"
+              {["all", "unread", "read"].map((key) => {
+                const count =
+                  key === "all"
+                    ? notificationCounts.all
+                    : key === "unread"
+                    ? notificationCounts.unread
+                    : notificationCounts.read;
+
+                const label =
+                  key === "all"
                     ? "Todas"
                     : key === "unread"
                     ? "Não Lidas"
-                    : "Lidas"}
-                </button>
-              ))}
+                    : "Lidas";
+
+                return (
+                  <button
+                    key={key}
+                    role="tab"
+                    aria-selected={filter === key}
+                    aria-label={`${label} (${count} notificações)`}
+                    onClick={() => setFilter(key)}
+                    className={`
+                      relative px-4 py-2.5 text-sm font-medium transition-all
+                      ${
+                        filter === key
+                          ? "text-accent"
+                          : "text-secondary hover:text-primary"
+                      }
+                    `}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>{label}</span>
+                      <span
+                        className={`
+                          inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold
+                          ${
+                            filter === key
+                              ? "bg-accent text-on-brand"
+                              : "bg-surface-muted text-tertiary"
+                          }
+                        `}
+                      >
+                        {count}
+                      </span>
+                    </span>
+                    {/* Borda inferior para tab ativa */}
+                    {filter === key && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent transition-all" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             <div className="flex gap-2 flex-wrap">
@@ -381,13 +447,49 @@ export default function NotificationsPage() {
               {liveNotifications.some((n) => n.read) && (
                 <button
                   onClick={handleDeleteAllRead}
-                  className="px-3 py-1.5 text-sm font-medium text-red-400 hover:text-red-500 transition-colors"
+                  disabled={deleteAllLoading}
+                  className="px-3 py-1.5 text-sm font-medium text-red-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Limpar lidas
+                  {deleteAllLoading ? "Deletando..." : "Limpar lidas"}
                 </button>
               )}
             </div>
           </div>
+
+          {/* Checkbox "Selecionar Tudo" */}
+          {filteredNotifications.length > 0 && (
+            <div className="flex items-center gap-3 px-1">
+              <label className="flex items-center gap-2 cursor-pointer p-2 -m-2">
+                <input
+                  ref={selectAllCheckboxRef}
+                  type="checkbox"
+                  checked={
+                    filteredNotifications.length > 0 &&
+                    selectedIds.size === filteredNotifications.length
+                  }
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      // Selecionar todas as notificações filtradas
+                      setSelectedIds(
+                        new Set(filteredNotifications.map((n) => n.id))
+                      );
+                    } else {
+                      // Limpar seleção
+                      setSelectedIds(new Set());
+                    }
+                  }}
+                  aria-label="Selecionar todas as notificações"
+                  className="w-5 h-5 cursor-pointer"
+                />
+                <span className="text-sm font-medium text-secondary">
+                  Selecionar tudo
+                  {selectedIds.size > 0 &&
+                    selectedIds.size < filteredNotifications.length &&
+                    ` (${selectedIds.size}/${filteredNotifications.length})`}
+                </span>
+              </label>
+            </div>
+          )}
 
           {/* Barra de ações em lote (quando houver seleção) */}
           {selectedIds.size > 0 && (
@@ -410,7 +512,7 @@ export default function NotificationsPage() {
                 <button
                   onClick={handleMarkSelectedAsRead}
                   disabled={batchActionLoading}
-                  className="px-2.5 py-1 text-sm md:px-3 md:py-1.5 bg-accent text-on-brand rounded inline-flex items-center gap-2"
+                  className="px-4 py-3 text-sm md:px-3 md:py-2 bg-accent text-on-brand rounded inline-flex items-center gap-2 min-h-[44px]"
                 >
                   <Check className="w-4 h-4" />
                   <span>Marcar</span>
@@ -418,7 +520,7 @@ export default function NotificationsPage() {
                 <button
                   onClick={() => setConfirmDeleteOpen(true)}
                   disabled={batchActionLoading}
-                  className="px-2.5 py-1 text-sm md:px-3 md:py-1.5 bg-red-500 text-white rounded inline-flex items-center gap-2"
+                  className="px-4 py-3 text-sm md:px-3 md:py-2 bg-red-500 text-white rounded inline-flex items-center gap-2 min-h-[44px]"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Deletar</span>
@@ -437,15 +539,29 @@ export default function NotificationsPage() {
           {/* Lista de Notificações */}
           <div className="flex flex-col gap-3">
             {filteredNotifications.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-secondary text-lg">
-                  {filter === "unread"
-                    ? "Nenhuma notificação não lida"
-                    : filter === "read"
-                    ? "Nenhuma notificação lida"
-                    : "Você não tem notificações"}
-                </p>
-              </div>
+              <>
+                {filter === "all" && (
+                  <EmptyState
+                    icon={<Bell />}
+                    title="Nenhuma notificação"
+                    description="Você ainda não recebeu notificações"
+                  />
+                )}
+                {filter === "unread" && (
+                  <EmptyState
+                    icon={<CheckCircle />}
+                    title="Tudo em dia!"
+                    description="Você não tem notificações não lidas"
+                  />
+                )}
+                {filter === "read" && (
+                  <EmptyState
+                    icon={<Archive />}
+                    title="Nenhuma lida ainda"
+                    description="As notificações que você ler aparecerão aqui"
+                  />
+                )}
+              </>
             ) : (
               filteredNotifications.map((notification) => (
                 <NotificationCard
