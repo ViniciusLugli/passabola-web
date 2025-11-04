@@ -15,13 +15,20 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
   const isPlayer = user instanceof Player;
   const isOrganization = user instanceof Organization;
 
+  // Extrair valores primitivos para dependências estáveis
+  const userId = user?.userId;
+  const userType = user?.userType;
+  const userFollowers = user?.followers;
+  const userFollowing = user?.following;
+  const loggedInUserId = loggedInUser?.userId;
+
   useEffect(() => {
     const checkFollowingStatus = async () => {
-      if (loggedInUser && user.userId && loggedInUser.userId !== user.userId) {
+      if (loggedInUserId && userId && loggedInUserId !== userId) {
         try {
           const response = await api.follow.checkFollowing(
-            user.userId,
-            user.userType.toUpperCase()
+            userId,
+            userType.toUpperCase()
           );
           setIsFollowing(response);
         } catch (error) {
@@ -34,9 +41,9 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
     };
 
     checkFollowingStatus();
-    setFollowersCount(user.followers || 0);
-    setFollowingCount(user.following || 0);
-  }, [user, loggedInUser]);
+    setFollowersCount(userFollowers || 0);
+    setFollowingCount(userFollowing || 0);
+  }, [userId, userType, userFollowers, userFollowing, loggedInUserId]);
 
   const handleFollow = async () => {
     try {
@@ -77,25 +84,28 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
       </div>
 
       <div className="p-4 md:p-8 relative">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start gap-4">
           <div
             className="
             relative 
             -mt-12 md:-mt-24 
-            w-24 h-24 md:w-36 md:h-36 
+            w-24 h-24 md:w-36 md:h-36
+            min-w-[96px] md:min-w-[144px]
             rounded-full 
             border-4 
             border-default 
             bg-surface
             overflow-hidden
+            flex-shrink-0
           "
           >
             <Image
               src={user.profilePhotoUrl || "/icons/user-default.png"}
               alt="Avatar do perfil"
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 24vw, 15vw"
+              width={144}
+              height={144}
+              className="w-full h-full object-cover"
+              style={{ objectFit: "cover" }}
             />
           </div>
           {loggedInUser &&
@@ -105,7 +115,7 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
               href={`/user/${user.userType.toLowerCase()}/${user.id}/config`}
               passHref
             >
-              <button className="text-zinc-500 dark:text-gray-300 hover:text-zinc-700 dark:hover:text-white transition-colors cursor-pointer">
+              <button className="text-zinc-500 dark:text-gray-300 hover:text-zinc-700 dark:hover:text-white transition-colors cursor-pointer flex-shrink-0">
                 <Settings
                   className="w-6 h-6 md:w-8 md:h-8"
                   strokeWidth={2}
@@ -117,13 +127,25 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
             loggedInUser &&
             user.userId &&
             loggedInUser.userId !== user.userId && (
-              <Button
+              <button
                 onClick={isFollowing ? handleUnfollow : handleFollow}
-                className="px-6 py-2 rounded-full text-sm shadow-none"
-                variant={isFollowing ? "danger" : "primary"}
+                className={`
+                  px-4 py-1.5 
+                  rounded-full 
+                  text-sm 
+                  font-medium 
+                  whitespace-nowrap 
+                  flex-shrink-0
+                  transition-colors
+                  ${
+                    isFollowing
+                      ? "bg-red-500 hover:bg-red-600 text-white"
+                      : "bg-purple-600 hover:bg-purple-700 text-white"
+                  }
+                `}
               >
-                {isFollowing ? "Deixar de Seguir" : "Seguir"}
-              </Button>
+                {isFollowing ? "Seguindo" : "Seguir"}
+              </button>
             )
           )}
         </div>

@@ -76,8 +76,14 @@ async function fetchApi(endpoint, options = {}) {
           const respHeaders = {};
           response.headers.forEach &&
             response.headers.forEach((v, k) => (respHeaders[k] = v));
+
+          // Erros esperados de ranking (404/500) quando jogador não tem ranking ainda
+          const isExpectedRankingError =
+            endpoint.includes("/rankings/") &&
+            (response.status === 404 || response.status === 500);
+
           logRequestResponse({
-            level: "error",
+            level: isExpectedRankingError ? "warn" : "error",
             route: endpoint,
             method: config.method,
             requestBody: requestBodyForLog,
@@ -85,7 +91,9 @@ async function fetchApi(endpoint, options = {}) {
             responseBody: parsedBody,
             responseStatus: response.status,
             responseHeaders: respHeaders,
-            message: errorObj.message,
+            message: isExpectedRankingError
+              ? "Ranking ainda não disponível (jogador sem jogos competitivos)"
+              : errorObj.message,
           });
         } catch (_) {}
 

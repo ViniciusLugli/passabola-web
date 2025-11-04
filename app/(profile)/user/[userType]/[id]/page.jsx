@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProfileHeader from "@/app/components/profile/ProfileHeader";
 import PlayerStats from "@/app/components/profile/PlayerStats";
@@ -24,7 +24,11 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchProfileData = async () => {
+  // Extrair valores estáveis do loggedInUser para evitar re-renders
+  const loggedInUserId = loggedInUser?.userId;
+  const loggedInUserType = loggedInUser?.userType;
+
+  const fetchProfileData = useCallback(async () => {
     if (!id || !userType) {
       setLoading(false);
       setError("ID ou tipo de usuário não fornecido.");
@@ -41,12 +45,12 @@ export default function ProfilePage() {
       switch (lowerCaseUserType) {
         case "player":
           fetchedUser = await api.players.getById(id);
-          // Buscar ranking da jogadora
           try {
             const ranking = await api.rankings.getPlayerRanking(id);
             setPlayerStats(ranking);
           } catch (rankingError) {
-            // Ranking não disponível - jogadora ainda não participou de jogos competitivos
+            // Erro 404/500 é esperado quando jogadora ainda não tem ranking
+            // (não participou de jogos competitivos)
             setPlayerStats(null);
           }
           break;
@@ -65,9 +69,9 @@ export default function ProfilePage() {
       }
 
       const isOwnProfile =
-        loggedInUser &&
-        loggedInUser.userId === fetchedUser.userId &&
-        loggedInUser.userType.toLowerCase() === lowerCaseUserType;
+        loggedInUserId &&
+        loggedInUserId === fetchedUser.userId &&
+        loggedInUserType?.toLowerCase() === lowerCaseUserType;
 
       const updatedProfileUser = {
         ...fetchedUser,
@@ -140,7 +144,7 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, userType, loggedInUserId, loggedInUserType]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -151,7 +155,7 @@ export default function ProfilePage() {
     if (isAuthenticated && id && userType) {
       fetchProfileData();
     }
-  }, [id, userType, isAuthenticated, authLoading, router]);
+  }, [id, userType, isAuthenticated, authLoading, fetchProfileData]);
 
   if (authLoading || loading) {
     return (
@@ -206,7 +210,7 @@ export default function ProfilePage() {
         />
 
         {/* Estatísticas da Jogadora */}
-        {profileUser.userType === "PLAYER" && playerStats && (
+        {profileUser.userType === "PLAYER" && (
           <section className="mt-8">
             <h3 className="text-xl md:text-2xl font-bold text-primary mb-4">
               Estatísticas

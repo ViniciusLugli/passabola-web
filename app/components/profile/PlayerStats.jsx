@@ -1,7 +1,21 @@
 import { Trophy, TrendingUp, Target, Award, Zap, Calendar } from "lucide-react";
 
 export default function PlayerStats({ stats }) {
-  if (!stats) return null;
+  // Exibir mensagem quando não há ranking
+  if (!stats) {
+    return (
+      <div className="bg-gradient-to-br from-purple-500/10 to-purple-700/10 rounded-2xl border border-purple-500/30 p-8 text-center">
+        <Trophy className="h-16 w-16 text-purple-500 mx-auto mb-4 opacity-50" />
+        <h3 className="text-xl font-semibold text-purple-600 dark:text-purple-400 mb-2">
+          Sem Ranking
+        </h3>
+        <p className="text-secondary text-sm">
+          Participe de jogos competitivos (Campeonatos e Copas) para obter seu
+          ranking e estatísticas!
+        </p>
+      </div>
+    );
+  }
 
   const getDivisionColor = (division) => {
     const colors = {
@@ -63,21 +77,21 @@ export default function PlayerStats({ stats }) {
 
       {/* Ranking */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="rounded-xl bg-surface border border-default p-4">
+        <div className="rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-700/10 border border-purple-500/30 p-4">
           <div className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-yellow-500" />
+            <Award className="h-5 w-5 text-purple-500" />
             <p className="text-sm text-secondary">Posição Global</p>
           </div>
-          <p className="mt-2 text-2xl font-bold text-primary">
+          <p className="mt-2 text-2xl font-bold text-purple-600 dark:text-purple-400">
             #{stats.globalPosition}
           </p>
         </div>
-        <div className="rounded-xl bg-surface border border-default p-4">
+        <div className="rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-700/10 border border-purple-500/30 p-4">
           <div className="flex items-center gap-2">
             <Target className="h-5 w-5 text-purple-500" />
             <p className="text-sm text-secondary">Posição na Divisão</p>
           </div>
-          <p className="mt-2 text-2xl font-bold text-primary">
+          <p className="mt-2 text-2xl font-bold text-purple-600 dark:text-purple-400">
             #{stats.divisionPosition}
           </p>
         </div>
@@ -85,8 +99,8 @@ export default function PlayerStats({ stats }) {
 
       {/* Estatísticas de Jogos */}
       <div className="rounded-xl bg-surface border border-default p-6">
-        <h4 className="mb-4 text-lg font-semibold text-primary flex items-center gap-2">
-          <Trophy className="h-5 w-5 text-primary" />
+        <h4 className="mb-4 text-lg font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-purple-500" />
           Estatísticas de Jogos
         </h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -114,13 +128,13 @@ export default function PlayerStats({ stats }) {
           </div>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-default">
+        <div className="mt-4 pt-4 border-t border-purple-500/20">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
+              <TrendingUp className="h-5 w-5 text-purple-500" />
               <span className="text-sm text-secondary">Taxa de Vitória</span>
             </div>
-            <span className="text-xl font-bold text-primary">
+            <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
               {stats.winRate.toFixed(1)}%
             </span>
           </div>
@@ -152,12 +166,12 @@ export default function PlayerStats({ stats }) {
 
       {/* Último Jogo */}
       {stats.lastGameDate && (
-        <div className="rounded-xl bg-surface border border-default p-4">
+        <div className="rounded-xl bg-gradient-to-br from-purple-500/5 to-purple-700/5 border border-purple-500/20 p-4">
           <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
+            <Calendar className="h-5 w-5 text-purple-500" />
             <p className="text-sm text-secondary">Último Jogo</p>
           </div>
-          <p className="mt-2 text-lg font-semibold text-primary">
+          <p className="mt-2 text-lg font-semibold text-purple-600 dark:text-purple-400">
             {formatDate(stats.lastGameDate)}
           </p>
         </div>
