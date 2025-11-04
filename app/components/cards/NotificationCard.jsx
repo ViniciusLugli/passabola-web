@@ -123,7 +123,7 @@ export default function NotificationCard({
             setOpen(false);
             setDragX(0);
           }}
-          className="pointer-events-auto bg-accent text-on-brand px-3 py-1 rounded text-xs flex items-center gap-2"
+          className="pointer-events-auto bg-accent text-on-brand px-4 py-3 rounded text-xs flex items-center gap-2 min-w-[44px] min-h-[44px]"
           aria-label={`Marcar notificação ${notification.id} como lida`}
         >
           <Check className="w-4 h-4" />
@@ -135,7 +135,7 @@ export default function NotificationCard({
             setOpen(false);
             setDragX(0);
           }}
-          className="pointer-events-auto bg-red-500 text-white px-3 py-1 rounded text-xs flex items-center gap-2"
+          className="pointer-events-auto bg-red-500 text-white px-4 py-3 rounded text-xs flex items-center gap-2 min-w-[44px] min-h-[44px]"
           aria-label={`Deletar notificação ${notification.id}`}
         >
           <Trash2 className="w-4 h-4" />
@@ -165,16 +165,18 @@ export default function NotificationCard({
         }
       >
         {selectable && (
-          <input
-            type="checkbox"
-            checked={!!selected}
-            onChange={(e) => {
-              e.stopPropagation();
-              onToggleSelect?.(notification.id);
-            }}
-            aria-label={`Selecionar notificação ${notification.title}`}
-            className="mt-1 mr-2 flex-shrink-0 w-4 h-4"
-          />
+          <label className="flex items-center cursor-pointer p-2 -m-2">
+            <input
+              type="checkbox"
+              checked={!!selected}
+              onChange={(e) => {
+                e.stopPropagation();
+                onToggleSelect?.(notification.id);
+              }}
+              aria-label={`Selecionar notificação ${notification.title}`}
+              className="mt-0 mr-2 flex-shrink-0 w-5 h-5 cursor-pointer"
+            />
+          </label>
         )}
 
         <div className="text-3xl flex-shrink-0">{getNotificationIcon()}</div>
@@ -204,7 +206,7 @@ export default function NotificationCard({
             e.stopPropagation();
             onDelete(notification.id);
           }}
-          className="text-gray-800 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200 p-1 flex-shrink-0"
+          className="text-gray-800 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200 p-2.5 flex-shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
           title="Deletar notificação"
           aria-label={`Deletar notificação ${notification.title}`}
         >

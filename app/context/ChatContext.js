@@ -33,6 +33,7 @@ export function ChatProvider({ children }) {
   const [messages, setMessages] = useState({});
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState(new Set());
   const clientRef = useRef(null);
   const subscriptionsRef = useRef({});
 
@@ -75,6 +76,7 @@ export function ChatProvider({ children }) {
       onConnect: () => {
         setIsConnected(true);
 
+        // Subscribe to personal messages
         stompClient.subscribe(`/user/queue/messages`, (message) => {
           try {
             const newMessage = JSON.parse(message.body);
@@ -82,6 +84,22 @@ export function ChatProvider({ children }) {
           } catch (error) {
             console.error("Erro ao processar mensagem:", error);
           }
+        });
+
+        // Subscribe to presence events
+        stompClient.subscribe(`/user/queue/presence`, (message) => {
+          try {
+            const presenceEvent = JSON.parse(message.body);
+            handlePresenceEvent(presenceEvent);
+          } catch (error) {
+            console.error("Erro ao processar evento de presença:", error);
+          }
+        });
+
+        // Request initial list of online users
+        stompClient.publish({
+          destination: `/app/presence.request`,
+          body: JSON.stringify({}),
         });
 
         clientRef.current = stompClient;
@@ -158,6 +176,28 @@ export function ChatProvider({ children }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user]);
+
+  const handlePresenceEvent = useCallback((event) => {
+    const { type, userId, userIds } = event;
+
+    switch (type) {
+      case "USER_ONLINE":
+        setOnlineUsers((prev) => new Set([...prev, userId]));
+        break;
+      case "USER_OFFLINE":
+        setOnlineUsers((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(userId);
+          return newSet;
+        });
+        break;
+      case "PRESENCE_LIST":
+        setOnlineUsers(new Set(userIds || []));
+        break;
+      default:
+        console.warn("Tipo de evento de presença desconhecido:", type);
+    }
+  }, []);
 
   const handleNewMessage = useCallback(
     (message) => {
@@ -278,6 +318,13 @@ export function ChatProvider({ children }) {
     setUnreadCount(count);
   }, []);
 
+  const isUserOnline = useCallback(
+    (userId) => {
+      return onlineUsers.has(userId);
+    },
+    [onlineUsers]
+  );
+
   const value = {
     conversations,
     setConversations,
@@ -286,6 +333,8 @@ export function ChatProvider({ children }) {
     messages,
     unreadCount,
     isConnected,
+    onlineUsers,
+    isUserOnline,
     subscribeToChat,
     unsubscribeFromChat,
     sendMessageViaWebSocket,

@@ -12,6 +12,8 @@ Em parceria estratégica com o **Passa a Bola**, o principal canal dedicado aos 
 
 **⚠️ Este projeto ainda está em desenvolvimento. ⚠️**
 
+> **📖 Documentação Completa:** Acesse a [Central de Documentação](./docs/README.md) para guias técnicos detalhados, design system, componentes, acessibilidade e testes.
+
 ### Problema e Oportunidade
 
 Apesar do crescimento visível do futebol feminino, a modalidade ainda enfrenta desafios digitais, como a falta de plataformas dedicadas e ferramentas de engajamento que limitam seu potencial. Nossa solução aproveita a tecnologia para preencher essa lacuna, criando uma ponte digital para amplificar as vozes e talentos das atletas brasileiras.
@@ -339,6 +341,21 @@ Duplo transporte para observabilidade:
 
 ## 📚 Documentação
 
+### Documentação Técnica Completa
+
+Acesse nossa [**Central de Documentação**](./docs/README.md) para guias completos:
+
+- [**Design System**](./docs/DESIGN-SYSTEM.md) - Paleta de cores, tipografia, espaçamento e tokens de design
+- [**Biblioteca de Componentes**](./docs/COMPONENT-LIBRARY.md) - 35+ componentes React reutilizáveis com exemplos de uso
+- [**Guia de Acessibilidade**](./docs/ACCESSIBILITY.md) - Diretrizes WCAG 2.1 AA e checklist de conformidade
+- [**Guia de Testes**](./docs/TESTING-GUIDE.md) - Estratégia de testes, ferramentas e melhores práticas
+
+### Documentação de Sprint
+
+- [**SPRINT-001: UX Improvements**](./docs/sprints/SPRINT-001-UX-IMPROVEMENTS.md) - Planejamento completo da sprint de melhorias UX
+
+### Documentação de Sistemas Específicos
+
 Para informações detalhadas sobre sistemas específicos, consulte:
 
 - [**Sistema de Notificações**](./.github/NOTIFICATIONS.md) - Documentação completa do sistema de notificações em tempo real
@@ -373,37 +390,6 @@ NEXT_PUBLIC_ENABLE_WEBSOCKET=false
 # Logs (opcional - se não definido, usa defaults)
 LOG_SOCKET_URL=ws://localhost:3001
 ```
-
-## ⚠️ Problemas Conhecidos
-
-### WebSocket 403 Forbidden (STOMP)
-
-**Status**: 🔴 Aguardando correção no backend
-
-O sistema de notificações e chat utilizam WebSocket (STOMP) para comunicação em tempo real. Atualmente, o backend está retornando erro 403 Forbidden ao tentar estabelecer a conexão WebSocket.
-
-**Workaround Aplicado**: WebSocket está temporariamente desabilitado via variável de ambiente:
-
-```env
-NEXT_PUBLIC_ENABLE_WEBSOCKET=false
-```
-
-Ambos os sistemas funcionam normalmente via HTTP como fallback. Para mais detalhes e solução, consulte o [guia de troubleshooting](./.github/TROUBLESHOOTING.md).
-
-### Chamadas Duplicadas em Dev Mode
-
-**Status**: ✅ Resolvido
-
-Em modo de desenvolvimento, o React Strict Mode pode causar dupla execução de efeitos, resultando em requisições duplicadas. Implementamos um deduplicador em `app/lib/api.js` que:
-
-- Detecta requisições idênticas em andamento (mesmo endpoint + método + body)
-- Retorna a mesma Promise para chamadas concorrentes
-- Elimina duplicação de rede automaticamente
-
-**Alternativas recomendadas para produção**:
-
-- Usar bibliotecas como SWR ou React Query para cache e deduplicação avançada
-- Mover data fetching para Server Components (Next.js App Router)
 
 ---
 

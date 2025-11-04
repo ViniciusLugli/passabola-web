@@ -8,6 +8,7 @@ import MessageInput from "@/app/components/chat/MessageInput";
 import { useToast } from "@/app/context/ToastContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { useChat } from "@/app/context/ChatContext";
+import { useChatPreferences } from "@/app/hooks/useChatPreferences";
 import { api } from "@/app/lib/api";
 
 export default function ChatPage() {
@@ -28,9 +29,11 @@ export default function ChatPage() {
   } = useChat();
 
   const { showToast } = useToast();
+  const { preferences, updatePreferences, isLoaded } = useChatPreferences();
   const [loading, setLoading] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
+  const [showConversations, setShowConversations] = useState(true); // Mobile navigation state
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -95,10 +98,37 @@ export default function ChatPage() {
     }
   };
 
+  // Restore last active conversation from localStorage
+  useEffect(() => {
+    if (
+      isLoaded &&
+      preferences.lastActiveConversation &&
+      conversations.length > 0 &&
+      !activeConversation
+    ) {
+      const lastConversation = conversations.find(
+        (c) => c.otherUserId === preferences.lastActiveConversation
+      );
+      if (lastConversation) {
+        handleSelectConversation(lastConversation);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, conversations, preferences.lastActiveConversation]);
+
   const handleSelectConversation = (conversation) => {
     setActiveConversation(conversation);
     // conversation.otherUserId é o userId global do outro usuário
     fetchMessages(conversation.otherUserId);
+    // On mobile, hide conversation list and show messages
+    setShowConversations(false);
+
+    // Save preference
+    updatePreferences({ lastActiveConversation: conversation.otherUserId });
+  };
+
+  const handleBackToConversations = () => {
+    setShowConversations(true);
   };
 
   const handleSendMessage = async (content) => {
@@ -170,9 +200,21 @@ export default function ChatPage() {
         className="container mx-auto p-4 mt-8"
         style={{ height: "calc(100vh - 140px)" }}
       >
-        <div className="bg-surface border border-default rounded-2xl shadow-elevated overflow-hidden h-full flex flex-col md:flex-row">
-          {/* Lista de Conversas */}
-          <div className="w-full md:w-1/3 border-r border-default flex flex-col bg-surface-muted">
+        <div className="bg-surface border border-default rounded-2xl shadow-elevated overflow-hidden h-full grid grid-cols-1 md:grid-cols-[320px_1fr]">
+          {/* Lista de Conversas - Hidden on mobile when conversation is active */}
+          <div
+            className={`
+              ${showConversations ? "flex" : "hidden md:flex"}
+              w-full
+              border-r
+              border-default
+              flex-col
+              bg-surface-muted
+              transition-all
+              duration-300
+              ease-in-out
+            `}
+          >
             <div className="p-4 border-b border-default">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-primary">Conversas</h2>
@@ -211,20 +253,72 @@ export default function ChatPage() {
             </div>
           </div>
 
-          {/* Área de Mensagens */}
-          <div className="flex-1 flex flex-col">
+          {/* Área de Mensagens - Hidden on mobile when showing conversations */}
+          <div
+            className={`
+              ${showConversations ? "hidden md:flex" : "flex"}
+              flex-col
+              transition-all
+              duration-300
+              ease-in-out
+            `}
+          >
             {activeConversation ? (
               <>
-                {/* Header da Conversa */}
+                {/* Header da Conversa with back button on mobile */}
                 <div className="p-4 border-b border-default bg-surface-muted">
-                  <h3 className="font-semibold text-primary">
-                    {activeConversation.otherName || "Usuário"}
-                  </h3>
-                  {activeConversation.otherUsername && (
-                    <p className="text-sm text-secondary">
-                      @{activeConversation.otherUsername}
-                    </p>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {/* Back button - only visible on mobile with min touch target 44x44 */}
+                    <button
+                      onClick={handleBackToConversations}
+                      className="md:hidden p-2 hover:bg-surface rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                      aria-label="Voltar para conversas"
+                    >
+                      <svg
+                        className="w-5 h-5 text-primary"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 19l-7-7 7-7"
+                        />
+                      </svg>
+                    </button>
+
+                    {/* Avatar with online indicator */}
+                    <div className="relative flex-shrink-0">
+                      <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center">
+                        <span className="text-accent font-semibold">
+                          {(activeConversation.otherName || "U")
+                            .charAt(0)
+                            .toUpperCase()}
+                        </span>
+                      </div>
+                      {/* Real-time online indicator from WebSocket presence */}
+                      {isUserOnline(activeConversation.otherUserId) && (
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-surface-muted" />
+                      )}
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold text-primary">
+                        {activeConversation.otherName || "Usuário"}
+                      </h3>
+                      {activeConversation.otherUsername && (
+                        <p className="text-sm text-secondary">
+                          @{activeConversation.otherUsername}
+                        </p>
+                      )}
+                      {/* Real-time online status text */}
+                      {isUserOnline(activeConversation.otherUserId) && (
+                        <p className="text-xs text-accent">Ativo agora</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Mensagens */}
