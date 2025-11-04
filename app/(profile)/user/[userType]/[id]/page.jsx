@@ -41,12 +41,12 @@ export default function ProfilePage() {
       switch (lowerCaseUserType) {
         case "player":
           fetchedUser = await api.players.getById(id);
-          // Buscar estatísticas da jogadora
+          // Buscar ranking da jogadora
           try {
-            const stats = await api.players.getStats(id);
-            setPlayerStats(stats);
-          } catch (statsError) {
-            // Estatísticas não disponíveis - endpoint não implementado ainda
+            const ranking = await api.rankings.getPlayerRanking(id);
+            setPlayerStats(ranking);
+          } catch (rankingError) {
+            // Ranking não disponível - jogadora ainda não participou de jogos competitivos
             setPlayerStats(null);
           }
           break;

@@ -226,6 +226,7 @@ import createPostRoutes from "./routes/postRoutes";
 import createTeamRoutes from "./routes/teamRoutes";
 import createNotificationRoutes from "./routes/notificationRoutes";
 import createChatRoutes from "./routes/chatRoutes";
+import createRankingRoutes from "./routes/rankingRoutes";
 
 export const api = {
   auth: createAuthRoutes(fetchApi),
@@ -240,4 +241,5 @@ export const api = {
   teams: createTeamRoutes(fetchApi),
   notifications: createNotificationRoutes(fetchApi),
   chats: createChatRoutes(fetchApi),
+  rankings: createRankingRoutes(fetchApi),
 };
