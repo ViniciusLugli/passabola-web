@@ -181,21 +181,21 @@ export function ChatProvider({ children }) {
     const { type, userId, userIds } = event;
 
     switch (type) {
-      case 'USER_ONLINE':
+      case "USER_ONLINE":
         setOnlineUsers((prev) => new Set([...prev, userId]));
         break;
-      case 'USER_OFFLINE':
+      case "USER_OFFLINE":
         setOnlineUsers((prev) => {
           const newSet = new Set(prev);
           newSet.delete(userId);
           return newSet;
         });
         break;
-      case 'PRESENCE_LIST':
+      case "PRESENCE_LIST":
         setOnlineUsers(new Set(userIds || []));
         break;
       default:
-        console.warn('Tipo de evento de presença desconhecido:', type);
+        console.warn("Tipo de evento de presença desconhecido:", type);
     }
   }, []);
 
