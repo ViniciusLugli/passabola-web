@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Pencil, Plus, Check } from "lucide-react";
+import { Pencil, Plus, Check, ClipboardCheck } from "lucide-react";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
 import { useToast } from "@/app/context/ToastContext";
@@ -166,6 +166,11 @@ export default function GameCard({ game, onGameUpdate }) {
   const handleEditGame = (e) => {
     e.stopPropagation();
     router.push(`/games/edit/${game.id}`);
+  };
+
+  const handleGameInfo = (e) => {
+    e.stopPropagation();
+    router.push(`/games/info/${game.id}`);
   };
 
   const requiredHostType =
@@ -488,29 +493,57 @@ export default function GameCard({ game, onGameUpdate }) {
         onClick={(e) => e.stopPropagation()}
       >
         {isGameCreator && (
-          <button
-            onClick={handleEditGame}
-            className="
-              p-2 sm:p-2.5
-              bg-accent-soft
-              text-gray-800
-              dark:text-gray-300
-              rounded-full
-              transition-all
-              duration-200
-              hover:scale-110
-              hover:text-gray-900
-              dark:hover:text-white
-              active:scale-95
-              shadow-elevated
-              hover:shadow-lg
-              border-2
-              border-accent
-            "
-            title="Editar Jogo"
-          >
-            <Pencil className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2} />
-          </button>
+          <>
+            <button
+              onClick={handleGameInfo}
+              className="
+                p-2 sm:p-2.5
+                bg-green-500/20
+                text-gray-800
+                dark:text-gray-300
+                rounded-full
+                transition-all
+                duration-200
+                hover:scale-110
+                hover:text-gray-900
+                dark:hover:text-white
+                active:scale-95
+                shadow-elevated
+                hover:shadow-lg
+                border-2
+                border-green-500/60
+              "
+              title="Informações do Jogo"
+            >
+              <ClipboardCheck
+                className="w-5 h-5 sm:w-6 sm:h-6"
+                strokeWidth={2}
+              />
+            </button>
+            <button
+              onClick={handleEditGame}
+              className="
+                p-2 sm:p-2.5
+                bg-accent-soft
+                text-gray-800
+                dark:text-gray-300
+                rounded-full
+                transition-all
+                duration-200
+                hover:scale-110
+                hover:text-gray-900
+                dark:hover:text-white
+                active:scale-95
+                shadow-elevated
+                hover:shadow-lg
+                border-2
+                border-accent
+              "
+              title="Editar Jogo"
+            >
+              <Pencil className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2} />
+            </button>
+          </>
         )}
         <button
           onClick={handleJoinLeaveGame}

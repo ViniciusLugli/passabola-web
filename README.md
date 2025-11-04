@@ -33,8 +33,9 @@ Este projeto foi construído utilizando tecnologias web modernas para criar uma 
 - **Framework**: [**Next.js 15**](https://nextjs.org/) - O framework React para produção.
 - **Biblioteca UI**: [**React 19**](https://reactjs.org/) - Para construir interfaces de usuário.
 - **Estilização**: [**Tailwind CSS 4**](https://tailwindcss.com/) - Um framework CSS utility-first.
-- **WebSocket**: [**@stomp/stompjs**](https://stomp-js.github.io/) - Para comunicação em tempo real.
+- **WebSocket**: [**@stomp/stompjs**](https://stomp-js.github.io/) + [**ws**](https://github.com/websockets/ws) - Para comunicação em tempo real e tail server de logs.
 - **Gerenciamento de Estado**: **React Context API** - Para estado global da aplicação.
+- **Observabilidade**: Sistema de logs estruturado client-side com streaming em tempo real (SSE/WebSocket).
 
 ## 🚀 Como Executar o Projeto
 
@@ -69,10 +70,22 @@ Para rodar a aplicação em seu ambiente de desenvolvimento, siga os passos abai
     > **Nota**: WebSocket está temporariamente desabilitado aguardando configuração no backend. Para habilitar quando estiver pronto, altere para `true`.
 
 5.  **Execute a Aplicação**:
+
     ```bash
     npm run dev
     ```
+
     Abra [http://localhost:3000](http://localhost:3000) no seu navegador para ver o resultado.
+
+6.  **Execute o Servidor de Logs (Opcional)**:
+
+    Para habilitar streaming de logs via WebSocket:
+
+    ```bash
+    npm run logs:socket
+    ```
+
+    O servidor WebSocket estará disponível em `ws://localhost:3001`. Acesse [http://localhost:3000/logs](http://localhost:3000/logs) para visualizar os logs em tempo real.
 
 ## 🛠️ Estrutura do Projeto
 
@@ -81,6 +94,10 @@ A estrutura de diretórios foi projetada para ser modular e escalável, seguindo
 ```
 passabola-web/
 ├── app/                      # Rotas, componentes e lógica da aplicação
+│   ├── api/                  # API Routes (Next.js)
+│   │   └── log/              # Endpoints de logs
+│   │       ├── route.js      # POST (receber logs), DELETE (limpar logs)
+│   │       └── stream/       # SSE streaming de logs
 │   ├── components/           # Componentes React reutilizáveis
 │   │   ├── Header.jsx        # Cabeçalho com navegação
 │   │   ├── NotificationCard.jsx    # Card de notificação
@@ -93,8 +110,11 @@ passabola-web/
 │   │   ├── ChatContext.js    # Contexto de chat (WebSocket)
 │   │   └── ToastContext.js   # Contexto de toasts
 │   ├── lib/                  # Utilitários e configurações
-│   │   ├── api.js            # Cliente HTTP centralizado
+│   │   ├── api.js            # Cliente HTTP centralizado com deduplicador
+│   │   ├── logger.js         # Logger client-side estruturado
 │   │   └── routes/           # Rotas da API organizadas por recurso
+│   ├── logs/                 # Sistema de observabilidade
+│   │   └── page.jsx          # UI de visualização de logs em tempo real
 │   ├── feed/                 # Página do feed de posts
 │   ├── games/                # Páginas relacionadas a jogos
 │   ├── calendar/             # Página do calendário
@@ -106,6 +126,10 @@ passabola-web/
 │   ├── register/             # Página de registro
 │   ├── layout.jsx            # Layout principal com providers
 │   └── page.jsx              # Página inicial (landing page)
+├── logs/                     # Armazenamento de logs (não versionado)
+│   └── client-logs.log       # Arquivo de logs JSON-line
+├── scripts/                  # Scripts utilitários
+│   └── log-socket-server.js  # Servidor WebSocket para tail de logs
 ├── public/                   # Arquivos estáticos
 │   ├── icons/                # Ícones SVG
 │   └── media/                # Imagens e mídia
@@ -179,6 +203,140 @@ passabola-web/
 
 - Assistente virtual para ajuda
 
+### 📊 Sistema de Observabilidade e Logs
+
+- **Logger Client-Side Estruturado**: Logging centralizado com redação automática de headers sensíveis (Authorization, Cookie)
+- **Coleta de Logs**: POST `/api/log` - Endpoint para receber logs do cliente
+- **Streaming em Tempo Real**:
+  - SSE (Server-Sent Events) via `/api/log/stream`
+  - WebSocket via `ws://localhost:3001` (servidor tail dedicado)
+- **UI de Visualização**: Interface em tempo real em `/logs` com:
+  - Filtros por nível (info, warn, error)
+  - Busca textual em logs
+  - Auto-scroll e exportação (JSON/CSV)
+  - Auto-detect de servidor WebSocket
+  - Limpeza de logs (client + server)
+- **Persistência**: Logs salvos em JSON-line format em `logs/client-logs.log`
+- **Instrumentação**: Todas as requisições HTTP são automaticamente logadas com request/response completos
+
+## 🏗️ Arquitetura e Padrões de Design
+
+### Padrões Arquiteturais
+
+#### 1. **Client HTTP Centralizado** (`app/lib/api.js`)
+
+- **Padrão**: Facade + Factory
+- **Funcionalidades**:
+  - Gerenciamento centralizado de autenticação (JWT token)
+  - Tratamento global de erros HTTP
+  - Logging automático de request/response
+  - **Deduplicador de requisições**: Evita requisições paralelas idênticas usando Map global de promises pendentes
+  - Organização modular por recurso (auth, games, teams, etc.)
+
+```javascript
+// Exemplo de uso
+import { api } from "@/app/lib/api";
+
+// Automaticamente deduplica se chamado em paralelo
+const games = await api.games.getAll();
+const players = await api.players.getById(1);
+```
+
+#### 2. **Logger Estruturado** (`app/lib/logger.js`)
+
+- **Padrão**: Singleton + Observer
+- **Características**:
+  - Logs estruturados em JSON
+  - Redação automática de headers sensíveis
+  - Envio assíncrono usando `sendBeacon` ou `fetch` com keepalive
+  - Integração transparente com o client HTTP
+
+```javascript
+import { logger } from "@/app/lib/logger";
+
+logger.info("User action", { userId: 123, action: "click" });
+logger.error("API Error", { endpoint: "/games", status: 500 });
+```
+
+#### 3. **Context API Pattern**
+
+Gerenciamento de estado global seguindo o padrão Provider:
+
+- `AuthContext`: Autenticação e dados do usuário logado
+- `NotificationContext`: Notificações em tempo real via WebSocket/STOMP
+- `ChatContext`: Mensagens de chat via WebSocket/STOMP
+- `ToastContext`: Notificações toast UI
+- `ThemeContext`: Tema claro/escuro
+
+#### 4. **Route Handlers (Next.js API Routes)**
+
+Endpoints API seguindo padrão RESTful:
+
+```javascript
+// app/api/log/route.js
+export async function POST(request) {
+  /* receber logs */
+}
+export async function DELETE(request) {
+  /* limpar logs */
+}
+```
+
+#### 5. **Real-time Streaming**
+
+Duplo transporte para observabilidade:
+
+- **SSE (Server-Sent Events)**: Fallback padrão, sempre disponível
+- **WebSocket**: Servidor dedicado Node.js com `ws` para performance
+- **Auto-detect**: Client detecta disponibilidade do WS e conecta automaticamente
+
+### Decisões de Design
+
+#### Performance e Otimização
+
+1. **Request Deduplication**:
+
+   - Requisições idênticas em paralelo compartilham a mesma Promise
+   - Previne race conditions e duplicação de chamadas (ex: múltiplos useEffect)
+   - Implementado via Map global com cleanup automático
+
+2. **Lazy Loading**:
+
+   - Componentes carregados sob demanda
+   - Reduz bundle inicial
+
+3. **Logging Assíncrono**:
+   - `sendBeacon` para logs críticos (não bloqueia navegação)
+   - `fetch` com keepalive como fallback
+
+#### Segurança
+
+1. **Redação de Dados Sensíveis**:
+
+   - Headers `Authorization` e `Cookie` são automaticamente redatados em logs
+   - Evita vazamento acidental de tokens em logs persistidos
+
+2. **JWT Token Management**:
+   - Token armazenado em memória (não em localStorage por padrão)
+   - Injetado automaticamente em todas as requisições
+
+#### Resiliência
+
+1. **Fallback Cascading**:
+
+   - WebSocket → SSE → HTTP polling
+   - Garantia de funcionalidade mesmo com servidores indisponíveis
+
+2. **Reconnection Strategy**:
+
+   - Backoff exponencial para reconexão WebSocket
+   - Máximo de 4 tentativas antes de fallback para SSE
+
+3. **Error Handling**:
+   - Try-catch em todas as operações críticas
+   - Mensagens de erro user-friendly
+   - Logging automático de exceções
+
 ## 📚 Documentação
 
 Para informações detalhadas sobre sistemas específicos, consulte:
@@ -188,9 +346,37 @@ Para informações detalhadas sobre sistemas específicos, consulte:
 - [**Troubleshooting**](./.github/TROUBLESHOOTING.md) - Guia de solução de problemas comuns
 - [**Changelog**](./.github/CHANGELOG.md) - Histórico detalhado de mudanças
 
+### Scripts Disponíveis
+
+```bash
+# Desenvolvimento
+npm run dev              # Inicia servidor de desenvolvimento (port 3000)
+npm run build            # Build de produção
+npm run start            # Inicia servidor de produção
+
+# Logs e Observabilidade
+npm run logs:socket      # Inicia servidor WebSocket de logs (port 3001)
+
+# Utilitários
+npm run lint             # Executa linter
+```
+
+### Variáveis de Ambiente
+
+```env
+# API Backend
+NEXT_PUBLIC_API_URL=http://localhost:8080/api
+
+# WebSocket (Notificações e Chat)
+NEXT_PUBLIC_ENABLE_WEBSOCKET=false
+
+# Logs (opcional - se não definido, usa defaults)
+LOG_SOCKET_URL=ws://localhost:3001
+```
+
 ## ⚠️ Problemas Conhecidos
 
-### WebSocket 403 Forbidden
+### WebSocket 403 Forbidden (STOMP)
 
 **Status**: 🔴 Aguardando correção no backend
 
@@ -203,6 +389,21 @@ NEXT_PUBLIC_ENABLE_WEBSOCKET=false
 ```
 
 Ambos os sistemas funcionam normalmente via HTTP como fallback. Para mais detalhes e solução, consulte o [guia de troubleshooting](./.github/TROUBLESHOOTING.md).
+
+### Chamadas Duplicadas em Dev Mode
+
+**Status**: ✅ Resolvido
+
+Em modo de desenvolvimento, o React Strict Mode pode causar dupla execução de efeitos, resultando em requisições duplicadas. Implementamos um deduplicador em `app/lib/api.js` que:
+
+- Detecta requisições idênticas em andamento (mesmo endpoint + método + body)
+- Retorna a mesma Promise para chamadas concorrentes
+- Elimina duplicação de rede automaticamente
+
+**Alternativas recomendadas para produção**:
+
+- Usar bibliotecas como SWR ou React Query para cache e deduplicação avançada
+- Mover data fetching para Server Components (Next.js App Router)
 
 ---
 

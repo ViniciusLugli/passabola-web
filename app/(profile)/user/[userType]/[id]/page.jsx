@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProfileHeader from "@/app/components/profile/ProfileHeader";
+import PlayerStats from "@/app/components/profile/PlayerStats";
 import PostList from "@/app/components/lists/PostList";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
@@ -18,6 +19,7 @@ export default function ProfilePage() {
   const { userType, id } = useParams();
 
   const [profileUser, setProfileUser] = useState(null);
+  const [playerStats, setPlayerStats] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,6 +41,14 @@ export default function ProfilePage() {
       switch (lowerCaseUserType) {
         case "player":
           fetchedUser = await api.players.getById(id);
+          // Buscar estatísticas da jogadora
+          try {
+            const stats = await api.players.getStats(id);
+            setPlayerStats(stats);
+          } catch (statsError) {
+            // Estatísticas não disponíveis - endpoint não implementado ainda
+            setPlayerStats(null);
+          }
           break;
         case "organization":
           fetchedUser = await api.organizations.getById(id);
@@ -194,6 +204,16 @@ export default function ProfilePage() {
           loggedInUser={loggedInUser}
           onFollowChange={handleFollowChange}
         />
+
+        {/* Estatísticas da Jogadora */}
+        {profileUser.userType === "PLAYER" && playerStats && (
+          <section className="mt-8">
+            <h3 className="text-xl md:text-2xl font-bold text-primary mb-4">
+              Estatísticas
+            </h3>
+            <PlayerStats stats={playerStats} />
+          </section>
+        )}
 
         <section className="mt-8">
           <h3 className="text-xl md:text-2xl font-bold text-primary mb-4">

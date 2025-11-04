@@ -84,6 +84,51 @@ export async function logRequestResponse({
     meta,
   };
 
+  // Log no console do navegador para desenvolvimento
+  if (process.env.NODE_ENV === "development") {
+    const logStyle =
+      level === "error"
+        ? "color: #ef4444; font-weight: bold"
+        : level === "warn"
+        ? "color: #f59e0b; font-weight: bold"
+        : "color: #10b981; font-weight: bold";
+
+    const emoji = level === "error" ? "❌" : level === "warn" ? "⚠️" : "✅";
+
+    console.groupCollapsed(
+      `%c${emoji} [${level.toUpperCase()}] ${method} ${route} ${
+        responseStatus ? `(${responseStatus})` : ""
+      }`,
+      logStyle
+    );
+
+    console.log("📅 Timestamp:", payload.timestamp);
+    console.log("🔗 Route:", route);
+    console.log("📤 Method:", method);
+
+    if (requestBody) {
+      console.log("📦 Request Body:", requestBody);
+    }
+
+    if (responseStatus) {
+      console.log("📊 Response Status:", responseStatus);
+    }
+
+    if (responseBody) {
+      console.log("📥 Response Body:", responseBody);
+    }
+
+    if (message) {
+      console.log("💬 Message:", message);
+    }
+
+    if (meta && Object.keys(meta).length > 0) {
+      console.log("🔍 Meta:", meta);
+    }
+
+    console.groupEnd();
+  }
+
   // fire-and-forget
   sendToServer(payload);
 }
