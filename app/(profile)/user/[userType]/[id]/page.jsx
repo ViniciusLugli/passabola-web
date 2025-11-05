@@ -44,139 +44,86 @@ export default function ProfilePage() {
   const loggedInUserId = loggedInUser?.userId;
   const loggedInUserType = loggedInUser?.userType;
 
-  // Fetch tab data lazily
-  const fetchTabData = useCallback(
-    async (tab) => {
-      if (!profileUser || !id) return;
-
-      const lowerCaseUserType = userType.toLowerCase();
-
-      try {
-        switch (tab) {
-          case "posts":
-            // Check if already loaded
-            setLoadedTabs((prev) => {
-              if (prev.posts) return prev;
-
-              // Set loading state
-              setTabLoading((loading) => ({ ...loading, posts: true }));
-
-              // Fetch data
-              api.posts
-                .getByAuthor(id)
-                .then((postsResponse) => {
-                  const filteredPosts = (postsResponse.content || []).filter(
-                    (post) => post.authorType.toLowerCase() === lowerCaseUserType
-                  );
-                  setPosts(filteredPosts);
-                  setTabLoading((loading) => ({ ...loading, posts: false }));
-                })
-                .catch((err) => {
-                  console.error("Error fetching posts:", err);
-                  setTabLoading((loading) => ({ ...loading, posts: false }));
-                });
-
-              return { ...prev, posts: true };
-            });
-            break;
-
-          case "teams":
-            if (lowerCaseUserType !== "player") return;
-
-            setLoadedTabs((prev) => {
-              if (prev.teams) return prev;
-
-              setTabLoading((loading) => ({ ...loading, teams: true }));
-
-              // For now, we'll fetch all teams and filter by player
-              // In a real scenario, there should be an API endpoint like /players/{id}/teams
-              api.teams
-                .getAll({ size: 100 })
-                .then((allTeamsResponse) => {
-                  setTeams(allTeamsResponse.content || []);
-                  setTabLoading((loading) => ({ ...loading, teams: false }));
-                })
-                .catch((err) => {
-                  console.error("Error fetching teams:", err);
-                  setTabLoading((loading) => ({ ...loading, teams: false }));
-                });
-
-              return { ...prev, teams: true };
-            });
-            break;
-
-          case "games":
-            setLoadedTabs((prev) => {
-              if (prev.games) return prev;
-
-              setTabLoading((loading) => ({ ...loading, games: true }));
-
-              let gamesPromise;
-              if (lowerCaseUserType === "player") {
-                // Get games by player participation
-                gamesPromise = api.gameParticipants.getByPlayer(id, {
-                  size: 50,
-                });
-              } else if (lowerCaseUserType === "organization") {
-                // Get games hosted by organization
-                gamesPromise = api.games.getByOrganization(id, {
-                  size: 50,
-                });
-              } else if (lowerCaseUserType === "spectator") {
-                // Get games spectated
-                gamesPromise = api.games.mySpectatorSubscriptions({
-                  size: 50,
-                });
-              }
-
-              if (gamesPromise) {
-                gamesPromise
-                  .then((gamesResponse) => {
-                    let gamesData = gamesResponse.content || [];
-
-                    // For players, gameParticipants returns participations with a game object
-                    // We need to extract the game from each participation
-                    if (lowerCaseUserType === "player") {
-                      gamesData = gamesData
-                        .map((participation) => {
-                          // Extract the game object from participation
-                          const game = participation.game || participation;
-                          // Mark as joined since it's from participations
-                          return { ...game, isJoined: true };
-                        })
-                        .filter((game) => game && game.id); // Filter out invalid games
-                    }
-
-                    setGames(gamesData);
-                    setTabLoading((loading) => ({ ...loading, games: false }));
-                  })
-                  .catch((err) => {
-                    console.error("Error fetching games:", err);
-                    setTabLoading((loading) => ({ ...loading, games: false }));
-                  });
-              }
-
-              return { ...prev, games: true };
-            });
-            break;
-
-          default:
-            break;
-        }
-      } catch (err) {
-        console.error(`Error fetching ${tab} data:`, err);
-        setTabLoading((prev) => ({ ...prev, [tab]: false }));
-      }
-    },
-    [profileUser, id, userType]
-  );
-
-  // Trigger tab data fetch when activeTab changes
-  useEffect(() => {
-    if (profileUser && activeTab !== "ranking") {
-      fetchTabData(activeTab);
+  // Helper function to fetch posts
+  const fetchPosts = useCallback(async (userId, lowerCaseUserType) => {
+    try {
+      const postsResponse = await api.posts.getByAuthor(userId);
+      const filteredPosts = (postsResponse.content || []).filter(
+        (post) => post.authorType.toLowerCase() === lowerCaseUserType
+      );
+      setPosts(filteredPosts);
+      setLoadedTabs((prev) => ({ ...prev, posts: true }));
+    } catch (err) {
+      console.error("Error fetching posts:", err);
     }
-  }, [activeTab, profileUser, fetchTabData]);
+  }, []);
+
+  // Helper function to fetch teams
+  const fetchTeams = useCallback(async (userId, lowerCaseUserType) => {
+    if (lowerCaseUserType !== "player") return;
+
+    try {
+      const allTeamsResponse = await api.teams.getAll({ size: 100 });
+      setTeams(allTeamsResponse.content || []);
+      setLoadedTabs((prev) => ({ ...prev, teams: true }));
+    } catch (err) {
+      console.error("Error fetching teams:", err);
+    }
+  }, []);
+
+  // Helper function to fetch games (following games/calendar pattern)
+  const fetchGames = useCallback(async (userId, lowerCaseUserType) => {
+    try {
+      let gamesData = [];
+
+      if (lowerCaseUserType === "player") {
+        // Get player participations
+        const participationsResponse = await api.gameParticipants.getByPlayer(
+          userId,
+          { size: 100 }
+        );
+        const participations = participationsResponse.content || [];
+
+        // Extract game IDs from participations
+        const gameIds = participations
+          .map((p) => p.gameId || p.game?.id)
+          .filter(Boolean);
+
+        if (gameIds.length > 0) {
+          // Fetch all games and filter by participation
+          const allGamesResponse = await api.games.getAll({
+            page: 0,
+            size: 1000,
+          });
+          const allGames = allGamesResponse.content || [];
+
+          gamesData = allGames
+            .filter((game) => gameIds.includes(game.id))
+            .map((game) => ({ ...game, isJoined: true }));
+        }
+      } else if (lowerCaseUserType === "organization") {
+        // Get games hosted by organization
+        const gamesResponse = await api.games.getByOrganization(userId, {
+          size: 100,
+        });
+        gamesData = gamesResponse.content || [];
+      } else if (lowerCaseUserType === "spectator") {
+        // Get games spectated
+        const gamesResponse = await api.games.mySpectatorSubscriptions({
+          size: 100,
+        });
+        gamesData = gamesResponse.content || [];
+      }
+
+      // Sort by date
+      gamesData.sort((a, b) => new Date(a.gameDate) - new Date(b.gameDate));
+
+      setGames(gamesData);
+      setLoadedTabs((prev) => ({ ...prev, games: true }));
+    } catch (err) {
+      console.error("Error fetching games:", err);
+    }
+  }, []);
 
   const fetchProfileData = useCallback(async () => {
     if (!id || !userType) {
@@ -199,8 +146,6 @@ export default function ProfilePage() {
             const ranking = await api.rankings.getPlayerRanking(id);
             setPlayerStats(ranking);
           } catch (rankingError) {
-            // Erro 404/500 é esperado quando jogadora ainda não tem ranking
-            // (não participou de jogos competitivos)
             setPlayerStats(null);
           }
           break;
@@ -280,7 +225,12 @@ export default function ProfilePage() {
 
       setProfileUser(updatedProfileUser);
 
-      // Posts will be loaded lazily when the posts tab is activated
+      // Fetch ALL tab data upfront (posts, teams, games) for tab counts
+      await Promise.allSettled([
+        fetchPosts(id, lowerCaseUserType),
+        fetchTeams(id, lowerCaseUserType),
+        fetchGames(id, lowerCaseUserType),
+      ]);
     } catch (err) {
       console.error("Error fetching profile data:", err);
       setError(err.message || "Falha ao carregar o perfil. Tente novamente.");
@@ -289,7 +239,15 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  }, [id, userType, loggedInUserId, loggedInUserType]);
+  }, [
+    id,
+    userType,
+    loggedInUserId,
+    loggedInUserType,
+    fetchPosts,
+    fetchTeams,
+    fetchGames,
+  ]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -300,58 +258,33 @@ export default function ProfilePage() {
     if (isAuthenticated && id && userType) {
       fetchProfileData();
     }
-  }, [id, userType, isAuthenticated, authLoading, fetchProfileData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, userType, isAuthenticated, authLoading]);
 
-  if (authLoading || loading) {
-    return (
-      <div>
-        <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
-          <p>Carregando perfil...</p>
-        </main>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div>
-        <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
-          <h1 className="text-red-500 text-2xl">Erro: {error}</h1>
-        </main>
-      </div>
-    );
-  }
-
-  if (!profileUser) {
-    return (
-      <div>
-        <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
-          <h1 className="text-red-500 text-2xl">Perfil não encontrado.</h1>
-        </main>
-      </div>
-    );
-  }
-
-  const handleFollowChange = () => {
+  // Define callbacks BEFORE early returns (Rules of Hooks)
+  const handleFollowChange = useCallback(() => {
     fetchProfileData();
-  };
+  }, [fetchProfileData]);
 
-  const handleGameUpdate = () => {
+  const handleGameUpdate = useCallback(() => {
     // Refetch games when a game is updated
-    setGames([]);
-    fetchTabData("games");
-  };
+    if (profileUser && id && userType) {
+      const lowerCaseUserType = userType.toLowerCase();
+      fetchGames(id, lowerCaseUserType);
+    }
+  }, [profileUser, id, userType]);
+
+  // Determine if ranking tab should be shown (only for PLAYER)
+  const showRankingTab = profileUser?.userType === "PLAYER";
 
   // Calculate tab counts
   const tabCounts = {
-    ranking: profileUser?.userType === "PLAYER" ? 1 : 0,
     posts: posts.length,
     teams: teams.length,
     games: games.length,
   };
 
-  // Render tab content based on activeTab
-  const renderTabContent = () => {
+  const renderTabContent = useCallback(() => {
     switch (activeTab) {
       case "ranking":
         if (profileUser.userType === "PLAYER") {
@@ -444,7 +377,47 @@ export default function ProfilePage() {
       default:
         return null;
     }
-  };
+  }, [
+    activeTab,
+    profileUser,
+    playerStats,
+    tabLoading,
+    posts,
+    teams,
+    games,
+    handleGameUpdate,
+  ]);
+
+  // Early returns AFTER all hooks
+  if (authLoading || loading) {
+    return (
+      <div>
+        <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
+          <p>Carregando perfil...</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
+          <h1 className="text-red-500 text-2xl">Erro: {error}</h1>
+        </main>
+      </div>
+    );
+  }
+
+  if (!profileUser) {
+    return (
+      <div>
+        <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
+          <h1 className="text-red-500 text-2xl">Perfil não encontrado.</h1>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -461,6 +434,7 @@ export default function ProfilePage() {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             counts={tabCounts}
+            showRankingTab={showRankingTab}
           />
         </section>
 

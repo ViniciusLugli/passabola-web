@@ -2,29 +2,44 @@
 
 import { useRef, useEffect } from "react";
 
-export default function ProfileTabs({ activeTab, onTabChange, counts = {} }) {
+export default function ProfileTabs({
+  activeTab,
+  onTabChange,
+  counts = {},
+  showRankingTab = false,
+}) {
   const tabsRef = useRef(null);
   const activeTabRef = useRef(null);
 
-  const tabs = [
-    { id: "ranking", label: "Ranking", count: counts.ranking },
+  // Define all possible tabs
+  const allTabs = [
+    { id: "ranking", label: "Ranking", showIf: showRankingTab },
     { id: "posts", label: "Posts", count: counts.posts },
     { id: "teams", label: "Times", count: counts.teams },
     { id: "games", label: "Jogos", count: counts.games },
   ];
 
-  // Scroll active tab into view on mobile
+  // Filter tabs based on showIf condition
+  const tabs = allTabs.filter((tab) => {
+    if (tab.id === "ranking") {
+      return tab.showIf;
+    }
+    return true; // Show all other tabs
+  });
+
   useEffect(() => {
     if (activeTabRef.current && tabsRef.current) {
       const tabElement = activeTabRef.current;
       const containerElement = tabsRef.current;
 
-      // Check if we're on mobile (container is scrollable)
       if (containerElement.scrollWidth > containerElement.clientWidth) {
         const tabRect = tabElement.getBoundingClientRect();
         const containerRect = containerElement.getBoundingClientRect();
 
-        if (tabRect.left < containerRect.left || tabRect.right > containerRect.right) {
+        if (
+          tabRect.left < containerRect.left ||
+          tabRect.right > containerRect.right
+        ) {
           tabElement.scrollIntoView({
             behavior: "smooth",
             block: "nearest",
@@ -86,7 +101,8 @@ export default function ProfileTabs({ activeTab, onTabChange, counts = {} }) {
       >
         {tabs.map((tab, index) => {
           const isActive = activeTab === tab.id;
-          const displayCount = tab.count !== undefined ? tab.count : 0;
+          const hasCount = tab.count !== undefined;
+          const displayCount = hasCount ? tab.count : 0;
 
           return (
             <button
@@ -104,19 +120,23 @@ export default function ProfileTabs({ activeTab, onTabChange, counts = {} }) {
                   ? "border-accent text-accent"
                   : "border-transparent text-secondary hover:text-primary hover:border-default"
               }`}
-              aria-label={`${tab.label} (${displayCount})`}
+              aria-label={
+                hasCount ? `${tab.label} (${displayCount})` : tab.label
+              }
             >
               <span>{tab.label}</span>
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full transition-colors duration-200 ${
-                  isActive
-                    ? "bg-accent-soft text-accent"
-                    : "bg-surface-elevated text-secondary"
-                }`}
-                aria-hidden="true"
-              >
-                {displayCount}
-              </span>
+              {hasCount && (
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full transition-colors duration-200 ${
+                    isActive
+                      ? "bg-accent-soft text-accent"
+                      : "bg-surface-elevated text-secondary"
+                  }`}
+                  aria-hidden="true"
+                >
+                  {displayCount}
+                </span>
+              )}
             </button>
           );
         })}
