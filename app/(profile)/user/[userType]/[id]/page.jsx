@@ -10,6 +10,9 @@ import TeamList from "@/app/components/profile/TeamList";
 import GameList from "@/app/components/profile/GameList";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
+import LoadingSkeleton from "@/app/components/ui/LoadingSkeleton";
+import ErrorState from "@/app/components/ui/ErrorState";
+import { User } from "lucide-react";
 
 export default function ProfilePage() {
   const {
@@ -328,12 +331,7 @@ export default function ProfilePage() {
               Publicações
             </h3>
             {tabLoading.posts ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-10 w-10 border-3 border-accent border-t-transparent"></div>
-                <span className="ml-3 text-secondary font-medium">
-                  Carregando publicações...
-                </span>
-              </div>
+              <LoadingSkeleton count={3} variant="post" />
             ) : (
               <PostList posts={posts} profileUser={profileUser} />
             )}
@@ -393,7 +391,8 @@ export default function ProfilePage() {
     return (
       <div>
         <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
-          <p>Carregando perfil...</p>
+          <LoadingSkeleton count={1} variant="card" className="h-48 mb-8" />
+          <LoadingSkeleton count={3} variant="post" />
         </main>
       </div>
     );
@@ -403,7 +402,12 @@ export default function ProfilePage() {
     return (
       <div>
         <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
-          <h1 className="text-red-500 text-2xl">Erro: {error}</h1>
+          <ErrorState
+            title="Erro ao carregar perfil"
+            message={error}
+            onRetry={() => window.location.reload()}
+            variant="error"
+          />
         </main>
       </div>
     );
@@ -413,7 +417,12 @@ export default function ProfilePage() {
     return (
       <div>
         <main className="container mx-auto p-4 md:p-8 lg:p-12 max-w-4xl">
-          <h1 className="text-red-500 text-2xl">Perfil não encontrado.</h1>
+          <ErrorState
+            icon={<User />}
+            title="Perfil não encontrado"
+            message="O perfil que você está procurando não existe ou foi removido."
+            variant="warning"
+          />
         </main>
       </div>
     );
