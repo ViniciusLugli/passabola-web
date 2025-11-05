@@ -2,6 +2,7 @@
 
 import Input from "@/app/components/ui/Input";
 import ConfirmSaveModal from "./ConfirmSaveModal";
+import AccordionSection from "@/app/components/AccordionSection";
 import { useConfigForm } from "./useConfigForm";
 import { X } from "lucide-react";
 
@@ -34,9 +35,10 @@ export default function ConfigForm({ userId, userType }) {
     <>
       <div className="bg-surface border border-default rounded-2xl shadow-elevated p-6 md:p-10 relative">
         <button
-          onClick={handleClose}
-          className="absolute top-6 right-6 text-gray-800 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-          aria-label="Fechar"
+          type="button"
+          onClick={() => router.back()}
+          className="absolute top-6 right-6 p-2 text-secondary hover:text-primary transition-colors rounded-full hover:bg-surface-elevated focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+          aria-label="Voltar"
         >
           <X className="w-6 h-6" strokeWidth={2} />
         </button>
@@ -48,69 +50,92 @@ export default function ConfigForm({ userId, userType }) {
           Atualize suas informações pessoais.
         </p>
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
-        >
-          <div className="md:col-span-2">
-            <Input
-              label="Nome de Exibição"
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-            />
-          </div>
-          <Input
-            label="Nome de Usuário"
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleInputChange}
-            disabled
-          />
-          <Input
-            label="Email"
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-          />
-          <div className="md:col-span-2">
-            <Input
-              label="Telefone"
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="md:col-span-2">
-            <Input
-              label="Bio"
-              type="textarea"
-              name="bio"
-              value={formData.bio}
-              onChange={handleInputChange}
-              rows={4}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Dados Pessoais */}
+          <AccordionSection
+            id="personal-data"
+            title="Dados Pessoais"
+            defaultOpen={true}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <Input
+                  label="Nome de Exibição"
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <Input
+                label="Nome de Usuário"
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleInputChange}
+                disabled
+              />
+              <Input
+                label="Email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+              />
+              <div className="md:col-span-2">
+                <Input
+                  label="Telefone"
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  label="Bio"
+                  type="textarea"
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  rows={4}
+                />
+              </div>
+            </div>
+          </AccordionSection>
 
-          <div className="md:col-span-2 border-t border-default pt-6 mt-4">
-            <h2 className="text-xl font-semibold text-primary mb-4">
-              Segurança
-            </h2>
-            <Input
-              label="Nova Senha"
-              type="password"
-              name="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Deixe em branco para não alterar"
-            />
-          </div>
+          {/* Segurança */}
+          <AccordionSection id="security" title="Segurança" defaultOpen={false}>
+            <div className="space-y-4">
+              <Input
+                label="Nova Senha"
+                type="password"
+                name="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Deixe em branco para não alterar"
+              />
+              <p className="text-sm text-secondary">
+                A senha deve ter no mínimo 8 caracteres.
+              </p>
+            </div>
+          </AccordionSection>
 
-          <div className="md:col-span-2 flex justify-end gap-4 mt-6">
+          {/* Privacidade */}
+          <AccordionSection
+            id="privacy"
+            title="Privacidade"
+            defaultOpen={false}
+          >
+            <div className="space-y-4">
+              <p className="text-sm text-secondary">
+                Configurações de privacidade estarão disponíveis em breve.
+              </p>
+            </div>
+          </AccordionSection>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-default">
             <button
               type="button"
               onClick={() => router.back()}
@@ -120,7 +145,7 @@ export default function ConfigForm({ userId, userType }) {
             </button>
             <button
               type="submit"
-              className="px-8 py-3 bg-accent hover:bg-accent-strong font-bold rounded-lg transition-all duration-200 shadow-elevated cursor-pointer"
+              className="px-8 py-3 bg-accent hover:bg-accent-strong font-bold rounded-lg transition-all duration-200 shadow-elevated cursor-pointer text-on-brand"
             >
               Salvar Alterações
             </button>

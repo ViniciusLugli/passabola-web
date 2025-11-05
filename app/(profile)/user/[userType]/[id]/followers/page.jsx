@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import UserListCard from "@/app/components/cards/UserListCard";
+import SearchableList from "@/app/components/SearchableList";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
 
@@ -152,33 +153,33 @@ export default function FollowersPage() {
         <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="text-purple-600 hover:text-purple-800 font-semibold mb-4 flex items-center gap-2"
+            className="text-accent hover:text-accent-strong font-semibold mb-4 flex items-center gap-2"
           >
             ← Voltar
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-primary">
             Seguidores de {profileUser?.name}
           </h1>
-          <p className="text-gray-500 mt-2">
+          <p className="text-secondary mt-2">
             {pagination.totalElements} seguidore
             {pagination.totalElements !== 1 ? "s" : ""}
           </p>
         </div>
 
-        {/* Lista de seguidores */}
-        {followers.length === 0 ? (
-          <div className="bg-gray-50 border border-zinc-200 rounded-xl p-8 text-center">
-            <p className="text-gray-500 text-lg">
-              {profileUser?.name} ainda não tem seguidores.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {followers.map((follower) => (
-              <UserListCard key={follower.userId} user={follower} />
-            ))}
-          </div>
-        )}
+        {/* Lista de seguidores com busca */}
+        <SearchableList
+          items={followers}
+          renderItem={(follower) => (
+            <UserListCard key={follower.userId} user={follower} />
+          )}
+          searchKey="name"
+          placeholder="Buscar seguidores por nome..."
+          emptyMessage={
+            followers.length === 0
+              ? `${profileUser?.name} ainda não tem seguidores.`
+              : "Nenhum seguidor encontrado com esse nome."
+          }
+        />
 
         {/* Paginação */}
         {pagination.totalPages > 1 && (
@@ -186,17 +187,17 @@ export default function FollowersPage() {
             <button
               onClick={handlePreviousPage}
               disabled={pagination.page === 0}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-purple-700 transition-colors"
+              className="px-4 py-3 sm:py-2 bg-accent text-white rounded-lg disabled:bg-surface-muted disabled:text-secondary disabled:cursor-not-allowed hover:bg-accent-strong transition-colors"
             >
               Anterior
             </button>
-            <span className="text-gray-700">
+            <span className="text-primary">
               Página {pagination.page + 1} de {pagination.totalPages}
             </span>
             <button
               onClick={handleNextPage}
               disabled={pagination.page >= pagination.totalPages - 1}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-purple-700 transition-colors"
+              className="px-4 py-3 sm:py-2 bg-accent text-white rounded-lg disabled:bg-surface-muted disabled:text-secondary disabled:cursor-not-allowed hover:bg-accent-strong transition-colors"
             >
               Próxima
             </button>
