@@ -354,10 +354,6 @@ html.dark {
   will-change: background-position;
 }
 
-/* ================================
-   Performance Optimizations (CSS Containment)
-   ================================ */
-/* Isolate layout/paint for heavy lists and cards */
 .contain-paint {
   contain: paint;
 }
@@ -374,7 +370,6 @@ html.dark {
   contain: strict;
 }
 
-/* Apply containment to common patterns */
 .game-card,
 .post-card,
 .team-card,
@@ -382,10 +377,6 @@ html.dark {
   contain: layout style paint;
 }
 
-/* ================================
-   Loading State Animations
-   ================================ */
-/* Spinner animation for buttons and inline loading */
 @keyframes spin-slow {
   0% {
     transform: rotate(0deg);
@@ -433,6 +424,79 @@ html.dark {
 
 .fade-in {
   animation: fade-in 0.3s ease-out;
+}
+
+/* Fade in from bottom - for cards and list items */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fade-in-up 0.4s ease-out;
+}
+
+/* Stagger animation for lists */
+.stagger-fade-in > * {
+  animation: fade-in-up 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.stagger-fade-in > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.stagger-fade-in > *:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.stagger-fade-in > *:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.stagger-fade-in > *:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.stagger-fade-in > *:nth-child(5) {
+  animation-delay: 0.25s;
+}
+.stagger-fade-in > *:nth-child(n + 6) {
+  animation-delay: 0.3s;
+}
+
+/* Scale in animation for modals */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+/* Slide in from right - for notifications/toasts */
+@keyframes slide-in-right-new {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-right-new {
+  animation: slide-in-right-new 0.3s ease-out;
 }
 
 /* Skeleton loading with better performance */

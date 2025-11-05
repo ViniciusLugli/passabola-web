@@ -10,6 +10,10 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useChat } from "@/app/context/ChatContext";
 import { useChatPreferences } from "@/app/hooks/useChatPreferences";
 import { api } from "@/app/lib/api";
+import LoadingSkeleton from "@/app/components/ui/LoadingSkeleton";
+import EmptyState from "@/app/components/ui/EmptyState";
+import ErrorState from "@/app/components/ui/ErrorState";
+import { MessageCircle, Send } from "lucide-react";
 
 export default function ChatPage() {
   const router = useRouter();
@@ -185,9 +189,7 @@ export default function ChatPage() {
       <div className="bg-page min-h-screen">
         <main className="container mx-auto p-4 mt-8">
           <div className="bg-surface rounded-2xl border border-default shadow-elevated p-8">
-            <p className="text-center text-secondary">
-              Carregando conversas...
-            </p>
+            <LoadingSkeleton count={5} variant="list" />
           </div>
         </main>
       </div>
@@ -325,11 +327,16 @@ export default function ChatPage() {
                 <div className="flex-1 overflow-y-auto p-4 bg-surface">
                   {loadingMessages ? (
                     <div className="flex items-center justify-center h-full">
-                      <p className="text-secondary">Carregando mensagens...</p>
+                      <LoadingSkeleton count={3} variant="list" />
                     </div>
                   ) : activeMessages.length === 0 ? (
                     <div className="flex items-center justify-center h-full">
-                      <p className="text-secondary">Nenhuma mensagem ainda</p>
+                      <EmptyState
+                        icon={<MessageCircle />}
+                        title="Nenhuma mensagem ainda"
+                        description="Envie a primeira mensagem para começar a conversa!"
+                        variant="default"
+                      />
                     </div>
                   ) : (
                     <>
