@@ -16,6 +16,8 @@ The PassaBola Component Library is a collection of 35+ reusable React components
   - [Modal](#modal)
   - [LoadingSpinner](#loadingspinner)
   - [LoadingSkeleton](#loadingskeleton)
+  - [EmptyState](#emptystate)
+  - [ErrorState](#errorstate)
   - [Alert](#alert)
   - [Toast](#toast)
   - [ThemeToggle](#themetoggle)
@@ -61,20 +63,21 @@ A versatile button component with multiple variants, loading states, and full ac
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `children` | ReactNode | - | Button content |
-| `type` | string | `"button"` | HTML button type (`button`, `submit`, `reset`) |
-| `onClick` | function | - | Click handler |
-| `loading` | boolean | `false` | Shows loading spinner when true |
-| `disabled` | boolean | `false` | Disables button interaction |
-| `variant` | string | `"primary"` | Button style variant (`primary`, `secondary`, `ghost`) |
-| `className` | string | `""` | Additional CSS classes |
-| `ariaLabel` | string | - | Accessible label for screen readers |
+| Prop        | Type      | Default     | Description                                            |
+| ----------- | --------- | ----------- | ------------------------------------------------------ |
+| `children`  | ReactNode | -           | Button content                                         |
+| `type`      | string    | `"button"`  | HTML button type (`button`, `submit`, `reset`)         |
+| `onClick`   | function  | -           | Click handler                                          |
+| `loading`   | boolean   | `false`     | Shows loading spinner when true                        |
+| `disabled`  | boolean   | `false`     | Disables button interaction                            |
+| `variant`   | string    | `"primary"` | Button style variant (`primary`, `secondary`, `ghost`) |
+| `className` | string    | `""`        | Additional CSS classes                                 |
+| `ariaLabel` | string    | -           | Accessible label for screen readers                    |
 
 #### Variants
 
 **Primary:** Full-width gradient button for main actions
+
 ```jsx
 <Button variant="primary" onClick={handleSubmit}>
   Criar Conta
@@ -82,6 +85,7 @@ A versatile button component with multiple variants, loading states, and full ac
 ```
 
 **Secondary:** Outlined button for secondary actions
+
 ```jsx
 <Button variant="secondary" onClick={handleCancel}>
   Cancelar
@@ -89,6 +93,7 @@ A versatile button component with multiple variants, loading states, and full ac
 ```
 
 **Ghost:** Text-only button for tertiary actions
+
 ```jsx
 <Button variant="ghost" onClick={handleLearnMore}>
   Saiba Mais
@@ -120,21 +125,21 @@ A comprehensive input component supporting text, password, email, number, and te
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `label` | string | - | Input label text |
-| `type` | string | `"text"` | Input type (`text`, `password`, `email`, `number`, `textarea`) |
-| `placeholder` | string | - | Placeholder text |
-| `name` | string | - | Input name attribute |
-| `value` | string | - | Controlled input value |
-| `onChange` | function | - | Change handler |
-| `className` | string | `""` | Additional CSS classes |
-| `description` | string | - | Helper text below input |
-| `hint` | string | - | Hint text (shown when no error) |
-| `error` | string | - | Error message |
-| `success` | string | - | Success message |
-| `required` | boolean | `false` | Shows required indicator |
-| `disabled` | boolean | `false` | Disables input |
+| Prop          | Type     | Default  | Description                                                    |
+| ------------- | -------- | -------- | -------------------------------------------------------------- |
+| `label`       | string   | -        | Input label text                                               |
+| `type`        | string   | `"text"` | Input type (`text`, `password`, `email`, `number`, `textarea`) |
+| `placeholder` | string   | -        | Placeholder text                                               |
+| `name`        | string   | -        | Input name attribute                                           |
+| `value`       | string   | -        | Controlled input value                                         |
+| `onChange`    | function | -        | Change handler                                                 |
+| `className`   | string   | `""`     | Additional CSS classes                                         |
+| `description` | string   | -        | Helper text below input                                        |
+| `hint`        | string   | -        | Hint text (shown when no error)                                |
+| `error`       | string   | -        | Error message                                                  |
+| `success`     | string   | -        | Success message                                                |
+| `required`    | boolean  | `false`  | Shows required indicator                                       |
+| `disabled`    | boolean  | `false`  | Disables input                                                 |
 
 #### Basic Usage
 
@@ -217,26 +222,20 @@ A fully accessible modal dialog with backdrop, close button, and keyboard suppor
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `isOpen` | boolean | - | Controls modal visibility |
-| `onClose` | function | - | Close handler |
-| `title` | string | - | Modal title |
-| `children` | ReactNode | - | Modal content |
+| Prop       | Type      | Default | Description               |
+| ---------- | --------- | ------- | ------------------------- |
+| `isOpen`   | boolean   | -       | Controls modal visibility |
+| `onClose`  | function  | -       | Close handler             |
+| `title`    | string    | -       | Modal title               |
+| `children` | ReactNode | -       | Modal content             |
 
 #### Usage
 
 ```jsx
 const [isOpen, setIsOpen] = useState(false);
 
-<Modal
-  isOpen={isOpen}
-  onClose={() => setIsOpen(false)}
-  title="Confirmar Ação"
->
-  <p className="text-secondary mb-4">
-    Tem certeza que deseja continuar?
-  </p>
+<Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Confirmar Ação">
+  <p className="text-secondary mb-4">Tem certeza que deseja continuar?</p>
   <div className="flex gap-3">
     <Button variant="secondary" onClick={() => setIsOpen(false)}>
       Cancelar
@@ -245,7 +244,7 @@ const [isOpen, setIsOpen] = useState(false);
       Confirmar
     </Button>
   </div>
-</Modal>
+</Modal>;
 ```
 
 #### Features
@@ -274,15 +273,15 @@ An animated loading indicator using Lucide's Loader2 icon.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `label` | string | `"Carregando"` | Loading text |
-| `size` | number | `20` | Icon size in pixels |
-| `className` | string | `""` | Additional CSS classes |
-| `iconClassName` | string | `"text-current"` | Icon color classes |
-| `strokeWidth` | number | `2.5` | Icon stroke width |
-| `labelClassName` | string | `"text-sm font-medium text-secondary"` | Label styling |
-| `srOnly` | boolean | `false` | Shows label only to screen readers |
+| Prop             | Type    | Default                                | Description                        |
+| ---------------- | ------- | -------------------------------------- | ---------------------------------- |
+| `label`          | string  | `"Carregando"`                         | Loading text                       |
+| `size`           | number  | `20`                                   | Icon size in pixels                |
+| `className`      | string  | `""`                                   | Additional CSS classes             |
+| `iconClassName`  | string  | `"text-current"`                       | Icon color classes                 |
+| `strokeWidth`    | number  | `2.5`                                  | Icon stroke width                  |
+| `labelClassName` | string  | `"text-sm font-medium text-secondary"` | Label styling                      |
+| `srOnly`         | boolean | `false`                                | Shows label only to screen readers |
 
 #### Usage
 
@@ -316,33 +315,289 @@ An animated loading indicator using Lucide's Loader2 icon.
 
 ### LoadingSkeleton
 
-A skeleton placeholder for loading states with shimmer animation.
+A skeleton placeholder for loading states with shimmer animation and multiple variants.
 
 **Location:** `/app/components/ui/LoadingSkeleton.jsx`
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `className` | string | `""` | Additional CSS classes |
-| `count` | number | `1` | Number of skeleton items |
+| Prop        | Type   | Default  | Description                                             |
+| ----------- | ------ | -------- | ------------------------------------------------------- |
+| `count`     | number | `3`      | Number of skeleton items to display                     |
+| `variant`   | string | `"card"` | Skeleton layout: `card`, `list`, `post`, `notification` |
+| `className` | string | `""`     | Additional CSS classes                                  |
 
-#### Usage
+#### Variants
+
+**Card Variant** - Generic content card skeleton
 
 ```jsx
-// Single skeleton
-<LoadingSkeleton className="h-20 rounded-lg" />
-
-// Multiple skeletons
-<LoadingSkeleton className="h-16 rounded-md" count={5} />
-
-// Custom skeleton card
-<div className="bg-surface p-4 rounded-lg">
-  <LoadingSkeleton className="h-10 w-10 rounded-full mb-3" />
-  <LoadingSkeleton className="h-4 w-3/4 mb-2" />
-  <LoadingSkeleton className="h-4 w-1/2" />
-</div>
+<LoadingSkeleton count={3} variant="card" />
 ```
+
+**List Variant** - User list with avatar and text
+
+```jsx
+<LoadingSkeleton count={5} variant="list" />
+```
+
+**Post Variant** - Social media post skeleton
+
+```jsx
+<LoadingSkeleton variant="post" />
+```
+
+**Notification Variant** - Notification card skeleton
+
+```jsx
+<LoadingSkeleton count={10} variant="notification" />
+```
+
+#### Features
+
+- **Shimmer Animation:** Smooth CSS-only animation
+- **Performance Optimized:** Uses `contain: paint` for isolation
+- **Accessible:** Includes `role="status"` and screen reader text
+- **Fade-in:** Each skeleton fades in smoothly
+- **Responsive:** Adapts to mobile and desktop layouts
+
+#### Example Usage
+
+```jsx
+function GamesList() {
+  const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  if (loading) {
+    return <LoadingSkeleton count={5} variant="card" />;
+  }
+
+  return games.map((game) => <GameCard key={game.id} game={game} />);
+}
+```
+
+---
+
+### EmptyState
+
+A reusable component to display empty states with icon, title, description, and optional action button.
+
+**Location:** `/app/components/ui/EmptyState.jsx`
+
+#### Props
+
+| Prop          | Type      | Default     | Description                                      |
+| ------------- | --------- | ----------- | ------------------------------------------------ |
+| `icon`        | ReactNode | -           | Lucide icon component                            |
+| `title`       | string    | -           | Main heading text                                |
+| `description` | string    | -           | Supporting description text                      |
+| `action`      | ReactNode | -           | Optional action button/link                      |
+| `variant`     | string    | `"default"` | Style variant: `default`, `gradient`, `bordered` |
+| `className`   | string    | `""`        | Additional CSS classes                           |
+
+#### Variants
+
+**Default** - Simple white background
+
+```jsx
+<EmptyState
+  icon={<Inbox />}
+  title="Nenhum post ainda"
+  description="Comece criando seu primeiro post!"
+/>
+```
+
+**Gradient** - Colorful gradient background
+
+```jsx
+<EmptyState
+  variant="gradient"
+  icon={<Users />}
+  title="Nenhum seguidor"
+  description="Convide amigos para seguir você"
+/>
+```
+
+**Bordered** - Dashed border for create actions
+
+```jsx
+<EmptyState
+  variant="bordered"
+  icon={<PlusCircle />}
+  title="Adicionar novo item"
+/>
+```
+
+#### With Action Button
+
+```jsx
+import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
+import EmptyState from "@/app/components/ui/EmptyState";
+import Button from "@/app/components/ui/Button";
+
+function TeamsList() {
+  const router = useRouter();
+  const [teams, setTeams] = useState([]);
+
+  if (teams.length === 0) {
+    return (
+      <EmptyState
+        icon={<Users />}
+        title="Você ainda não tem times"
+        description="Crie um time para começar a jogar e organizar partidas."
+        action={
+          <Button onClick={() => router.push("/teams/newTeam")}>
+            <Plus className="w-4 h-4 mr-2" />
+            Criar Meu Primeiro Time
+          </Button>
+        }
+        variant="gradient"
+      />
+    );
+  }
+
+  return <TeamList teams={teams} />;
+}
+```
+
+#### Accessibility Features
+
+- `role="status"` for screen reader announcements
+- `aria-live="polite"` for non-urgent updates
+- `aria-label` set to title for context
+- Icon has `aria-hidden="true"`
+- Action button is fully keyboard accessible
+
+---
+
+### ErrorState
+
+A user-friendly error display component with retry functionality.
+
+**Location:** `/app/components/ui/ErrorState.jsx`
+
+#### Props
+
+| Prop         | Type      | Default              | Description                                 |
+| ------------ | --------- | -------------------- | ------------------------------------------- |
+| `title`      | string    | `"Algo deu errado"`  | Error heading                               |
+| `message`    | string    | Default error text   | Detailed error message                      |
+| `onRetry`    | function  | -                    | Retry callback function                     |
+| `retryLabel` | string    | `"Tentar Novamente"` | Retry button text                           |
+| `icon`       | ReactNode | `<AlertCircle />`    | Custom icon (Lucide)                        |
+| `variant`    | string    | `"error"`            | Style variant: `error`, `warning`, `danger` |
+
+#### Variants
+
+**Error** - Standard error (red)
+
+```jsx
+<ErrorState
+  title="Erro ao carregar jogos"
+  message="Não foi possível conectar ao servidor."
+  onRetry={fetchGames}
+/>
+```
+
+**Warning** - Non-critical warning (yellow)
+
+```jsx
+<ErrorState
+  variant="warning"
+  title="Conexão instável"
+  message="Sua conexão está lenta. Alguns recursos podem não funcionar."
+/>
+```
+
+**Danger** - Critical error (dark red)
+
+```jsx
+<ErrorState
+  variant="danger"
+  title="Erro crítico"
+  message="O sistema encontrou um erro grave. Contate o suporte."
+/>
+```
+
+#### With Custom Icon
+
+```jsx
+import { WifiOff } from "lucide-react";
+
+<ErrorState
+  icon={<WifiOff />}
+  title="Sem conexão"
+  message="Verifique sua conexão com a internet e tente novamente."
+  onRetry={handleRetry}
+  retryLabel="Reconectar"
+/>;
+```
+
+#### Complete Example with Error Handling
+
+```jsx
+function FeedPage() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchPosts = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.posts.getAll();
+      setPosts(response.content || []);
+    } catch (err) {
+      setError(err.message || "Falha ao carregar posts");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  if (loading) {
+    return <LoadingSkeleton count={5} variant="post" />;
+  }
+
+  if (error) {
+    return (
+      <ErrorState
+        title="Erro ao carregar feed"
+        message={error}
+        onRetry={fetchPosts}
+      />
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <EmptyState
+        icon={<MessageCircle />}
+        title="Nenhum post no feed"
+        description="Siga outros usuários para ver posts aqui."
+      />
+    );
+  }
+
+  return <PostList posts={posts} />;
+}
+```
+
+#### Accessibility Features
+
+- `role="alert"` for immediate screen reader announcement
+- `aria-live="assertive"` for urgent errors
+- `aria-atomic="true"` reads entire message
+- Retry button has clear `aria-label`
+- Icon is decorative with `aria-hidden="true"`
+- Keyboard accessible retry button
+
+---
 
 ---
 
@@ -354,13 +609,13 @@ A dismissible alert component for temporary notifications.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `isOpen` | boolean | - | Controls alert visibility |
-| `onClose` | function | - | Close handler |
-| `message` | string | - | Alert message |
-| `type` | string | `"error"` | Alert type (`error`, `success`, `warning`, `info`) |
-| `duration` | number | `3000` | Auto-dismiss duration in ms |
+| Prop       | Type     | Default   | Description                                        |
+| ---------- | -------- | --------- | -------------------------------------------------- |
+| `isOpen`   | boolean  | -         | Controls alert visibility                          |
+| `onClose`  | function | -         | Close handler                                      |
+| `message`  | string   | -         | Alert message                                      |
+| `type`     | string   | `"error"` | Alert type (`error`, `success`, `warning`, `info`) |
+| `duration` | number   | `3000`    | Auto-dismiss duration in ms                        |
 
 #### Usage
 
@@ -377,21 +632,25 @@ A dismissible alert component for temporary notifications.
 #### Types
 
 **Error:** Red background, used for errors
+
 ```jsx
 <Alert type="error" message="Falha ao salvar. Tente novamente." />
 ```
 
 **Success:** Green background, used for confirmations
+
 ```jsx
 <Alert type="success" message="Post criado com sucesso!" />
 ```
 
 **Warning:** Yellow background, used for warnings
+
 ```jsx
 <Alert type="warning" message="Seu perfil está incompleto." />
 ```
 
 **Info:** Blue background, used for informational messages
+
 ```jsx
 <Alert type="info" message="Nova atualização disponível!" />
 ```
@@ -467,12 +726,12 @@ A search input with icon and clear functionality.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `value` | string | - | Search query value |
-| `onChange` | function | - | Change handler |
-| `placeholder` | string | `"Buscar..."` | Placeholder text |
-| `className` | string | `""` | Additional CSS classes |
+| Prop          | Type     | Default       | Description            |
+| ------------- | -------- | ------------- | ---------------------- |
+| `value`       | string   | -             | Search query value     |
+| `onChange`    | function | -             | Change handler         |
+| `placeholder` | string   | `"Buscar..."` | Placeholder text       |
+| `className`   | string   | `""`          | Additional CSS classes |
 
 #### Usage
 
@@ -483,7 +742,7 @@ const [query, setQuery] = useState("");
   value={query}
   onChange={(e) => setQuery(e.target.value)}
   placeholder="Buscar jogadoras..."
-/>
+/>;
 ```
 
 ---
@@ -496,14 +755,14 @@ A styled select dropdown component.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `label` | string | - | Select label |
-| `options` | array | - | Array of `{ value, label }` objects |
-| `value` | string | - | Selected value |
-| `onChange` | function | - | Change handler |
-| `required` | boolean | `false` | Shows required indicator |
-| `error` | string | - | Error message |
+| Prop       | Type     | Default | Description                         |
+| ---------- | -------- | ------- | ----------------------------------- |
+| `label`    | string   | -       | Select label                        |
+| `options`  | array    | -       | Array of `{ value, label }` objects |
+| `value`    | string   | -       | Selected value                      |
+| `onChange` | function | -       | Change handler                      |
+| `required` | boolean  | `false` | Shows required indicator            |
+| `error`    | string   | -       | Error message                       |
 
 #### Usage
 
@@ -512,7 +771,7 @@ const positions = [
   { value: "goleira", label: "Goleira" },
   { value: "zagueira", label: "Zagueira" },
   { value: "meia", label: "Meia" },
-  { value: "atacante", label: "Atacante" }
+  { value: "atacante", label: "Atacante" },
 ];
 
 <SelectInput
@@ -521,7 +780,7 @@ const positions = [
   value={position}
   onChange={(e) => setPosition(e.target.value)}
   required
-/>
+/>;
 ```
 
 ---
@@ -534,16 +793,16 @@ A specialized modal for confirmation dialogs.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `isOpen` | boolean | - | Controls modal visibility |
-| `onClose` | function | - | Close/cancel handler |
-| `onConfirm` | function | - | Confirm action handler |
-| `title` | string | - | Modal title |
-| `message` | string | - | Confirmation message |
-| `confirmText` | string | `"Confirmar"` | Confirm button text |
-| `cancelText` | string | `"Cancelar"` | Cancel button text |
-| `variant` | string | `"danger"` | Button variant (`danger`, `primary`) |
+| Prop          | Type     | Default       | Description                          |
+| ------------- | -------- | ------------- | ------------------------------------ |
+| `isOpen`      | boolean  | -             | Controls modal visibility            |
+| `onClose`     | function | -             | Close/cancel handler                 |
+| `onConfirm`   | function | -             | Confirm action handler               |
+| `title`       | string   | -             | Modal title                          |
+| `message`     | string   | -             | Confirmation message                 |
+| `confirmText` | string   | `"Confirmar"` | Confirm button text                  |
+| `cancelText`  | string   | `"Cancelar"`  | Cancel button text                   |
+| `variant`     | string   | `"danger"`    | Button variant (`danger`, `primary`) |
 
 #### Usage
 
@@ -570,17 +829,17 @@ A visual step indicator for multi-step processes.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `steps` | array | - | Array of step labels |
-| `currentStep` | number | - | Current step index (0-based) |
+| Prop          | Type   | Default | Description                  |
+| ------------- | ------ | ------- | ---------------------------- |
+| `steps`       | array  | -       | Array of step labels         |
+| `currentStep` | number | -       | Current step index (0-based) |
 
 #### Usage
 
 ```jsx
 const steps = ["Dados Pessoais", "Informações de Contato", "Confirmação"];
 
-<StepIndicator steps={steps} currentStep={1} />
+<StepIndicator steps={steps} currentStep={1} />;
 ```
 
 ---
@@ -595,9 +854,9 @@ Displays a social media post with author info, content, image, and like function
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `post` | object | - | Post data object |
+| Prop   | Type   | Default | Description      |
+| ------ | ------ | ------- | ---------------- |
+| `post` | object | -       | Post data object |
 
 #### Post Object Structure
 
@@ -641,15 +900,15 @@ A notification card with swipe gestures, mark as read, and delete actions.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `notification` | object | - | Notification data |
-| `onMarkAsRead` | function | - | Mark as read handler |
-| `onDelete` | function | - | Delete handler |
-| `onActionComplete` | function | - | Action complete callback |
-| `selectable` | boolean | `false` | Shows checkbox for batch selection |
-| `selected` | boolean | `false` | Selection state |
-| `onToggleSelect` | function | - | Toggle selection handler |
+| Prop               | Type     | Default | Description                        |
+| ------------------ | -------- | ------- | ---------------------------------- |
+| `notification`     | object   | -       | Notification data                  |
+| `onMarkAsRead`     | function | -       | Mark as read handler               |
+| `onDelete`         | function | -       | Delete handler                     |
+| `onActionComplete` | function | -       | Action complete callback           |
+| `selectable`       | boolean  | `false` | Shows checkbox for batch selection |
+| `selected`         | boolean  | `false` | Selection state                    |
+| `onToggleSelect`   | function | -       | Toggle selection handler           |
 
 #### Notification Object
 
@@ -695,13 +954,15 @@ Loading placeholder for notification cards.
 #### Usage
 
 ```jsx
-{isLoading && (
-  <>
-    <NotificationCardSkeleton />
-    <NotificationCardSkeleton />
-    <NotificationCardSkeleton />
-  </>
-)}
+{
+  isLoading && (
+    <>
+      <NotificationCardSkeleton />
+      <NotificationCardSkeleton />
+      <NotificationCardSkeleton />
+    </>
+  );
+}
 ```
 
 ---
@@ -714,20 +975,16 @@ Displays game information including teams, date, location, and status.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `game` | object | - | Game data object |
-| `onEdit` | function | - | Edit handler (optional) |
-| `onDelete` | function | - | Delete handler (optional) |
+| Prop       | Type     | Default | Description               |
+| ---------- | -------- | ------- | ------------------------- |
+| `game`     | object   | -       | Game data object          |
+| `onEdit`   | function | -       | Edit handler (optional)   |
+| `onDelete` | function | -       | Delete handler (optional) |
 
 #### Usage
 
 ```jsx
-<GameCard
-  game={game}
-  onEdit={handleEdit}
-  onDelete={handleDelete}
-/>
+<GameCard game={game} onEdit={handleEdit} onDelete={handleDelete} />
 ```
 
 ---
@@ -740,20 +997,16 @@ Displays team information with member count and join/leave actions.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `team` | object | - | Team data object |
-| `onJoin` | function | - | Join team handler |
-| `onLeave` | function | - | Leave team handler |
+| Prop      | Type     | Default | Description        |
+| --------- | -------- | ------- | ------------------ |
+| `team`    | object   | -       | Team data object   |
+| `onJoin`  | function | -       | Join team handler  |
+| `onLeave` | function | -       | Leave team handler |
 
 #### Usage
 
 ```jsx
-<TeamCard
-  team={team}
-  onJoin={handleJoin}
-  onLeave={handleLeave}
-/>
+<TeamCard team={team} onJoin={handleJoin} onLeave={handleLeave} />
 ```
 
 ---
@@ -766,20 +1019,16 @@ Displays user information in a list format with follow/unfollow actions.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `user` | object | - | User data object |
-| `onFollow` | function | - | Follow handler |
-| `onUnfollow` | function | - | Unfollow handler |
+| Prop         | Type     | Default | Description      |
+| ------------ | -------- | ------- | ---------------- |
+| `user`       | object   | -       | User data object |
+| `onFollow`   | function | -       | Follow handler   |
+| `onUnfollow` | function | -       | Unfollow handler |
 
 #### Usage
 
 ```jsx
-<UserListCard
-  user={user}
-  onFollow={handleFollow}
-  onUnfollow={handleUnfollow}
-/>
+<UserListCard user={user} onFollow={handleFollow} onUnfollow={handleUnfollow} />
 ```
 
 ---
@@ -794,9 +1043,9 @@ Displays a chat message with sender info and timestamp.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `message` | object | - | Message data object |
+| Prop      | Type   | Default | Description         |
+| --------- | ------ | ------- | ------------------- |
+| `message` | object | -       | Message data object |
 
 #### Message Object
 
@@ -834,11 +1083,11 @@ Displays a conversation preview in the chat list.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `conversation` | object | - | Conversation data |
-| `isActive` | boolean | `false` | Highlights active conversation |
-| `onClick` | function | - | Click handler |
+| Prop           | Type     | Default | Description                    |
+| -------------- | -------- | ------- | ------------------------------ |
+| `conversation` | object   | -       | Conversation data              |
+| `isActive`     | boolean  | `false` | Highlights active conversation |
+| `onClick`      | function | -       | Click handler                  |
 
 #### Usage
 
@@ -860,13 +1109,13 @@ A text input for composing and sending messages.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `value` | string | - | Message text |
-| `onChange` | function | - | Change handler |
-| `onSend` | function | - | Send handler |
-| `placeholder` | string | `"Digite sua mensagem..."` | Placeholder text |
-| `disabled` | boolean | `false` | Disables input |
+| Prop          | Type     | Default                    | Description      |
+| ------------- | -------- | -------------------------- | ---------------- |
+| `value`       | string   | -                          | Message text     |
+| `onChange`    | function | -                          | Change handler   |
+| `onSend`      | function | -                          | Send handler     |
+| `placeholder` | string   | `"Digite sua mensagem..."` | Placeholder text |
+| `disabled`    | boolean  | `false`                    | Disables input   |
 
 #### Usage
 
@@ -891,13 +1140,13 @@ Displays user profile header with avatar, name, stats, and follow button.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `user` | object | - | User data object |
-| `isOwnProfile` | boolean | `false` | True if viewing own profile |
-| `onFollow` | function | - | Follow handler |
-| `onUnfollow` | function | - | Unfollow handler |
-| `onEdit` | function | - | Edit profile handler |
+| Prop           | Type     | Default | Description                 |
+| -------------- | -------- | ------- | --------------------------- |
+| `user`         | object   | -       | User data object            |
+| `isOwnProfile` | boolean  | `false` | True if viewing own profile |
+| `onFollow`     | function | -       | Follow handler              |
+| `onUnfollow`   | function | -       | Unfollow handler            |
+| `onEdit`       | function | -       | Edit profile handler        |
 
 #### Usage
 
@@ -907,7 +1156,7 @@ Displays user profile header with avatar, name, stats, and follow button.
   isOwnProfile={currentUserId === user.id}
   onFollow={handleFollow}
   onUnfollow={handleUnfollow}
-  onEdit={() => router.push('/profile/edit')}
+  onEdit={() => router.push("/profile/edit")}
 />
 ```
 
@@ -921,9 +1170,9 @@ Displays player statistics (games, goals, assists).
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `stats` | object | - | Player statistics |
+| Prop    | Type   | Default | Description       |
+| ------- | ------ | ------- | ----------------- |
+| `stats` | object | -       | Player statistics |
 
 #### Stats Object
 
@@ -953,11 +1202,11 @@ Renders a list of posts with loading and empty states.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `posts` | array | - | Array of post objects |
-| `loading` | boolean | `false` | Shows loading skeletons |
-| `emptyMessage` | string | `"Nenhum post encontrado"` | Empty state message |
+| Prop           | Type    | Default                    | Description             |
+| -------------- | ------- | -------------------------- | ----------------------- |
+| `posts`        | array   | -                          | Array of post objects   |
+| `loading`      | boolean | `false`                    | Shows loading skeletons |
+| `emptyMessage` | string  | `"Nenhum post encontrado"` | Empty state message     |
 
 #### Usage
 
@@ -979,9 +1228,9 @@ Renders a list of teams with loading and empty states.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `teams` | array | - | Array of team objects |
+| Prop      | Type    | Default | Description             |
+| --------- | ------- | ------- | ----------------------- |
+| `teams`   | array   | -       | Array of team objects   |
 | `loading` | boolean | `false` | Shows loading skeletons |
 
 #### Usage
@@ -1000,11 +1249,11 @@ Renders a list of team invitations with accept/decline actions.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `invites` | array | - | Array of invite objects |
-| `onAccept` | function | - | Accept invite handler |
-| `onDecline` | function | - | Decline invite handler |
+| Prop        | Type     | Default | Description             |
+| ----------- | -------- | ------- | ----------------------- |
+| `invites`   | array    | -       | Array of invite objects |
+| `onAccept`  | function | -       | Accept invite handler   |
+| `onDecline` | function | -       | Decline invite handler  |
 
 #### Usage
 
@@ -1028,18 +1277,15 @@ A complete form for creating a new team.
 
 #### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `onSubmit` | function | - | Form submit handler |
-| `onCancel` | function | - | Cancel handler |
+| Prop       | Type     | Default | Description         |
+| ---------- | -------- | ------- | ------------------- |
+| `onSubmit` | function | -       | Form submit handler |
+| `onCancel` | function | -       | Cancel handler      |
 
 #### Usage
 
 ```jsx
-<CreateTeamForm
-  onSubmit={handleCreateTeam}
-  onCancel={() => router.back()}
-/>
+<CreateTeamForm onSubmit={handleCreateTeam} onCancel={() => router.back()} />
 ```
 
 ---
@@ -1088,22 +1334,26 @@ The application footer with links and copyright.
 ### General Principles
 
 1. **Accessibility First**
+
    - All interactive elements have proper ARIA labels
    - Keyboard navigation is fully supported
    - Focus states are visible
    - Screen reader compatibility is tested
 
 2. **Responsive Design**
+
    - Mobile-first approach
    - Tested from 320px to 1920px
    - Touch-friendly targets (min 44x44px)
 
 3. **Theme Support**
+
    - All components support light and dark themes
    - Use design system color tokens
    - Test in both themes before committing
 
 4. **Performance**
+
    - Use `React.memo` for expensive components
    - Optimize re-renders with proper prop comparison
    - Lazy load images with Next.js Image component
@@ -1116,13 +1366,16 @@ The application footer with links and copyright.
 ### Naming Conventions
 
 **Component Files:**
+
 - PascalCase: `MyComponent.jsx`
 - Location: `/app/components/{category}/MyComponent.jsx`
 
 **Component Props:**
+
 - camelCase: `onClick`, `isLoading`, `userName`
 
 **CSS Classes:**
+
 - Tailwind utility classes
 - Design system custom classes (kebab-case): `bg-surface`, `text-primary`
 
@@ -1165,9 +1418,7 @@ import PropTypes from "prop-types";
 const MyComponent = ({ title, onClick, className = "" }) => {
   return (
     <div className={`bg-surface rounded-lg p-4 ${className}`}>
-      <h3 className="text-lg font-semibold text-primary mb-2">
-        {title}
-      </h3>
+      <h3 className="text-lg font-semibold text-primary mb-2">{title}</h3>
       <button
         onClick={onClick}
         className="bg-accent text-on-brand px-4 py-2 rounded-lg"
@@ -1212,25 +1463,25 @@ Before creating a pull request:
 ### Unit Testing Example
 
 ```jsx
-import { render, screen, fireEvent } from '@testing-library/react';
-import Button from './Button';
+import { render, screen, fireEvent } from "@testing-library/react";
+import Button from "./Button";
 
-describe('Button', () => {
-  it('renders children correctly', () => {
+describe("Button", () => {
+  it("renders children correctly", () => {
     render(<Button>Click Me</Button>);
-    expect(screen.getByText('Click Me')).toBeInTheDocument();
+    expect(screen.getByText("Click Me")).toBeInTheDocument();
   });
 
-  it('calls onClick when clicked', () => {
+  it("calls onClick when clicked", () => {
     const handleClick = jest.fn();
     render(<Button onClick={handleClick}>Click Me</Button>);
-    fireEvent.click(screen.getByText('Click Me'));
+    fireEvent.click(screen.getByText("Click Me"));
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  it('disables button when loading', () => {
+  it("disables button when loading", () => {
     render(<Button loading>Submit</Button>);
-    expect(screen.getByRole('button')).toBeDisabled();
+    expect(screen.getByRole("button")).toBeDisabled();
   });
 });
 ```
@@ -1257,9 +1508,9 @@ describe('Button', () => {
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | 2025-11-04 | Initial component library documentation |
+| Version | Date       | Changes                                 |
+| ------- | ---------- | --------------------------------------- |
+| 1.0     | 2025-11-04 | Initial component library documentation |
 
 ---
 

@@ -48,15 +48,28 @@ export default function Alert({
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 p-4">
+    <div className="fixed top-4 right-4 z-50 p-4 fade-in">
       <div
-        className={`relative ${alertStyles[type]} border-t-4 ${borderStyles[type]} rounded-b text-gray-900 px-4 py-3 shadow-md max-w-sm w-full`}
+        className={`
+          relative 
+          ${alertStyles[type]} 
+          border-t-4 
+          ${borderStyles[type]} 
+          rounded-b 
+          text-gray-900 
+          px-4 
+          py-3 
+          shadow-elevated 
+          max-w-sm 
+          w-full
+          transition-smooth
+        `}
         role="alert"
         aria-live="assertive"
         aria-atomic="true"
       >
         <div className="flex items-center">
-          <div className="py-1">
+          <div className="py-1" aria-hidden="true">
             {type === "error" && (
               <svg
                 className="fill-current h-6 w-6 text-red-500 mr-4"

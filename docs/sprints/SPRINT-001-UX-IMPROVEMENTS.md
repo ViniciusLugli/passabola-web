@@ -267,36 +267,36 @@ const tabs = [
 
 1. **Responsive Hero Section**
 
-   - [ ] Create mobile-first hero with background image
-   - [ ] Set min-height to 100vh for full-screen impact
-   - [ ] Add gradient overlay for text readability
-   - [ ] Implement responsive typography (clamp or media queries)
+   - [x] Create mobile-first hero with background image
+   - [x] Set min-height to 100vh for full-screen impact
+   - [x] Add gradient overlay for text readability
+   - [x] Implement responsive typography (clamp or media queries)
 
 2. **Clear CTAs**
 
-   - [ ] Primary CTA: "Começar Agora" (redirects to register)
-   - [ ] Secondary CTA: "Saber Mais" (smooth scroll to features)
-   - [ ] Use brand gradient for primary button
-   - [ ] Add hover animations and focus states
+   - [x] Primary CTA: "Começar Agora" (redirects to register)
+   - [x] Secondary CTA: "Saber Mais" (smooth scroll to features)
+   - [x] Use brand gradient for primary button
+   - [x] Add hover animations and focus states
 
 3. **Feature Showcase**
 
-   - [ ] Create 3-column grid on desktop, 1-column on mobile
-   - [ ] Add icons for each feature (Feed, Jogos, Times, Chat)
-   - [ ] Write concise feature descriptions (2-3 sentences)
-   - [ ] Implement fade-in animation on scroll
+   - [x] Create 3-column grid on desktop, 1-column on mobile
+   - [x] Add icons for each feature (Feed, Jogos, Times, Chat)
+   - [x] Write concise feature descriptions (2-3 sentences)
+   - [x] Implement fade-in animation on scroll
 
 4. **Social Proof Section**
 
-   - [ ] Add testimonial section (optional)
-   - [ ] Show partner logos (FIAP, Passa a Bola)
-   - [ ] Display stats: X jogadoras, Y times, Z jogos
+   - [x] Add testimonial section (optional)
+   - [x] Show partner logos (FIAP, Passa a Bola)
+   - [x] Display stats: X jogadoras, Y times, Z jogos
 
 5. **Footer Enhancement**
-   - [ ] Add navigation links: Sobre, Contato, Privacidade, Termos
-   - [ ] Include social media links
-   - [ ] Add copyright notice
-   - [ ] Ensure footer is responsive and accessible
+   - [x] Add navigation links: Sobre, Contato, Privacidade, Termos
+   - [x] Include social media links
+   - [x] Add copyright notice
+   - [x] Ensure footer is responsive and accessible
 
 #### Acceptance Criteria
 
