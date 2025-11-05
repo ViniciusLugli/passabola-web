@@ -29,6 +29,14 @@ export default function NotificationsPage() {
 
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
+
+  // Debug: Log user info
+  console.log("[DEBUG] Current user:", {
+    id: user?.id,
+    userType: user?.userType,
+    username: user?.username,
+    fullUser: user,
+  });
   const [filter, setFilter] = useState("all");
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [batchActionLoading, setBatchActionLoading] = useState(false);

@@ -20,6 +20,17 @@ async function fetchApi(endpoint, options = {}) {
 
   if (authToken && !customConfig.skipAuth) {
     headers["Authorization"] = `Bearer ${authToken}`;
+    
+    // Debug: Decode JWT to check user ID
+    if (endpoint.includes("/notifications") && authToken) {
+      try {
+        const payload = JSON.parse(atob(authToken.split(".")[1]));
+        console.log("[API DEBUG] JWT Payload:", payload);
+        console.log("[API DEBUG] User ID from token:", payload.sub || payload.userId || payload.id);
+      } catch (e) {
+        console.error("[API DEBUG] Failed to decode JWT:", e);
+      }
+    }
   }
 
   const config = {
@@ -122,13 +133,13 @@ async function fetchApi(endpoint, options = {}) {
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         const parsed = await response.json();
-        
+
         // Debug log for notifications endpoint
         if (endpoint.includes("/notifications")) {
           console.log("[API DEBUG] Notifications endpoint:", endpoint);
           console.log("[API DEBUG] Response parsed:", parsed);
         }
-        
+
         try {
           const respHeaders = {};
           response.headers.forEach &&
