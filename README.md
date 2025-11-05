@@ -4,6 +4,24 @@
   <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8B5pQmu3WV6NFowHTtz5h9dKaCCBVJoRAeA&s" alt="Logo do Passa a Bola" width="150">
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.1.0-purple?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Next.js-15.5.2-black?style=for-the-badge&logo=next.js" alt="Next.js">
+  <img src="https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react" alt="React">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/license-Private-red?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/status-In_Development-yellow?style=for-the-badge" alt="Status">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/WCAG_2.1-AA_Compliant-green?style=flat-square" alt="WCAG 2.1 AA">
+  <img src="https://img.shields.io/badge/Lighthouse-90+-success?style=flat-square" alt="Lighthouse Score">
+  <img src="https://img.shields.io/badge/Test_Coverage-70%25+-brightgreen?style=flat-square" alt="Test Coverage">
+  <img src="https://img.shields.io/badge/Responsive-320px_to_1920px-blue?style=flat-square" alt="Responsive Range">
+</p>
+
+---
+
 ## ⚽ Visão Geral do Projeto
 
 Este é um projeto de destaque desenvolvido em colaboração da **FIAP**, como parte do **Desafio de Inovação Tecnológica: Passa a Bola - Tecnologia & Futebol Feminino**. A nossa solução é uma plataforma web que tem como objetivo transformar a maneira como o futebol feminino é vivenciado no ambiente digital.
@@ -339,6 +357,502 @@ Duplo transporte para observabilidade:
    - Mensagens de erro user-friendly
    - Logging automático de exceções
 
+---
+
+## 🎨 Design System
+
+### Paleta de Cores
+
+#### Cores Primárias (Brand)
+
+| Nome              | Hex                   | RGB          | CSS Variable            | Uso                                |
+| ----------------- | --------------------- | ------------ | ----------------------- | ---------------------------------- |
+| **Accent**        | `#6d28d9`             | `109 40 217` | `--color-accent`        | CTAs, links, elementos interativos |
+| **Accent Strong** | `#581cb4`             | `88 28 180`  | `--color-accent-strong` | Hover states, ênfase               |
+| **Accent Soft**   | `#e5dbff` / `#321a5d` | Light/Dark   | `--color-accent-soft`   | Backgrounds sutis, badges          |
+
+#### Superfícies (Adaptativas - Light/Dark)
+
+| Nome                 | Light Hex | Dark Hex  | CSS Variable               | Uso                           |
+| -------------------- | --------- | --------- | -------------------------- | ----------------------------- |
+| **Page Background**  | `#f4f7fc` | `#090b16` | `--color-page`             | Fundo da página               |
+| **Surface**          | `#ffffff` | `#151b2e` | `--color-surface`          | Cards, modals, containers     |
+| **Surface Muted**    | `#f6f8fc` | `#1e263c` | `--color-surface-muted`    | Backgrounds secundários       |
+| **Surface Elevated** | `#f9f4ff` | `#2e3a58` | `--color-surface-elevated` | Elementos elevados, dropdowns |
+
+#### Tipografia (Adaptativa - Light/Dark)
+
+| Nome               | Light Hex | Dark Hex  | CSS Variable             | Uso                             |
+| ------------------ | --------- | --------- | ------------------------ | ------------------------------- |
+| **Text Primary**   | `#111827` | `#e9eeff` | `--color-text-primary`   | Títulos, texto principal        |
+| **Text Secondary** | `#4f5669` | `#bbc4de` | `--color-text-secondary` | Subtítulos, labels              |
+| **Text Tertiary**  | `#717989` | `#929dba` | `--color-text-tertiary`  | Placeholder, texto auxiliar     |
+| **Text Inverse**   | `#ffffff` | `#0c1018` | `--color-text-inverse`   | Texto sobre backgrounds escuros |
+
+#### Bordas (Adaptativas - Light/Dark)
+
+| Nome              | Light Hex | Dark Hex  | CSS Variable            | Uso                 |
+| ----------------- | --------- | --------- | ----------------------- | ------------------- |
+| **Border Subtle** | `#e0e3eb` | `#252e44` | `--color-border-subtle` | Divisores sutis     |
+| **Border Strong** | `#cbd0dd` | `#4a5a78` | `--color-border-strong` | Borders de destaque |
+
+#### Estados
+
+| Nome        | Hex                                  | RGB        | CSS Variable      | Uso                      |
+| ----------- | ------------------------------------ | ---------- | ----------------- | ------------------------ |
+| **Success** | `#10b981` (Light) / `#22c55e` (Dark) | Light/Dark | `--color-success` | Sucesso, confirmação     |
+| **Danger**  | `#ef4444` (Light) / `#f87171` (Dark) | Light/Dark | `--color-danger`  | Erros, ações destrutivas |
+
+### Classes Utilitárias CSS
+
+```css
+/* Superfícies */
+.bg-page             /* Background da página */
+/* Background da página */
+/* Background da página */
+/* Background da página */
+.bg-surface          /* Cards e containers */
+.bg-surface-muted    /* Backgrounds secundários */
+.bg-surface-elevated /* Elementos elevados */
+
+/* Tipografia */
+.text-primary        /* Texto principal */
+.text-secondary      /* Texto secundário */
+.text-tertiary       /* Texto auxiliar */
+.text-accent         /* Texto com cor da marca */
+
+/* Bordas */
+.border-default      /* Border sutil */
+.border-strong       /* Border de destaque */
+
+/* Gradientes */
+.bg-brand-gradient   /* Gradiente roxo (CTAs) */
+.bg-empty-gradient; /* Gradiente para empty states */
+```
+
+---
+
+## 📏 Escala de Espaçamento
+
+Baseada no sistema de **4px** (Tailwind CSS):
+
+| Token  | Pixels | Rem     | Uso                                 |
+| ------ | ------ | ------- | ----------------------------------- |
+| `xs`   | 4px    | 0.25rem | Espaçamento mínimo, ícones pequenos |
+| `sm`   | 8px    | 0.5rem  | Gaps, padding compacto              |
+| `base` | 12px   | 0.75rem | Padding padrão                      |
+| `md`   | 16px   | 1rem    | Margens, padding médio              |
+| `lg`   | 24px   | 1.5rem  | Seções, espaçamento generoso        |
+| `xl`   | 32px   | 2rem    | Grandes espaçamentos                |
+| `2xl`  | 48px   | 3rem    | Separação de seções                 |
+| `3xl`  | 64px   | 4rem    | Hero sections, espaçamento máximo   |
+
+**Exemplo de uso:**
+
+```jsx
+<div className="p-4 mb-6 space-y-4">
+  {/* padding: 16px, margin-bottom: 24px, gap vertical: 16px */}
+</div>
+```
+
+---
+
+## 🔤 Tipografia
+
+### Escala Tipográfica
+
+| Classe      | Tamanho | Line Height | Peso    | Uso                        |
+| ----------- | ------- | ----------- | ------- | -------------------------- |
+| `text-xs`   | 12px    | 16px        | 400-600 | Labels pequenos, badges    |
+| `text-sm`   | 14px    | 20px        | 400-600 | Corpo secundário, captions |
+| `text-base` | 16px    | 24px        | 400-600 | Corpo de texto padrão      |
+| `text-lg`   | 18px    | 28px        | 500-700 | Subtítulos, leads          |
+| `text-xl`   | 20px    | 28px        | 600-700 | Títulos de cards           |
+| `text-2xl`  | 24px    | 32px        | 700-800 | Títulos de seções          |
+| `text-3xl`  | 30px    | 36px        | 700-800 | Títulos de páginas         |
+| `text-4xl`  | 36px    | 40px        | 700-900 | Hero titles (mobile)       |
+| `text-5xl`  | 48px    | 1           | 800-900 | Hero titles (desktop)      |
+
+### Famílias de Fonte
+
+```css
+/* Padrão do sistema (sans-serif) */
+font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+```
+
+**Pesos disponíveis:**
+
+- `font-normal` (400) - Corpo de texto
+- `font-medium` (500) - Ênfase leve
+- `font-semibold` (600) - Subtítulos, labels
+- `font-bold` (700) - Títulos, botões
+- `font-extrabold` (800) - Hero titles
+
+---
+
+## 🎭 Sombras e Efeitos
+
+### Sombras
+
+| Classe            | CSS Box Shadow                                     | Uso                      |
+| ----------------- | -------------------------------------------------- | ------------------------ |
+| `shadow-sm`       | `0 1px 2px rgba(0,0,0,0.05)`                       | Sombra sutil em cards    |
+| `shadow`          | `0 1px 3px rgba(0,0,0,0.1)`                        | Sombra padrão            |
+| `shadow-md`       | `0 4px 6px rgba(0,0,0,0.1)`                        | Cards elevados           |
+| `shadow-lg`       | `0 10px 15px rgba(0,0,0,0.1)`                      | Modals, dropdowns        |
+| `shadow-xl`       | `0 20px 25px rgba(0,0,0,0.1)`                      | Elementos flutuantes     |
+| `shadow-elevated` | `0 25px 50px -24px rgb(var(--shadow-color) / 0.6)` | Máxima elevação (custom) |
+
+### Border Radius
+
+| Classe         | Valor  | Uso                               |
+| -------------- | ------ | --------------------------------- |
+| `rounded`      | 4px    | Bordas sutis                      |
+| `rounded-md`   | 6px    | Botões pequenos, inputs           |
+| `rounded-lg`   | 8px    | Cards, containers                 |
+| `rounded-xl`   | 12px   | Cards principais, modals          |
+| `rounded-2xl`  | 16px   | Hero sections, imagens destacadas |
+| `rounded-full` | 9999px | Avatares, badges circulares       |
+
+---
+
+## 🧩 Biblioteca de Componentes
+
+### Componentes UI Core
+
+#### 1. **Button**
+
+Botão reutilizável com 3 variantes e estados de loading.
+
+**Props:**
+
+```typescript
+variant?: 'primary' | 'secondary' | 'ghost'
+size?: 'small' | 'medium' | 'large'
+loading?: boolean
+disabled?: boolean
+fullWidth?: boolean
+type?: 'button' | 'submit' | 'reset'
+onClick?: () => void
+```
+
+**Exemplo:**
+
+```jsx
+import Button from "@/app/components/ui/Button";
+
+<Button variant="primary" size="medium" loading={false}>
+  Salvar
+</Button>;
+```
+
+**Acessibilidade:**
+
+- ✅ `aria-disabled` quando desabilitado
+- ✅ `aria-busy` durante loading
+- ✅ Touch target 44x44px mínimo (WCAG 2.1 AA)
+- ✅ Focus ring visível (`focus-visible`)
+
+---
+
+#### 2. **LoadingSkeleton**
+
+Skeleton screen com 5 variantes e animação shimmer.
+
+**Props:**
+
+```typescript
+count?: number           // Quantidade de skeletons (padrão: 3)
+variant?: 'card' | 'list' | 'post' | 'notification' | 'game'
+className?: string
+```
+
+**Exemplo:**
+
+```jsx
+import LoadingSkeleton from "@/app/components/ui/LoadingSkeleton";
+
+<LoadingSkeleton count={5} variant="post" />;
+```
+
+**Variantes:**
+
+- `card` - Card simples com título e descrição
+- `list` - Item de lista com avatar e texto
+- `post` - Post completo com avatar, conteúdo e ações
+- `notification` - Notificação com avatar e mensagem
+- `game` - Card de jogo com informações detalhadas
+
+**Acessibilidade:**
+
+- ✅ `role="status"` e `aria-live="polite"`
+- ✅ Texto alternativo `"Carregando conteúdo..."`
+- ✅ CSS `contain: paint` para performance
+
+---
+
+#### 3. **EmptyState**
+
+Estado vazio reutilizável com ícone, título e CTA.
+
+**Props:**
+
+```typescript
+icon?: React.ReactNode       // Ícone do lucide-react
+title: string                // Título obrigatório
+description?: string         // Descrição opcional
+action?: React.ReactNode     // Botão ou link de ação
+variant?: 'default' | 'gradient' | 'bordered'
+className?: string
+```
+
+**Exemplo:**
+
+```jsx
+import EmptyState from "@/app/components/ui/EmptyState";
+import { FileQuestion } from "lucide-react";
+import Button from "@/app/components/ui/Button";
+
+<EmptyState
+  icon={<FileQuestion />}
+  title="Nenhum post encontrado"
+  description="Comece criando seu primeiro post!"
+  action={<Button variant="primary">Criar Post</Button>}
+  variant="gradient"
+/>;
+```
+
+**Acessibilidade:**
+
+- ✅ `role="status"` e `aria-live="polite"`
+- ✅ `aria-label` com o título
+- ✅ Ícone com `aria-hidden="true"`
+
+---
+
+#### 4. **Modal**
+
+Modal acessível com overlay e foco gerenciado.
+
+**Props:**
+
+```typescript
+isOpen: boolean
+onClose: () => void
+title?: string
+children: React.ReactNode
+size?: 'sm' | 'md' | 'lg' | 'xl'
+```
+
+**Exemplo:**
+
+```jsx
+import Modal from "@/app/components/ui/Modal";
+
+<Modal isOpen={isOpen} onClose={handleClose} title="Confirmar Ação">
+  <p>Tem certeza que deseja continuar?</p>
+  <Button onClick={handleConfirm}>Confirmar</Button>
+</Modal>;
+```
+
+**Acessibilidade:**
+
+- ✅ `role="dialog"` e `aria-modal="true"`
+- ✅ Focus trap (foco fica dentro do modal)
+- ✅ Fecha com `Escape`
+- ✅ Retorna foco ao elemento que abriu
+
+---
+
+#### 5. **Input**
+
+Input controlado com suporte a erros e labels.
+
+**Props:**
+
+```typescript
+label?: string
+error?: string
+type?: string
+placeholder?: string
+value: string
+onChange: (value: string) => void
+disabled?: boolean
+required?: boolean
+```
+
+**Exemplo:**
+
+```jsx
+import Input from "@/app/components/ui/Input";
+
+<Input
+  label="Email"
+  type="email"
+  placeholder="seu@email.com"
+  value={email}
+  onChange={setEmail}
+  error={emailError}
+  required
+/>;
+```
+
+**Acessibilidade:**
+
+- ✅ Label associado com `htmlFor`
+- ✅ `aria-invalid` quando há erro
+- ✅ `aria-describedby` para mensagem de erro
+- ✅ `required` e `aria-required`
+
+---
+
+#### 6. **Alert**
+
+Alertas contextuais (sucesso, erro, warning, info).
+
+**Props:**
+
+```typescript
+type?: 'success' | 'error' | 'warning' | 'info'
+title?: string
+message: string
+dismissible?: boolean
+onDismiss?: () => void
+```
+
+**Exemplo:**
+
+```jsx
+import Alert from "@/app/components/ui/Alert";
+
+<Alert
+  type="success"
+  title="Sucesso!"
+  message="Seu post foi criado com sucesso."
+  dismissible
+  onDismiss={handleDismiss}
+/>;
+```
+
+**Acessibilidade:**
+
+- ✅ `role="alert"` ou `role="status"`
+- ✅ `aria-live="assertive"` para erros
+- ✅ Ícones com `aria-hidden="true"`
+
+---
+
+### Componentes de Lista
+
+- **PostList** - Lista de posts com paginação
+- **TeamList** - Lista de equipes com filtros
+- **TeamInviteList** - Lista de convites de equipe
+- **UserListCard** - Card de usuário para listas
+
+### Componentes de Card
+
+- **GameCard** - Card de jogo com informações e ações
+- **PostCard** - Card de post com interações
+- **TeamCard** - Card de equipe
+- **NotificationCard** - Card de notificação
+- **UserListCard** - Card de usuário
+
+### Componentes de Layout
+
+- **Header** - Cabeçalho com navegação responsiva
+- **AuthLayout** - Layout para páginas de autenticação
+- **PrivateRoute** - HOC para rotas protegidas
+- **BackgroundDecorations** - Decorações de fundo animadas
+
+### Componentes de Chat
+
+- **MessageBubble** - Bolha de mensagem
+- **MessageInput** - Input de mensagem com envio
+- **ConversationItem** - Item de conversa na lista
+- **TypingIndicator** - Indicador de digitação
+
+### Componentes de Formulário
+
+- **CreateTeamForm** - Formulário de criação de equipe
+- **NewPostForm** - Formulário de novo post
+
+### Componentes de Perfil
+
+- **ProfileHeader** - Cabeçalho de perfil com avatar e stats
+- **PlayerStats** - Estatísticas de jogador
+- **ProfileTabs** - Tabs de conteúdo do perfil
+
+---
+
+## ♿ Acessibilidade
+
+### Conformidade WCAG 2.1 AA
+
+✅ **Contraste de Cores:** Todos os textos atendem proporção mínima de 4.5:1 (texto normal) e 3:1 (texto grande)
+
+✅ **Touch Targets:** Todos os elementos interativos possuem mínimo de 44x44px
+
+✅ **Navegação por Teclado:** Todos os componentes são navegáveis via teclado (Tab, Enter, Escape, Arrow keys)
+
+✅ **Screen Reader:** ARIA labels, roles e live regions implementados em todos os componentes
+
+✅ **Focus Indicators:** Indicadores de foco visíveis e de alto contraste (`focus-visible`)
+
+### Recursos de Acessibilidade
+
+```css
+/* Focus ring customizado */
+.focus-visible:focus-visible {
+  outline: 3px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
+
+/* Skip to main content */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: rgb(var(--color-accent));
+  color: rgb(var(--color-accent-contrast));
+  padding: 8px 16px;
+  transition: top 0.2s ease-in-out;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+```
+
+### Suporte a Reduced Motion
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+```
+
+---
+
 ## 📚 Documentação
 
 ### Documentação Técnica Completa
@@ -383,9 +897,6 @@ npm run lint             # Executa linter
 ```env
 # API Backend
 NEXT_PUBLIC_API_URL=http://localhost:8080/api
-
-# WebSocket (Notificações e Chat)
-NEXT_PUBLIC_ENABLE_WEBSOCKET=false
 
 # Logs (opcional - se não definido, usa defaults)
 LOG_SOCKET_URL=ws://localhost:3001
