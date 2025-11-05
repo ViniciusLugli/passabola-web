@@ -44,4 +44,6 @@ next-env.d.ts
 .github
 logs/
 docs/
-logs/*.log
+*.log
+test-run.log
+test-reports/
