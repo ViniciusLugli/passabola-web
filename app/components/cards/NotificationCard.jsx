@@ -19,23 +19,16 @@ export default function NotificationCard({
   const [dragX, setDragX] = useState(0);
   const [open, setOpen] = useState(false);
   const startXRef = useRef(0);
-
-  // Debug log
-  console.log("[NotificationCard] Rendering:", {
-    id: notification.id,
-    type: notification.type,
-    title: notification.title,
-    message: notification.message,
-    metadata: notification.metadata,
-  });
   const draggingRef = useRef(false);
   const contentRef = useRef(null);
 
   const getNotificationIcon = () => {
     switch (notification.type) {
       case "TEAM_INVITE":
+      case "TEAM_INVITE_RECEIVED": // Backend type
         return "👥";
       case "GAME_INVITE":
+      case "GAME_INVITE_RECEIVED": // Backend type
         return "⚽";
       case "GAME_UPDATE":
         return "📅";
@@ -54,10 +47,14 @@ export default function NotificationCard({
     if (!notification.read) {
       onMarkAsRead(notification.id);
     }
-    if (
-      notification.link &&
-      !["GAME_INVITE", "TEAM_INVITE"].includes(notification.type)
-    ) {
+    // Don't navigate for invite types (they have action buttons)
+    const inviteTypes = [
+      "GAME_INVITE",
+      "GAME_INVITE_RECEIVED",
+      "TEAM_INVITE",
+      "TEAM_INVITE_RECEIVED",
+    ];
+    if (notification.link && !inviteTypes.includes(notification.type)) {
       router.push(notification.link);
     }
   };
@@ -168,7 +165,12 @@ export default function NotificationCard({
           }
         `}
         onClick={
-          ["GAME_INVITE", "TEAM_INVITE"].includes(notification.type)
+          [
+            "GAME_INVITE",
+            "GAME_INVITE_RECEIVED",
+            "TEAM_INVITE",
+            "TEAM_INVITE_RECEIVED",
+          ].includes(notification.type)
             ? undefined
             : handleClick
         }
@@ -202,7 +204,12 @@ export default function NotificationCard({
           </p>
 
           {/* Ações de convite */}
-          {["GAME_INVITE", "TEAM_INVITE"].includes(notification.type) && (
+          {[
+            "GAME_INVITE",
+            "GAME_INVITE_RECEIVED",
+            "TEAM_INVITE",
+            "TEAM_INVITE_RECEIVED",
+          ].includes(notification.type) && (
             <InviteNotificationActions
               notification={notification}
               onComplete={onActionComplete}

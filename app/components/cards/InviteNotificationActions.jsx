@@ -136,7 +136,11 @@ export default function InviteNotificationActions({
     }
   };
 
-  if (notification.type === "GAME_INVITE") {
+  // Handle both GAME_INVITE and GAME_INVITE_RECEIVED (backend type)
+  if (
+    notification.type === "GAME_INVITE" ||
+    notification.type === "GAME_INVITE_RECEIVED"
+  ) {
     return (
       <div className="flex flex-col sm:flex-row items-stretch gap-3 mt-2">
         <Button
@@ -161,7 +165,11 @@ export default function InviteNotificationActions({
     );
   }
 
-  if (notification.type === "TEAM_INVITE") {
+  // Handle both TEAM_INVITE and TEAM_INVITE_RECEIVED (backend type)
+  if (
+    notification.type === "TEAM_INVITE" ||
+    notification.type === "TEAM_INVITE_RECEIVED"
+  ) {
     return (
       // stacked on mobile, side-by-side equally on sm+
       <div className="flex flex-col sm:flex-row items-stretch gap-3 mt-2">

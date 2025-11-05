@@ -123,20 +123,12 @@ export default function NotificationsPage() {
   };
 
   const filteredNotifications = useMemo(() => {
-    console.log("[NotificationsPage] All notifications:", liveNotifications);
-    console.log("[NotificationsPage] Current filter:", filter);
-
-    const filtered = liveNotifications.filter((notif) => {
+    return liveNotifications.filter((notif) => {
       if (filter === "unread") return !notif.read;
       if (filter === "read") return notif.read;
       return true;
     });
-
-    console.log("[NotificationsPage] Filtered notifications:", filtered);
-    return filtered;
-  }, [liveNotifications, filter]);
-
-  const notificationCounts = useMemo(() => {
+  }, [liveNotifications, filter]);  const notificationCounts = useMemo(() => {
     return {
       all: liveNotifications.length,
       unread: liveNotifications.filter((n) => !n.read).length,

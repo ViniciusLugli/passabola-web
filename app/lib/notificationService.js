@@ -133,7 +133,9 @@ class NotificationService {
       NEW_FOLLOWER: "/icons/user-plus.svg",
       POST_LIKE: "/icons/heart.svg",
       TEAM_INVITE: "/icons/users.svg",
+      TEAM_INVITE_RECEIVED: "/icons/users.svg", // Backend type
       GAME_INVITE: "/icons/calendar.svg",
+      GAME_INVITE_RECEIVED: "/icons/calendar.svg", // Backend type
       SYSTEM: "/icons/bell.svg",
       NEW_POST: "/icons/file-text.svg",
       GAME_UPDATE: "/icons/refresh-cw.svg",
