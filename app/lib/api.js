@@ -122,6 +122,13 @@ async function fetchApi(endpoint, options = {}) {
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         const parsed = await response.json();
+        
+        // Debug log for notifications endpoint
+        if (endpoint.includes("/notifications")) {
+          console.log("[API DEBUG] Notifications endpoint:", endpoint);
+          console.log("[API DEBUG] Response parsed:", parsed);
+        }
+        
         try {
           const respHeaders = {};
           response.headers.forEach &&

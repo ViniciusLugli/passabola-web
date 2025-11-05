@@ -48,7 +48,10 @@ export default function NotificationsPage() {
       setLoading(true);
       try {
         const response = await api.notifications.getAll({ page: 0, size: 50 });
+        console.log("[DEBUG] Raw API response:", response);
         const notificationsList = response.content || [];
+        console.log("[DEBUG] Notifications list:", notificationsList);
+        console.log("[DEBUG] Notifications count:", notificationsList.length);
 
         if (isMounted) {
           setNotificationsList(notificationsList);
@@ -128,7 +131,8 @@ export default function NotificationsPage() {
       if (filter === "read") return notif.read;
       return true;
     });
-  }, [liveNotifications, filter]);  const notificationCounts = useMemo(() => {
+  }, [liveNotifications, filter]);
+  const notificationCounts = useMemo(() => {
     return {
       all: liveNotifications.length,
       unread: liveNotifications.filter((n) => !n.read).length,
