@@ -11,6 +11,7 @@ import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { error as logError } from "@/app/lib/logger";
 import { useAuth } from "./AuthContext";
+import { notificationService } from "@/app/lib/notificationService";
 
 const NotificationContext = createContext();
 
@@ -78,20 +79,17 @@ export function NotificationProvider({ children }) {
           `/topic/notifications/${userType}/${user.id}`,
           (message) => {
             try {
-              const notification = JSON.parse(message.body);
+              const rawNotification = JSON.parse(message.body);
+
+              // Format notification with user-friendly messages
+              const notification =
+                notificationService.formatNotification(rawNotification);
+
               setNotifications((prev) => [notification, ...prev]);
               setUnreadCount((prev) => prev + 1);
 
-              // Browser native notification (optional)
-              if (
-                typeof Notification !== "undefined" &&
-                Notification.permission === "granted"
-              ) {
-                new Notification(notification.title || "Notificação", {
-                  body: notification.message || notification.title || "",
-                  icon: "/logo.svg",
-                });
-              }
+              // Delegate to notification service for browser notifications
+              notificationService.handleIncomingNotification(notification);
             } catch (error) {
               console.error("Erro ao processar notificação:", error);
             }
@@ -192,12 +190,9 @@ export function NotificationProvider({ children }) {
     stompClient.activate();
     setClient(stompClient);
 
-    if (
-      typeof Notification !== "undefined" &&
-      Notification.permission === "default"
-    ) {
-      Notification.requestPermission();
-    }
+    // Initialize notification service and request permission
+    notificationService.initialize();
+    notificationService.requestPermission();
 
     return () => {
       if (stompClient) {
