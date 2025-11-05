@@ -5,6 +5,11 @@ import Link from "next/link";
 import { api } from "@/app/lib/api";
 import TeamCard from "@/app/components/cards/TeamCard";
 import { useAuth } from "@/app/context/AuthContext";
+import LoadingSkeleton from "@/app/components/ui/LoadingSkeleton";
+import EmptyState from "@/app/components/ui/EmptyState";
+import ErrorState from "@/app/components/ui/ErrorState";
+import { Users, Plus } from "lucide-react";
+import Button from "@/app/components/ui/Button";
 
 export default function TeamList({ query = "", onlyMine = false }) {
   const [teams, setTeams] = useState([]);
@@ -139,21 +144,7 @@ export default function TeamList({ query = "", onlyMine = false }) {
   }, [authLoading, user]);
 
   if (loading) {
-    const skeletons = Array.from({ length: 6 });
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-        {skeletons.map((_, i) => (
-          <div
-            key={`sk-${i}`}
-            className="p-4 rounded-xl bg-surface border border-default animate-pulse"
-          >
-            <div className="h-6 bg-surface-muted rounded mb-3 w-3/4"></div>
-            <div className="h-4 bg-surface-muted rounded mb-2 w-full"></div>
-            <div className="h-4 bg-surface-muted rounded w-1/2"></div>
-          </div>
-        ))}
-      </div>
-    );
+    return <LoadingSkeleton count={6} variant="card" />;
   }
 
   if (error) {
@@ -162,14 +153,12 @@ export default function TeamList({ query = "", onlyMine = false }) {
         ? error
         : error?.message || `${error?.status ?? ""} ${error?.statusText ?? ""}`;
     return (
-      <div className="text-center py-6 sm:py-8">
-        <p className="text-red-500 text-sm sm:text-base">⚠️ Erro: {errMsg}</p>
-        {error?.body && (
-          <pre className="text-xs text-gray-600 mt-2 overflow-x-auto p-2 bg-gray-50 rounded">
-            {JSON.stringify(error.body, null, 2)}
-          </pre>
-        )}
-      </div>
+      <ErrorState
+        title="Erro ao carregar equipes"
+        message={errMsg}
+        onRetry={() => window.location.reload()}
+        variant="error"
+      />
     );
   }
 
@@ -186,33 +175,34 @@ export default function TeamList({ query = "", onlyMine = false }) {
   if (filtered.length === 0) {
     if (!hasQuery) {
       return (
-        <div className="text-center py-8 sm:py-12">
-          <p className="text-gray-500 text-sm sm:text-base mb-3">
-            📋 Você ainda não faz parte de nenhuma equipe.
-          </p>
-          {user?.userType === "PLAYER" ? (
-            <Link
-              href="/teams/newTeam"
-              className="inline-block bg-accent text-on-brand px-4 py-2 rounded-lg font-semibold"
-            >
-              Criar nova equipe
-            </Link>
-          ) : (
-            <p className="text-secondary">
-              Procure por equipes ou peça para alguém te convidar.
-            </p>
-          )}
-        </div>
+        <EmptyState
+          icon={<Users />}
+          title="Você ainda não tem equipes"
+          description={
+            user?.userType === "PLAYER"
+              ? "Crie sua primeira equipe para começar a jogar e organizar partidas."
+              : "Procure por equipes ou peça para alguém te convidar."
+          }
+          action={
+            user?.userType === "PLAYER" ? (
+              <Button onClick={() => (window.location.href = "/teams/newTeam")}>
+                <Plus className="w-4 h-4 mr-2" />
+                Criar Primeira Equipe
+              </Button>
+            ) : undefined
+          }
+          variant="gradient"
+        />
       );
     }
 
     return (
-      <div className="text-center py-8 sm:py-12">
-        <p className="text-gray-500 text-sm sm:text-base mb-3">
-          📋 Nenhuma equipe encontrada para "{query}".
-        </p>
-        <p className="text-secondary">Tente outro termo de busca.</p>
-      </div>
+      <EmptyState
+        icon={<Users />}
+        title={`Nenhuma equipe encontrada para "${query}"`}
+        description="Tente outro termo de busca ou ajuste os filtros."
+        variant="bordered"
+      />
     );
   }
 

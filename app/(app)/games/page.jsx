@@ -6,6 +6,11 @@ import Link from "next/link";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
 import { getGameTypeLabel } from "@/app/lib/gameUtils";
+import LoadingSkeleton from "@/app/components/ui/LoadingSkeleton";
+import EmptyState from "@/app/components/ui/EmptyState";
+import ErrorState from "@/app/components/ui/ErrorState";
+import { Calendar, Plus } from "lucide-react";
+import Button from "@/app/components/ui/Button";
 
 function Games() {
   const [games, setGames] = useState([]);
@@ -145,20 +150,15 @@ function Games() {
             </div>
           </div>
 
-          {loading && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mb-4"></div>
-              <p className="text-center text-secondary font-medium">
-                Carregando jogos...
-              </p>
-            </div>
-          )}
+          {loading && <LoadingSkeleton count={5} variant="card" />}
 
           {error && (
-            <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-center">
-              <span className="text-4xl mb-3 block">⚠️</span>
-              <p className="text-red-700 font-semibold text-lg">{error}</p>
-            </div>
+            <ErrorState
+              title="Erro ao carregar jogos"
+              message={error}
+              onRetry={fetchGames}
+              variant="error"
+            />
           )}
 
           {!loading && !error && (
@@ -295,22 +295,25 @@ function Games() {
                     />
                   ))
               ) : (
-                <div className="bg-surface-muted border-2 border-default rounded-xl p-8 sm:p-12 text-center">
-                  <span className="text-5xl sm:text-6xl mb-4 block">🎮</span>
-                  <p className="text-secondary font-semibold text-lg sm:text-xl mb-2">
-                    Nenhum jogo encontrado
-                  </p>
-                  <p className="text-tertiary text-sm sm:text-base">
-                    Seja o primeiro a criar um jogo!
-                  </p>
-                </div>
+                <EmptyState
+                  icon={<Calendar />}
+                  title="Nenhum jogo disponível"
+                  description="Seja a primeira a criar um jogo e começar a jogar!"
+                  action={
+                    <Button
+                      onClick={() => (window.location.href = "/games/newGame")}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Criar Primeiro Jogo
+                    </Button>
+                  }
+                  variant="gradient"
+                />
               )}
             </section>
           )}
         </div>
       </main>
-
-      {/* Floating FAB removed — CTA moved to header area for accessibility and discoverability */}
     </div>
   );
 }
