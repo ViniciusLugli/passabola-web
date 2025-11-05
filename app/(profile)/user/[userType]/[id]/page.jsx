@@ -132,7 +132,22 @@ export default function ProfilePage() {
               if (gamesPromise) {
                 gamesPromise
                   .then((gamesResponse) => {
-                    setGames(gamesResponse.content || []);
+                    let gamesData = gamesResponse.content || [];
+
+                    // For players, gameParticipants returns participations with a game object
+                    // We need to extract the game from each participation
+                    if (lowerCaseUserType === "player") {
+                      gamesData = gamesData
+                        .map((participation) => {
+                          // Extract the game object from participation
+                          const game = participation.game || participation;
+                          // Mark as joined since it's from participations
+                          return { ...game, isJoined: true };
+                        })
+                        .filter((game) => game && game.id); // Filter out invalid games
+                    }
+
+                    setGames(gamesData);
                     setTabLoading((loading) => ({ ...loading, games: false }));
                   })
                   .catch((err) => {
