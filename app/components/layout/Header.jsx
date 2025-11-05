@@ -10,14 +10,12 @@ import {
   Calendar,
   Users,
   User,
-  Bell,
   MessageCircle,
   Bot,
   LogOut,
   Menu,
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
-import { useNotifications } from "@/app/context/NotificationContext";
 import { useChat } from "@/app/context/ChatContext";
 
 // Import dinâmico para evitar SSR
@@ -28,20 +26,28 @@ const ThemeToggle = dynamic(() => import("@/app/components/ui/ThemeToggle"), {
   ),
 });
 
+const NotificationBell = dynamic(
+  () => import("@/app/components/ui/NotificationBell"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-10 h-10 rounded-full bg-surface-muted animate-pulse" />
+    ),
+  }
+);
+
 const iconMap = {
   Feed: Home,
   Jogos: Trophy,
   Calendário: Calendar,
   Equipes: Users,
   Perfil: User,
-  Notificações: Bell,
   Chat: MessageCircle,
   Chatbot: Bot,
 };
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
-  const { unreadCount } = useNotifications();
   const { unreadCount: chatUnreadCount } = useChat();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -50,7 +56,6 @@ export default function Header() {
     { name: "Jogos", href: "/games" },
     { name: "Calendário", href: "/calendar" },
     { name: "Equipes", href: "/teams" },
-    { name: "Notificações", href: "/notifications" },
     { name: "Chat", href: "/chat" },
     { name: "Chatbot", href: "/chatbot" },
   ];
@@ -123,11 +128,6 @@ export default function Header() {
             >
               <Icon className="w-6 h-6" strokeWidth={2} />
               <span className="text-xs">{link.name}</span>
-              {link.name === "Notificações" && unreadCount > 0 && (
-                <span className="absolute top-0 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
               {link.name === "Chat" && chatUnreadCount > 0 && (
                 <span className="absolute top-0 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
@@ -136,6 +136,12 @@ export default function Header() {
             </Link>
           );
         })}
+
+        {/* Notification Bell with integrated badge */}
+        <div className="flex flex-col items-center justify-center gap-1 w-20">
+          <NotificationBell />
+          <span className="text-xs text-white font-semibold">Notificações</span>
+        </div>
         {isAuthenticated ? (
           <button
             onClick={logout}
@@ -218,11 +224,6 @@ export default function Header() {
                 >
                   <Icon className="w-6 h-6" strokeWidth={2} />
                   <span>{link.name}</span>
-                  {link.name === "Notificações" && unreadCount > 0 && (
-                    <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
                   {link.name === "Chat" && chatUnreadCount > 0 && (
                     <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                       {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
@@ -231,6 +232,18 @@ export default function Header() {
                 </Link>
               );
             })}
+
+            {/* Notification Bell in mobile menu */}
+            <div className="flex items-center gap-3 p-2">
+              <NotificationBell />
+              <Link
+                href="/notifications"
+                className="flex-1 text-primary hover:text-accent transition-colors font-semibold"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Notificações
+              </Link>
+            </div>
             {isAuthenticated ? (
               <button
                 onClick={() => {
