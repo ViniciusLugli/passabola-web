@@ -138,10 +138,25 @@ export default function Header() {
         })}
 
         {/* Notification Bell with integrated badge */}
-        <div className="flex flex-col items-center justify-center gap-1 w-20">
+        <Link
+          href="/notifications"
+          className="
+            flex
+            flex-col
+            items-center
+            justify-center
+            gap-1
+            text-white
+            hover:text-white/90
+            transition-colors
+            duration-200
+            w-20
+            cursor-pointer
+          "
+        >
           <NotificationBell />
-          <span className="text-xs text-white font-semibold">Notificações</span>
-        </div>
+          <span className="text-xs font-semibold">Notificações</span>
+        </Link>
         {isAuthenticated ? (
           <button
             onClick={logout}
@@ -234,16 +249,27 @@ export default function Header() {
             })}
 
             {/* Notification Bell in mobile menu */}
-            <div className="flex items-center gap-3 p-2">
+            <Link
+              href="/notifications"
+              className="
+                flex
+                items-center
+                gap-3
+                text-primary
+                hover:text-accent
+                transition-colors
+                duration-200
+                font-semibold
+                p-2
+                rounded-lg
+                relative
+                hover:bg-surface-muted
+              "
+              onClick={() => setIsMenuOpen(false)}
+            >
               <NotificationBell />
-              <Link
-                href="/notifications"
-                className="flex-1 text-primary hover:text-accent transition-colors font-semibold"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Notificações
-              </Link>
-            </div>
+              <span>Notificações</span>
+            </Link>
             {isAuthenticated ? (
               <button
                 onClick={() => {

@@ -201,7 +201,6 @@ passabola-web/
 - Contador de notificações não lidas
 - Filtros e ações em massa
 - Fallback HTTP quando WebSocket indisponível
-- [Documentação completa](./.github/NOTIFICATIONS.md)
 
 ### 💬 Chat em Tempo Real
 
@@ -210,7 +209,6 @@ passabola-web/
 - Envio de mensagens em tempo real
 - Contador de mensagens não lidas
 - Fallback HTTP quando WebSocket indisponível
-- [Documentação completa](./.github/CHAT.md)
 
 ### 👤 Perfis de Usuário
 
@@ -408,6 +406,10 @@ Duplo transporte para observabilidade:
 ```css
 /* Superfícies */
 .bg-page             /* Background da página */
+/* Background da página */
+/* Background da página */
+/* Background da página */
+/* Background da página */
 /* Background da página */
 /* Background da página */
 /* Background da página */

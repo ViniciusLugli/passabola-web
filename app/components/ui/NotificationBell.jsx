@@ -2,30 +2,26 @@
 
 import { useNotifications } from "@/app/context/NotificationContext";
 import { Bell } from "lucide-react";
-import Link from "next/link";
 
 /**
  * NotificationBell Component
  *
- * Displays notification bell icon with unread count badge in header.
- * Shows connection status and links to notifications page.
+ * Displays notification bell icon with unread count badge.
+ * Shows connection status. Designed to be wrapped in a Link by parent.
  */
 export default function NotificationBell() {
   const { unreadCount, isConnected } = useNotifications();
 
   return (
-    <Link
-      href="/notifications"
-      className="relative inline-flex items-center justify-center p-2 rounded-lg hover:bg-surface-muted transition-colors touch-target"
+    <div
+      className="relative inline-flex items-center justify-center"
       aria-label={`Notificações${
         unreadCount > 0 ? ` (${unreadCount} não lidas)` : ""
       }`}
     >
       {/* Bell Icon */}
       <Bell
-        className={`w-6 h-6 ${
-          unreadCount > 0 ? "text-accent" : "text-secondary"
-        }`}
+        className={`w-6 h-6 ${unreadCount > 0 ? "text-accent" : "text-white"}`}
         strokeWidth={2}
       />
 
@@ -54,6 +50,6 @@ export default function NotificationBell() {
           ? `Você tem ${unreadCount} notificações não lidas`
           : "Sem notificações não lidas"}
       </span>
-    </Link>
+    </div>
   );
 }

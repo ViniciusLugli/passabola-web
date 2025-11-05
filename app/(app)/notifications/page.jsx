@@ -123,18 +123,24 @@ export default function NotificationsPage() {
   };
 
   const filteredNotifications = useMemo(() => {
-    return liveNotifications.filter((notif) => {
+    console.log("[NotificationsPage] All notifications:", liveNotifications);
+    console.log("[NotificationsPage] Current filter:", filter);
+
+    const filtered = liveNotifications.filter((notif) => {
       if (filter === "unread") return !notif.read;
       if (filter === "read") return notif.read;
       return true;
     });
+
+    console.log("[NotificationsPage] Filtered notifications:", filtered);
+    return filtered;
   }, [liveNotifications, filter]);
 
   const notificationCounts = useMemo(() => {
     return {
       all: liveNotifications.length,
-      unread: liveNotifications.filter(n => !n.read).length,
-      read: liveNotifications.filter(n => n.read).length,
+      unread: liveNotifications.filter((n) => !n.read).length,
+      read: liveNotifications.filter((n) => n.read).length,
     };
   }, [liveNotifications]);
 
@@ -146,8 +152,7 @@ export default function NotificationsPage() {
   useEffect(() => {
     if (selectAllCheckboxRef.current) {
       selectAllCheckboxRef.current.indeterminate =
-        selectedIds.size > 0 &&
-        selectedIds.size < filteredNotifications.length;
+        selectedIds.size > 0 && selectedIds.size < filteredNotifications.length;
     }
   }, [selectedIds, filteredNotifications]);
 

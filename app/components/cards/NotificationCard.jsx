@@ -19,6 +19,15 @@ export default function NotificationCard({
   const [dragX, setDragX] = useState(0);
   const [open, setOpen] = useState(false);
   const startXRef = useRef(0);
+
+  // Debug log
+  console.log("[NotificationCard] Rendering:", {
+    id: notification.id,
+    type: notification.type,
+    title: notification.title,
+    message: notification.message,
+    metadata: notification.metadata,
+  });
   const draggingRef = useRef(false);
   const contentRef = useRef(null);
 
