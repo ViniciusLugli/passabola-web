@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import {
   Users,
   Trophy,
@@ -13,6 +14,14 @@ import {
   Facebook,
   ChevronDown,
 } from "lucide-react";
+
+// Import dinâmico do ThemeToggle para evitar SSR
+const ThemeToggle = dynamic(() => import("@/app/components/ui/ThemeToggle"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-10 h-10 rounded-full bg-surface-muted shadow-elevated animate-pulse" />
+  ),
+});
 
 const decorations = [
   {
@@ -143,10 +152,12 @@ export default function HomePage() {
     e.preventDefault();
     const featuresSection = document.getElementById("features");
     if (featuresSection) {
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
       featuresSection.scrollIntoView({
         behavior: prefersReducedMotion ? "auto" : "smooth",
-        block: "start"
+        block: "start",
       });
     }
   };
@@ -191,6 +202,11 @@ export default function HomePage() {
           p-4 sm:p-6 md:p-8 lg:p-12
         "
       >
+        {/* Theme Toggle - Top Left */}
+        <div className="absolute top-6 left-6 z-20">
+          <ThemeToggle />
+        </div>
+
         {/* Decorative Background Elements */}
         <div className="absolute inset-0 z-0">
           {decorations.map((deco, index) => (
@@ -300,20 +316,21 @@ export default function HomePage() {
               <button
                 onClick={scrollToFeatures}
                 className="
-                  px-8 py-4
+                  px-8
+                  py-4
                   bg-transparent
                   border-2
-                  border-white
-                  text-white
-                  hover:bg-white/10
-                  hover:text-white
+                  border-on-brand
+                  text-on-brand
+                  hover:bg-on-brand/10
+                  hover:border-on-brand
                   text-lg
                   font-bold
                   rounded-full
                   transition-all
                   duration-300
                   hover:scale-105 active:scale-95
-                  focus:outline-none focus:ring-4 focus:ring-white/50
+                  focus:outline-none focus:ring-4 focus:ring-on-brand/50
                   flex items-center justify-center gap-2
                 "
                 aria-label="Rolar para a seção de recursos"
@@ -568,7 +585,10 @@ export default function HomePage() {
                         focus:ring-accent/50
                       "
                     >
-                      <Icon className="w-6 h-6 text-accent hover:text-accent-contrast" aria-hidden="true" />
+                      <Icon
+                        className="w-6 h-6 text-accent hover:text-accent-contrast"
+                        aria-hidden="true"
+                      />
                     </a>
                   );
                 })}
@@ -592,7 +612,10 @@ export default function HomePage() {
               text-tertiary
             "
           >
-            <p>© {new Date().getFullYear()} PassaBola. Todos os direitos reservados.</p>
+            <p>
+              © {new Date().getFullYear()} PassaBola. Todos os direitos
+              reservados.
+            </p>
             <p>Uma iniciativa FIAP em parceria com Passa a Bola</p>
           </div>
         </div>

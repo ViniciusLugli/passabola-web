@@ -20,13 +20,15 @@ async function fetchApi(endpoint, options = {}) {
 
   if (authToken && !customConfig.skipAuth) {
     headers["Authorization"] = `Bearer ${authToken}`;
-    
-    // Debug: Decode JWT to check user ID
+
     if (endpoint.includes("/notifications") && authToken) {
       try {
         const payload = JSON.parse(atob(authToken.split(".")[1]));
         console.log("[API DEBUG] JWT Payload:", payload);
-        console.log("[API DEBUG] User ID from token:", payload.sub || payload.userId || payload.id);
+        console.log(
+          "[API DEBUG] User ID from token:",
+          payload.sub || payload.userId || payload.id
+        );
       } catch (e) {
         console.error("[API DEBUG] Failed to decode JWT:", e);
       }

@@ -1,13 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Settings } from "lucide-react";
+import { Settings, MessageCircle } from "lucide-react";
 import Player from "@/app/models/player";
 import Organization from "@/app/models/organization";
 import { api } from "@/app/lib/api";
 import Button from "@/app/components/ui/Button";
+import { useChat } from "@/app/context/ChatContext";
 
 export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
+  const router = useRouter();
+  const { setActiveConversation, conversations, setConversations } = useChat();
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(user.followers || 0);
   const [followingCount, setFollowingCount] = useState(user.following || 0);
@@ -71,6 +75,36 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
     }
   };
 
+  const handleStartConversation = () => {
+    // Create or find existing conversation
+    const existingConversation = conversations.find(
+      (c) => c.otherUserId === user.userId
+    );
+
+    if (existingConversation) {
+      // Set as active conversation
+      setActiveConversation(existingConversation);
+    } else {
+      // Create new conversation object
+      const newConversation = {
+        otherUserId: user.userId,
+        otherUsername: user.username,
+        otherName: user.name,
+        otherProfilePhotoUrl: user.profilePhotoUrl,
+        lastMessage: null,
+        lastMessageTime: null,
+        unreadCount: 0,
+      };
+
+      // Add to conversations list
+      setConversations([newConversation, ...conversations]);
+      setActiveConversation(newConversation);
+    }
+
+    // Navigate to chat page
+    router.push("/chat");
+  };
+
   return (
     <div className="w-full bg-surface rounded-2xl border border-default shadow-elevated overflow-hidden relative">
       <div className="relative w-full h-40 md:h-64">
@@ -127,25 +161,59 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
             loggedInUser &&
             user.userId &&
             loggedInUser.userId !== user.userId && (
-              <button
-                onClick={isFollowing ? handleUnfollow : handleFollow}
-                className={`
-                  px-4 py-1.5 
-                  rounded-full 
-                  text-sm 
-                  font-medium 
-                  whitespace-nowrap 
-                  flex-shrink-0
-                  transition-colors
-                  ${
-                    isFollowing
-                      ? "bg-red-500 hover:bg-red-600 text-white"
-                      : "bg-purple-600 hover:bg-purple-700 text-white"
-                  }
-                `}
-              >
-                {isFollowing ? "Seguindo" : "Seguir"}
-              </button>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Message Button */}
+                <button
+                  onClick={handleStartConversation}
+                  className="
+                    p-2
+                    rounded-full
+                    bg-surface-muted
+                    hover:bg-accent/20
+                    text-secondary
+                    hover:text-accent
+                    transition-all
+                    duration-200
+                    min-w-[44px]
+                    min-h-[44px]
+                    flex
+                    items-center
+                    justify-center
+                    border
+                    border-default
+                    hover:border-accent
+                    group
+                  "
+                  aria-label="Enviar mensagem"
+                  title="Enviar mensagem"
+                >
+                  <MessageCircle
+                    className="w-5 h-5 transition-transform group-hover:scale-110"
+                    strokeWidth={2}
+                  />
+                </button>
+
+                {/* Follow/Unfollow Button */}
+                <button
+                  onClick={isFollowing ? handleUnfollow : handleFollow}
+                  className={`
+                    px-4 py-1.5 
+                    rounded-full 
+                    text-sm 
+                    font-medium 
+                    whitespace-nowrap 
+                    transition-colors
+                    min-h-[44px]
+                    ${
+                      isFollowing
+                        ? "bg-red-500 hover:bg-red-600 text-white"
+                        : "bg-purple-600 hover:bg-purple-700 text-white"
+                    }
+                  `}
+                >
+                  {isFollowing ? "Seguindo" : "Seguir"}
+                </button>
+              </div>
             )
           )}
         </div>

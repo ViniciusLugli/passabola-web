@@ -25,6 +25,7 @@ export default function ChatPage() {
     setActiveConversation,
     messages,
     isConnected,
+    isUserOnline,
     subscribeToChat,
     unsubscribeFromChat,
     sendMessageViaWebSocket,

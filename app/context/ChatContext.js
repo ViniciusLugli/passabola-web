@@ -74,17 +74,33 @@ export function ChatProvider({ children }) {
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: () => {
+        console.log("[Chat WebSocket] ✅ Conectado com sucesso!");
+        console.log("[Chat WebSocket] User:", {
+          id: user?.id,
+          userId: user?.userId,
+          username: user?.username,
+        });
         setIsConnected(true);
 
         // Subscribe to personal messages
-        stompClient.subscribe(`/user/queue/messages`, (message) => {
-          try {
-            const newMessage = JSON.parse(message.body);
-            handleNewMessage(newMessage);
-          } catch (error) {
-            console.error("Erro ao processar mensagem:", error);
+        const subscription = stompClient.subscribe(
+          `/user/queue/messages`,
+          (message) => {
+            console.log("[Chat WebSocket] 📨 Mensagem recebida via WebSocket!");
+            console.log("[Chat WebSocket] Raw message:", message.body);
+            try {
+              const newMessage = JSON.parse(message.body);
+              console.log("[Chat WebSocket] Parsed message:", newMessage);
+              handleNewMessage(newMessage);
+            } catch (error) {
+              console.error(
+                "[Chat WebSocket] ❌ Erro ao processar mensagem:",
+                error
+              );
+            }
           }
-        });
+        );
+        console.log("[Chat WebSocket] ✅ Subscribed to /user/queue/messages");
 
         // Subscribe to presence events
         stompClient.subscribe(`/user/queue/presence`, (message) => {
@@ -201,11 +217,26 @@ export function ChatProvider({ children }) {
 
   const handleNewMessage = useCallback(
     (message) => {
+      console.log("[ChatContext] New message received:", message);
+      console.log("[ChatContext] Current user:", {
+        id: user?.id,
+        userId: user?.userId,
+      });
+
       // Determinar o otherUserId baseado em quem enviou/recebeu
       // Se eu enviei, otherUserId é recipientId
       // Se eu recebi, otherUserId é senderId
-      const otherUserId =
-        message.senderId === user?.id ? message.recipientId : message.senderId;
+      // IMPORTANTE: Usar userId (Snowflake ID), não id (incremental)
+      const isSentByMe = message.senderId === user?.userId;
+      const otherUserId = isSentByMe ? message.recipientId : message.senderId;
+
+      console.log("[ChatContext] Message comparison:", {
+        messageSenderId: message.senderId,
+        userUserId: user?.userId,
+        isSentByMe,
+        otherUserId,
+        recipientId: message.recipientId,
+      });
 
       // Armazenar mensagens por otherUserId (não por chatId)
       setMessages((prev) => ({
@@ -214,17 +245,29 @@ export function ChatProvider({ children }) {
       }));
 
       // Atualizar lista de conversas
-      if (
-        !activeConversation ||
-        activeConversation.otherUserId !== otherUserId
-      ) {
+      const shouldUpdateUnread =
+        !activeConversation || activeConversation.otherUserId !== otherUserId;
+
+      console.log("[ChatContext] Should update unread:", {
+        shouldUpdateUnread,
+        hasActiveConversation: !!activeConversation,
+        activeConversationOtherUserId: activeConversation?.otherUserId,
+        messageOtherUserId: otherUserId,
+      });
+
+      if (shouldUpdateUnread) {
         setUnreadCount((prev) => prev + 1);
 
         setConversations((prev) => {
+          console.log("[ChatContext] Current conversations:", prev);
           const existingConv = prev.find((c) => c.otherUserId === otherUserId);
+          console.log(
+            "[ChatContext] Existing conversation found:",
+            existingConv
+          );
 
           if (existingConv) {
-            return prev.map((conv) =>
+            const updated = prev.map((conv) =>
               conv.otherUserId === otherUserId
                 ? {
                     ...conv,
@@ -234,24 +277,30 @@ export function ChatProvider({ children }) {
                   }
                 : conv
             );
+            console.log(
+              "[ChatContext] Updated existing conversation:",
+              updated
+            );
+            return updated;
           } else {
             // Nova conversa
             const newConv = {
               otherUserId: otherUserId,
-              otherUsername:
-                message.senderId === user?.id
-                  ? message.recipientUsername
-                  : message.senderUsername,
-              otherName:
-                message.senderId === user?.id
-                  ? message.recipientName
-                  : message.senderName,
+              otherUsername: isSentByMe
+                ? message.recipientUsername
+                : message.senderUsername,
+              otherName: isSentByMe
+                ? message.recipientName
+                : message.senderName,
               otherProfilePhotoUrl: null,
               lastMessage: message.content,
               lastMessageTime: message.createdAt,
               unreadCount: 1,
             };
-            return [newConv, ...prev];
+            console.log("[ChatContext] Creating new conversation:", newConv);
+            const updated = [newConv, ...prev];
+            console.log("[ChatContext] Updated conversations list:", updated);
+            return updated;
           }
         });
       }
@@ -273,19 +322,29 @@ export function ChatProvider({ children }) {
 
   const sendMessageViaWebSocket = useCallback(
     (recipientId, content) => {
+      console.log("[Chat WebSocket] Tentando enviar mensagem...");
+      console.log("[Chat WebSocket] isConnected:", isConnected);
+      console.log("[Chat WebSocket] clientRef.current:", !!clientRef.current);
+
       if (!clientRef.current || !isConnected) {
-        console.warn("[Chat] Não conectado, enviando via HTTP");
+        console.warn("[Chat WebSocket] ❌ Não conectado, enviando via HTTP");
         return false;
       }
 
       try {
+        const payload = { recipientId, content };
+        console.log("[Chat WebSocket] 📤 Enviando mensagem:", payload);
         clientRef.current.publish({
           destination: `/app/chat.send`,
-          body: JSON.stringify({ recipientId, content }),
+          body: JSON.stringify(payload),
         });
+        console.log("[Chat WebSocket] ✅ Mensagem enviada via WebSocket!");
         return true;
       } catch (error) {
-        console.error("Erro ao enviar mensagem via WebSocket:", error);
+        console.error(
+          "[Chat WebSocket] ❌ Erro ao enviar mensagem via WebSocket:",
+          error
+        );
         return false;
       }
     },

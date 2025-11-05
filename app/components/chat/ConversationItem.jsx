@@ -22,7 +22,7 @@ export default function ConversationItem({ conversation, isActive, onClick }) {
   };
 
   const getParticipantName = () => {
-    return conversation.participantName || "Usuário";
+    return conversation.otherName || conversation.participantName || "Usuário";
   };
 
   // Check real-time online status from WebSocket presence
@@ -110,7 +110,7 @@ export default function ConversationItem({ conversation, isActive, onClick }) {
         </div>
 
         <span className="text-xs text-tertiary ml-2 flex-shrink-0">
-          {formatDate(conversation.lastMessageAt)}
+          {formatDate(conversation.lastMessageTime)}
         </span>
       </div>
     </div>

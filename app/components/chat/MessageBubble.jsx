@@ -52,7 +52,7 @@ export default function MessageBubble({ message }) {
                 : "text-secondary opacity-80"
             }`}
           >
-            {formatTime(message.sentAt)}
+            {formatTime(message.createdAt || message.sentAt)}
           </p>
 
           {/* Message delivery status - only for own messages */}
