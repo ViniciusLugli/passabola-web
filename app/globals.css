@@ -298,6 +298,14 @@ html.dark {
     background-image: linear-gradient(135deg, #581cb4 0%, #6d28d9 100%);
     color: rgb(var(--color-accent-contrast));
   }
+
+  .bg-empty-gradient {
+    background: linear-gradient(
+      135deg,
+      rgb(var(--color-surface-muted)) 0%,
+      rgb(var(--color-surface-elevated)) 100%
+    );
+  }
 }
 
 /* ================================

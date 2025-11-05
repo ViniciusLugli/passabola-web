@@ -22,9 +22,8 @@ export default function EmptyState({
 }) {
   const variants = {
     default: "bg-surface rounded-xl p-8",
-    gradient:
-      "bg-gradient-to-br from-purple-50 to-blue-50 dark:from-surface-muted dark:to-surface-elevated rounded-xl p-8 border border-default",
-    bordered: "border-2 border-dashed border-default rounded-xl p-8",
+    gradient: "bg-empty-gradient rounded-xl p-8 border border-default",
+    bordered: "border-2 border-dashed border-default rounded-xl p-8 bg-surface",
   };
 
   const variantClass = variants[variant] || variants.default;
