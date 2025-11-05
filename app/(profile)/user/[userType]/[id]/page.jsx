@@ -34,6 +34,11 @@ export default function ProfilePage() {
     teams: false,
     games: false,
   });
+  const [loadedTabs, setLoadedTabs] = useState({
+    posts: false,
+    teams: false,
+    games: false,
+  });
 
   // Extrair valores estáveis do loggedInUser para evitar re-renders
   const loggedInUserId = loggedInUser?.userId;
@@ -49,53 +54,95 @@ export default function ProfilePage() {
       try {
         switch (tab) {
           case "posts":
-            if (posts.length > 0) return; // Already loaded
-            setTabLoading((prev) => ({ ...prev, posts: true }));
-            const postsResponse = await api.posts.getByAuthor(id);
-            const filteredPosts = (postsResponse.content || []).filter(
-              (post) => post.authorType.toLowerCase() === lowerCaseUserType
-            );
-            setPosts(filteredPosts);
-            setTabLoading((prev) => ({ ...prev, posts: false }));
+            // Check if already loaded
+            setLoadedTabs((prev) => {
+              if (prev.posts) return prev;
+
+              // Set loading state
+              setTabLoading((loading) => ({ ...loading, posts: true }));
+
+              // Fetch data
+              api.posts
+                .getByAuthor(id)
+                .then((postsResponse) => {
+                  const filteredPosts = (postsResponse.content || []).filter(
+                    (post) => post.authorType.toLowerCase() === lowerCaseUserType
+                  );
+                  setPosts(filteredPosts);
+                  setTabLoading((loading) => ({ ...loading, posts: false }));
+                })
+                .catch((err) => {
+                  console.error("Error fetching posts:", err);
+                  setTabLoading((loading) => ({ ...loading, posts: false }));
+                });
+
+              return { ...prev, posts: true };
+            });
             break;
 
           case "teams":
-            if (teams.length > 0) return; // Already loaded
             if (lowerCaseUserType !== "player") return;
-            setTabLoading((prev) => ({ ...prev, teams: true }));
-            // For now, we'll fetch all teams and filter by player
-            // In a real scenario, there should be an API endpoint like /players/{id}/teams
-            const allTeamsResponse = await api.teams.getAll({ size: 100 });
-            // Filter teams where player is a member (this is a placeholder - adjust based on actual API)
-            setTeams(allTeamsResponse.content || []);
-            setTabLoading((prev) => ({ ...prev, teams: false }));
+
+            setLoadedTabs((prev) => {
+              if (prev.teams) return prev;
+
+              setTabLoading((loading) => ({ ...loading, teams: true }));
+
+              // For now, we'll fetch all teams and filter by player
+              // In a real scenario, there should be an API endpoint like /players/{id}/teams
+              api.teams
+                .getAll({ size: 100 })
+                .then((allTeamsResponse) => {
+                  setTeams(allTeamsResponse.content || []);
+                  setTabLoading((loading) => ({ ...loading, teams: false }));
+                })
+                .catch((err) => {
+                  console.error("Error fetching teams:", err);
+                  setTabLoading((loading) => ({ ...loading, teams: false }));
+                });
+
+              return { ...prev, teams: true };
+            });
             break;
 
           case "games":
-            if (games.length > 0) return; // Already loaded
-            setTabLoading((prev) => ({ ...prev, games: true }));
+            setLoadedTabs((prev) => {
+              if (prev.games) return prev;
 
-            if (lowerCaseUserType === "player") {
-              // Get games by player participation
-              const gamesResponse = await api.gameParticipants.getByPlayer(id, {
-                size: 50,
-              });
-              setGames(gamesResponse.content || []);
-            } else if (lowerCaseUserType === "organization") {
-              // Get games hosted by organization
-              const gamesResponse = await api.games.getByOrganization(id, {
-                size: 50,
-              });
-              setGames(gamesResponse.content || []);
-            } else if (lowerCaseUserType === "spectator") {
-              // Get games spectated
-              const gamesResponse = await api.games.mySpectatorSubscriptions({
-                size: 50,
-              });
-              setGames(gamesResponse.content || []);
-            }
+              setTabLoading((loading) => ({ ...loading, games: true }));
 
-            setTabLoading((prev) => ({ ...prev, games: false }));
+              let gamesPromise;
+              if (lowerCaseUserType === "player") {
+                // Get games by player participation
+                gamesPromise = api.gameParticipants.getByPlayer(id, {
+                  size: 50,
+                });
+              } else if (lowerCaseUserType === "organization") {
+                // Get games hosted by organization
+                gamesPromise = api.games.getByOrganization(id, {
+                  size: 50,
+                });
+              } else if (lowerCaseUserType === "spectator") {
+                // Get games spectated
+                gamesPromise = api.games.mySpectatorSubscriptions({
+                  size: 50,
+                });
+              }
+
+              if (gamesPromise) {
+                gamesPromise
+                  .then((gamesResponse) => {
+                    setGames(gamesResponse.content || []);
+                    setTabLoading((loading) => ({ ...loading, games: false }));
+                  })
+                  .catch((err) => {
+                    console.error("Error fetching games:", err);
+                    setTabLoading((loading) => ({ ...loading, games: false }));
+                  });
+              }
+
+              return { ...prev, games: true };
+            });
             break;
 
           default:
@@ -106,7 +153,7 @@ export default function ProfilePage() {
         setTabLoading((prev) => ({ ...prev, [tab]: false }));
       }
     },
-    [profileUser, id, userType, posts, teams, games]
+    [profileUser, id, userType]
   );
 
   // Trigger tab data fetch when activeTab changes
