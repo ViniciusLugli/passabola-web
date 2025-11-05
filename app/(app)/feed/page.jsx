@@ -4,7 +4,9 @@ import { useState } from "react";
 import PostCard from "@/app/components/cards/PostCard";
 import SearchBar from "@/app/components/ui/SearchBar";
 import LoadingSkeleton from "@/app/components/ui/LoadingSkeleton";
-import { Plus } from "lucide-react";
+import EmptyState from "@/app/components/ui/EmptyState";
+import ErrorState from "@/app/components/ui/ErrorState";
+import { Plus, MessageCircle } from "lucide-react";
 import Modal from "@/app/components/ui/Modal";
 import NewPostForm from "@/app/components/feed/NewPostForm";
 import useFeed from "@/app/hooks/useFeed";
@@ -99,8 +101,16 @@ function Feed() {
           </div>
         </div>
 
-        {loading && <LoadingSkeleton count={3} />}
-        {error && <p className="text-center text-red-500">{error}</p>}
+        {loading && <LoadingSkeleton count={3} variant="post" />}
+
+        {error && (
+          <ErrorState
+            title="Erro ao carregar feed"
+            message={error}
+            onRetry={() => window.location.reload()}
+            variant="error"
+          />
+        )}
 
         {!loading && !error && (
           <section className="flex flex-col gap-6" aria-live="polite">
@@ -137,12 +147,21 @@ function Feed() {
             {posts.length > 0 ? (
               posts.map((post) => <PostCard key={post.id} post={post} />)
             ) : (
-              <p className="text-center text-secondary">
-                Nenhum post encontrado.
-              </p>
+              <EmptyState
+                icon={<MessageCircle />}
+                title="Nenhum post disponível"
+                description="Seja a primeira a compartilhar algo ou siga outras usuárias para ver posts aqui."
+                action={
+                  <Button onClick={() => setIsModalOpen(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Criar Primeiro Post
+                  </Button>
+                }
+                variant="gradient"
+              />
             )}
             <div ref={sentinelRef} />
-            {loadingMore && <LoadingSkeleton count={1} />}
+            {loadingMore && <LoadingSkeleton count={1} variant="post" />}
           </section>
         )}
       </main>

@@ -5,6 +5,10 @@ import { api } from "@/app/lib/api";
 import GameCard from "@/app/components/cards/GameCard";
 import { getGameTypeLabel } from "@/app/lib/gameUtils";
 import { useAuth } from "@/app/context/AuthContext";
+import LoadingSkeleton from "@/app/components/ui/LoadingSkeleton";
+import EmptyState from "@/app/components/ui/EmptyState";
+import ErrorState from "@/app/components/ui/ErrorState";
+import { Calendar as CalendarIcon } from "lucide-react";
 
 import CalendarHeader from "./components/CalendarHeader";
 import Filters from "./components/Filters";
@@ -189,15 +193,17 @@ function Calendar() {
         </div>
 
         {loading && (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-accent border-t-transparent"></div>
-            <p className="mt-4 text-secondary">Carregando seus jogos...</p>
-          </div>
+          <LoadingSkeleton count={3} variant="card" className="mt-8" />
         )}
 
         {error && (
-          <div className="bg-surface-muted border-2 border-red-400 rounded-xl p-6 text-center text-red-400">
-            <p className="font-semibold">{error}</p>
+          <div className="mt-8">
+            <ErrorState
+              title="Erro ao carregar calendário"
+              message={error}
+              onRetry={fetchUserGames}
+              variant="error"
+            />
           </div>
         )}
 
