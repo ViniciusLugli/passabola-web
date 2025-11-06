@@ -10,6 +10,8 @@ import { Check, Trash2, Bell, CheckCircle, Archive } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useNotifications } from "@/app/context/NotificationContext";
 import { api } from "@/app/lib/api";
+import { useNotificationsFilter } from "@/app/hooks/useNotificationsFilter";
+import { useNotificationsSelection } from "@/app/hooks/useNotificationsSelection";
 
 export default function NotificationsPage() {
   const router = useRouter();
@@ -37,12 +39,24 @@ export default function NotificationsPage() {
     username: user?.username,
     fullUser: user,
   });
-  const [filter, setFilter] = useState("all");
-  const [selectedIds, setSelectedIds] = useState(new Set());
+
+  // Use custom hook for filtering
+  const { filter, setFilter, filteredNotifications, counts: notificationCounts } =
+    useNotificationsFilter(liveNotifications);
+
+  // Use custom hook for selection
+  const {
+    selectedIds,
+    toggleSelect,
+    selectAll,
+    clearSelection,
+    selectAllCheckboxRef,
+    isAllSelected,
+  } = useNotificationsSelection(filteredNotifications, filter);
+
   const [batchActionLoading, setBatchActionLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleteAllLoading, setDeleteAllLoading] = useState(false);
-  const selectAllCheckboxRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
@@ -124,41 +138,6 @@ export default function NotificationsPage() {
     }
   };
 
-  const toggleSelect = (id) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const filteredNotifications = useMemo(() => {
-    return liveNotifications.filter((notif) => {
-      if (filter === "unread") return !notif.read;
-      if (filter === "read") return notif.read;
-      return true;
-    });
-  }, [liveNotifications, filter]);
-  const notificationCounts = useMemo(() => {
-    return {
-      all: liveNotifications.length,
-      unread: liveNotifications.filter((n) => !n.read).length,
-      read: liveNotifications.filter((n) => n.read).length,
-    };
-  }, [liveNotifications]);
-
-  useEffect(() => {
-    // Clear selection when filter changes
-    setSelectedIds(new Set());
-  }, [filter]);
-
-  useEffect(() => {
-    if (selectAllCheckboxRef.current) {
-      selectAllCheckboxRef.current.indeterminate =
-        selectedIds.size > 0 && selectedIds.size < filteredNotifications.length;
-    }
-  }, [selectedIds, filteredNotifications]);
 
   const handleMarkSelectedAsRead = async () => {
     const ids = Array.from(selectedIds);
@@ -168,7 +147,7 @@ export default function NotificationsPage() {
       await Promise.all(ids.map((id) => api.notifications.markAsRead(id)));
       ids.forEach((id) => markAsReadLocally(id));
       showToast(`${ids.length} notificações marcadas como lidas.`, "success");
-      setSelectedIds(new Set());
+      clearSelection();
     } catch (err) {
       console.error(
         "Erro ao marcar notificações selecionadas como lidas:",
@@ -191,7 +170,7 @@ export default function NotificationsPage() {
       await Promise.all(ids.map((id) => api.notifications.delete(id)));
       ids.forEach((id) => removeNotificationLocally(id));
       showToast(`${ids.length} notificações deletadas.`, "success");
-      setSelectedIds(new Set());
+      clearSelection();
       setConfirmDeleteOpen(false);
     } catch (err) {
       console.error("Erro ao deletar notificações selecionadas:", err);
@@ -472,19 +451,12 @@ export default function NotificationsPage() {
                 <input
                   ref={selectAllCheckboxRef}
                   type="checkbox"
-                  checked={
-                    filteredNotifications.length > 0 &&
-                    selectedIds.size === filteredNotifications.length
-                  }
+                  checked={isAllSelected}
                   onChange={(e) => {
                     if (e.target.checked) {
-                      // Selecionar todas as notificações filtradas
-                      setSelectedIds(
-                        new Set(filteredNotifications.map((n) => n.id))
-                      );
+                      selectAll();
                     } else {
-                      // Limpar seleção
-                      setSelectedIds(new Set());
+                      clearSelection();
                     }
                   }}
                   aria-label="Selecionar todas as notificações"
@@ -535,7 +507,7 @@ export default function NotificationsPage() {
                   <span>Deletar</span>
                 </button>
                 <button
-                  onClick={() => setSelectedIds(new Set())}
+                  onClick={clearSelection}
                   disabled={batchActionLoading}
                   className="px-2.5 py-1 text-sm text-secondary hover:text-primary"
                 >
