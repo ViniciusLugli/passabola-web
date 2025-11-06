@@ -3,13 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProfileHeader from "@/app/components/profile/ProfileHeader";
-import PlayerStats from "@/app/components/profile/PlayerStats";
-import PostList from "@/app/components/lists/PostList";
 import ProfileTabs from "@/app/components/ProfileTabs";
-import TeamList from "@/app/components/profile/TeamList";
-import GameList from "@/app/components/profile/GameList";
+import RankingTabContent from "@/app/components/profile/tabs/RankingTabContent";
+import PostsTabContent from "@/app/components/profile/tabs/PostsTabContent";
+import TeamsTabContent from "@/app/components/profile/tabs/TeamsTabContent";
+import GamesTabContent from "@/app/components/profile/tabs/GamesTabContent";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
+import { useProfileTabsData } from "@/app/hooks/useProfileTabsData";
 import LoadingSkeleton from "@/app/components/ui/LoadingSkeleton";
 import ErrorState from "@/app/components/ui/ErrorState";
 import { User } from "lucide-react";
@@ -26,107 +27,24 @@ export default function ProfilePage() {
 
   const [profileUser, setProfileUser] = useState(null);
   const [playerStats, setPlayerStats] = useState(null);
-  const [posts, setPosts] = useState([]);
-  const [teams, setTeams] = useState([]);
-  const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("ranking");
-  const [tabLoading, setTabLoading] = useState({
-    posts: false,
-    teams: false,
-    games: false,
-  });
-  const [loadedTabs, setLoadedTabs] = useState({
-    posts: false,
-    teams: false,
-    games: false,
-  });
+
+  // Use custom hook for tabs data
+  const {
+    posts,
+    teams,
+    games,
+    tabLoading,
+    tabCounts,
+    fetchAllTabsData,
+    refetchGames,
+  } = useProfileTabsData(id, userType);
 
   // Extrair valores estáveis do loggedInUser para evitar re-renders
   const loggedInUserId = loggedInUser?.userId;
   const loggedInUserType = loggedInUser?.userType;
-
-  // Helper function to fetch posts
-  const fetchPosts = useCallback(async (userId, lowerCaseUserType) => {
-    try {
-      const postsResponse = await api.posts.getByAuthor(userId);
-      const filteredPosts = (postsResponse.content || []).filter(
-        (post) => post.authorType.toLowerCase() === lowerCaseUserType
-      );
-      setPosts(filteredPosts);
-      setLoadedTabs((prev) => ({ ...prev, posts: true }));
-    } catch (err) {
-      console.error("Error fetching posts:", err);
-    }
-  }, []);
-
-  // Helper function to fetch teams
-  const fetchTeams = useCallback(async (userId, lowerCaseUserType) => {
-    if (lowerCaseUserType !== "player") return;
-
-    try {
-      const allTeamsResponse = await api.teams.getAll({ size: 100 });
-      setTeams(allTeamsResponse.content || []);
-      setLoadedTabs((prev) => ({ ...prev, teams: true }));
-    } catch (err) {
-      console.error("Error fetching teams:", err);
-    }
-  }, []);
-
-  // Helper function to fetch games (following games/calendar pattern)
-  const fetchGames = useCallback(async (userId, lowerCaseUserType) => {
-    try {
-      let gamesData = [];
-
-      if (lowerCaseUserType === "player") {
-        // Get player participations
-        const participationsResponse = await api.gameParticipants.getByPlayer(
-          userId,
-          { size: 100 }
-        );
-        const participations = participationsResponse.content || [];
-
-        // Extract game IDs from participations
-        const gameIds = participations
-          .map((p) => p.gameId || p.game?.id)
-          .filter(Boolean);
-
-        if (gameIds.length > 0) {
-          // Fetch all games and filter by participation
-          const allGamesResponse = await api.games.getAll({
-            page: 0,
-            size: 1000,
-          });
-          const allGames = allGamesResponse.content || [];
-
-          gamesData = allGames
-            .filter((game) => gameIds.includes(game.id))
-            .map((game) => ({ ...game, isJoined: true }));
-        }
-      } else if (lowerCaseUserType === "organization") {
-        // Get games hosted by organization
-        const gamesResponse = await api.games.getByOrganization(userId, {
-          size: 100,
-        });
-        gamesData = gamesResponse.content || [];
-      } else if (lowerCaseUserType === "spectator") {
-        // Get games spectated
-        const gamesResponse = await api.games.mySpectatorSubscriptions({
-          size: 100,
-        });
-        gamesData = gamesResponse.content || [];
-      }
-
-      // Sort by date
-      gamesData.sort((a, b) => new Date(a.gameDate) - new Date(b.gameDate));
-
-      setGames(gamesData);
-      setLoadedTabs((prev) => ({ ...prev, games: true }));
-    } catch (err) {
-      console.error("Error fetching games:", err);
-    }
-  }, []);
 
   const fetchProfileData = useCallback(async () => {
     if (!id || !userType) {
@@ -229,28 +147,15 @@ export default function ProfilePage() {
       setProfileUser(updatedProfileUser);
 
       // Fetch ALL tab data upfront (posts, teams, games) for tab counts
-      await Promise.allSettled([
-        fetchPosts(id, lowerCaseUserType),
-        fetchTeams(id, lowerCaseUserType),
-        fetchGames(id, lowerCaseUserType),
-      ]);
+      await fetchAllTabsData(id, lowerCaseUserType);
     } catch (err) {
       console.error("Error fetching profile data:", err);
       setError(err.message || "Falha ao carregar o perfil. Tente novamente.");
       setProfileUser(null);
-      setPosts([]);
     } finally {
       setLoading(false);
     }
-  }, [
-    id,
-    userType,
-    loggedInUserId,
-    loggedInUserType,
-    fetchPosts,
-    fetchTeams,
-    fetchGames,
-  ]);
+  }, [id, userType, loggedInUserId, loggedInUserType, fetchAllTabsData]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -271,120 +176,47 @@ export default function ProfilePage() {
 
   const handleGameUpdate = useCallback(() => {
     // Refetch games when a game is updated
-    if (profileUser && id && userType) {
-      const lowerCaseUserType = userType.toLowerCase();
-      fetchGames(id, lowerCaseUserType);
-    }
-  }, [profileUser, id, userType]);
+    refetchGames();
+  }, [refetchGames]);
 
   // Determine if ranking tab should be shown (only for PLAYER)
   const showRankingTab = profileUser?.userType === "PLAYER";
 
-  // Calculate tab counts
-  const tabCounts = {
-    posts: posts.length,
-    teams: teams.length,
-    games: games.length,
-  };
-
-  const renderTabContent = useCallback(() => {
+  const renderTabContent = () => {
     switch (activeTab) {
       case "ranking":
-        if (profileUser.userType === "PLAYER") {
-          return (
-            <section
-              role="tabpanel"
-              id="ranking-panel"
-              aria-labelledby="ranking-tab"
-              tabIndex={0}
-            >
-              <h3 className="text-xl md:text-2xl font-bold text-primary mb-4">
-                Estatísticas e Ranking
-              </h3>
-              <PlayerStats stats={playerStats} />
-            </section>
-          );
-        }
         return (
-          <div
-            role="tabpanel"
-            id="ranking-panel"
-            aria-labelledby="ranking-tab"
-            tabIndex={0}
-            className="bg-surface-muted border border-default rounded-xl p-8 text-center"
-          >
-            <p className="text-secondary">
-              Ranking disponível apenas para jogadoras.
-            </p>
-          </div>
+          <RankingTabContent
+            profileUser={profileUser}
+            playerStats={playerStats}
+          />
         );
 
       case "posts":
         return (
-          <section
-            role="tabpanel"
-            id="posts-panel"
-            aria-labelledby="posts-tab"
-            tabIndex={0}
-          >
-            <h3 className="text-xl md:text-2xl font-bold text-primary mb-4">
-              Publicações
-            </h3>
-            {tabLoading.posts ? (
-              <LoadingSkeleton count={3} variant="post" />
-            ) : (
-              <PostList posts={posts} profileUser={profileUser} />
-            )}
-          </section>
+          <PostsTabContent
+            posts={posts}
+            profileUser={profileUser}
+            isLoading={tabLoading.posts}
+          />
         );
 
       case "teams":
-        return (
-          <section
-            role="tabpanel"
-            id="teams-panel"
-            aria-labelledby="teams-tab"
-            tabIndex={0}
-          >
-            <h3 className="text-xl md:text-2xl font-bold text-primary mb-4">
-              Times
-            </h3>
-            <TeamList teams={teams} isLoading={tabLoading.teams} />
-          </section>
-        );
+        return <TeamsTabContent teams={teams} isLoading={tabLoading.teams} />;
 
       case "games":
         return (
-          <section
-            role="tabpanel"
-            id="games-panel"
-            aria-labelledby="games-tab"
-            tabIndex={0}
-          >
-            <h3 className="text-xl md:text-2xl font-bold text-primary mb-4">
-              Jogos
-            </h3>
-            <GameList
-              games={games}
-              isLoading={tabLoading.games}
-              onGameUpdate={handleGameUpdate}
-            />
-          </section>
+          <GamesTabContent
+            games={games}
+            isLoading={tabLoading.games}
+            onGameUpdate={handleGameUpdate}
+          />
         );
 
       default:
         return null;
     }
-  }, [
-    activeTab,
-    profileUser,
-    playerStats,
-    tabLoading,
-    posts,
-    teams,
-    games,
-    handleGameUpdate,
-  ]);
+  };
 
   // Early returns AFTER all hooks
   if (authLoading || loading) {
