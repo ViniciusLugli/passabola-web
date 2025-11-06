@@ -7,7 +7,9 @@ import NotificationCard from "@/app/components/cards/NotificationCard";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
 import NotificationsLoadingState from "@/app/components/notifications/NotificationsLoadingState";
 import NotificationsEmptyState from "@/app/components/notifications/NotificationsEmptyState";
-import { Check, Trash2 } from "lucide-react";
+import NotificationsHeader from "@/app/components/notifications/NotificationsHeader";
+import NotificationsTabs from "@/app/components/notifications/NotificationsTabs";
+import NotificationsBatchActions from "@/app/components/notifications/NotificationsBatchActions";
 import { useAuth } from "@/app/context/AuthContext";
 import { useNotifications } from "@/app/context/NotificationContext";
 import { api } from "@/app/lib/api";
@@ -267,148 +269,26 @@ export default function NotificationsPage() {
     <div className="min-h-screen">
       <main className="container mx-auto p-4 mt-8 max-w-4xl">
         <div className="relative bg-surface border border-default rounded-2xl shadow-elevated p-4 md:p-8 flex flex-col gap-6">
-          <button
-            onClick={() => router.back()}
-            className="absolute top-4 md:top-8 right-4 md:right-8 text-tertiary hover:text-secondary transition-colors duration-200"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6 md:w-7 md:h-7"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-4">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-primary">
-                Notificações
-              </h1>
-              {unreadCount > 0 && (
-                <p className="text-sm text-secondary mt-1">
-                  {unreadCount} {unreadCount === 1 ? "nova" : "novas"}
-                </p>
-              )}
-            </div>
-
-            {/* Dev helpers: adicionar mocks */}
-            {process.env.NODE_ENV === "development" && (
-              <div className="mt-3 md:mt-0">
-                <button
-                  onClick={addMockNotifications}
-                  className="px-3 py-1.5 text-sm font-medium bg-surface-muted border border-default rounded-md hover:bg-surface-elevated"
-                >
-                  Adicionar mocks
-                </button>
-              </div>
-            )}
-
-            <div className="flex items-center gap-2">
-              <div
-                className={`
-                  w-2 h-2 rounded-full
-                  ${isConnected ? "bg-green-500" : "bg-red-500"}
-                `}
-                title={isConnected ? "Conectado" : "Desconectado"}
-              ></div>
-              <span className="text-xs text-secondary">
-                {isConnected ? "Online" : "Offline"}
-              </span>
-            </div>
-          </div>
+          <NotificationsHeader
+            onBack={() => router.back()}
+            unreadCount={unreadCount}
+            isConnected={isConnected}
+            onAddMocks={addMockNotifications}
+          />
 
           {/* notifications shown via ToastProvider */}
 
           {/* Filtros e Ações */}
-          <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-            <div
-              role="tablist"
-              aria-label="Filtros de notificações"
-              className="flex gap-2 flex-wrap border-b border-default pb-3"
-            >
-              {["all", "unread", "read"].map((key) => {
-                const count =
-                  key === "all"
-                    ? notificationCounts.all
-                    : key === "unread"
-                    ? notificationCounts.unread
-                    : notificationCounts.read;
-
-                const label =
-                  key === "all"
-                    ? "Todas"
-                    : key === "unread"
-                    ? "Não Lidas"
-                    : "Lidas";
-
-                return (
-                  <button
-                    key={key}
-                    role="tab"
-                    aria-selected={filter === key}
-                    aria-label={`${label} (${count} notificações)`}
-                    onClick={() => setFilter(key)}
-                    className={`
-                      relative px-4 py-2.5 text-sm font-medium transition-all
-                      ${
-                        filter === key
-                          ? "text-accent"
-                          : "text-secondary hover:text-primary"
-                      }
-                    `}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span>{label}</span>
-                      <span
-                        className={`
-                          inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold
-                          ${
-                            filter === key
-                              ? "bg-accent text-on-brand"
-                              : "bg-surface-muted text-tertiary"
-                          }
-                        `}
-                      >
-                        {count}
-                      </span>
-                    </span>
-                    {/* Borda inferior para tab ativa */}
-                    {filter === key && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent transition-all" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex gap-2 flex-wrap">
-              {unreadCount > 0 && (
-                <button
-                  onClick={handleMarkAllAsRead}
-                  className="px-3 py-1.5 text-sm font-medium text-accent hover:text-accent-strong transition-colors"
-                >
-                  Marcar todas como lidas
-                </button>
-              )}
-              {liveNotifications.some((n) => n.read) && (
-                <button
-                  onClick={handleDeleteAllRead}
-                  disabled={deleteAllLoading}
-                  className="px-3 py-1.5 text-sm font-medium text-red-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {deleteAllLoading ? "Deletando..." : "Limpar lidas"}
-                </button>
-              )}
-            </div>
-          </div>
+          <NotificationsTabs
+            activeFilter={filter}
+            onFilterChange={setFilter}
+            counts={notificationCounts}
+            onMarkAllAsRead={handleMarkAllAsRead}
+            onDeleteAllRead={handleDeleteAllRead}
+            unreadCount={unreadCount}
+            hasReadNotifications={liveNotifications.some((n) => n.read)}
+            deleteAllLoading={deleteAllLoading}
+          />
 
           {/* Checkbox "Selecionar Tudo" */}
           {filteredNotifications.length > 0 && (
@@ -439,49 +319,13 @@ export default function NotificationsPage() {
           )}
 
           {/* Barra de ações em lote (quando houver seleção) */}
-          {selectedIds.size > 0 && (
-            <div
-              role="region"
-              aria-live="polite"
-              aria-label="Ações de notificações selecionadas"
-              className="transform transition-all duration-200 ease-out flex flex-col md:flex-row items-center justify-between gap-3 p-3 md:p-4 bg-surface-muted border border-default rounded-md shadow-sm"
-            >
-              <div className="flex items-center gap-3">
-                <div className="text-sm text-secondary font-medium" aria-hidden>
-                  {selectedIds.size}
-                </div>
-                <div className="text-sm text-secondary">
-                  selecionada{selectedIds.size > 1 ? "s" : ""}
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2 items-center">
-                <button
-                  onClick={handleMarkSelectedAsRead}
-                  disabled={batchActionLoading}
-                  className="px-4 py-3 text-sm md:px-3 md:py-2 bg-accent text-on-brand rounded inline-flex items-center gap-2 min-h-[44px]"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>Marcar</span>
-                </button>
-                <button
-                  onClick={() => setConfirmDeleteOpen(true)}
-                  disabled={batchActionLoading}
-                  className="px-4 py-3 text-sm md:px-3 md:py-2 bg-red-500 text-white rounded inline-flex items-center gap-2 min-h-[44px]"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Deletar</span>
-                </button>
-                <button
-                  onClick={clearSelection}
-                  disabled={batchActionLoading}
-                  className="px-2.5 py-1 text-sm text-secondary hover:text-primary"
-                >
-                  Limpar seleção
-                </button>
-              </div>
-            </div>
-          )}
+          <NotificationsBatchActions
+            selectedCount={selectedIds.size}
+            onMarkAsRead={handleMarkSelectedAsRead}
+            onDelete={() => setConfirmDeleteOpen(true)}
+            onClearSelection={clearSelection}
+            loading={batchActionLoading}
+          />
 
           {/* Lista de Notificações */}
           <div className="flex flex-col gap-3">
