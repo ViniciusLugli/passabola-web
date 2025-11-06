@@ -4,7 +4,17 @@ import { useAuth } from "@/app/context/AuthContext";
 
 export default function MessageBubble({ message }) {
   const { user } = useAuth();
-  const isOwnMessage = message.senderId === user?.id;
+
+  // Normalize IDs for comparison (handle both string and number types)
+  const normalizeId = (id) => {
+    if (id === null || id === undefined) return null;
+    return String(id);
+  };
+
+  const messageSenderId = normalizeId(message.senderId);
+  const currentUserId = normalizeId(user?.userId || user?.id);
+
+  const isOwnMessage = messageSenderId === currentUserId;
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);

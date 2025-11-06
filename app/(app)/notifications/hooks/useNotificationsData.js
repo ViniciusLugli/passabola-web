@@ -28,11 +28,35 @@ export function useNotificationsData(
         const response = await api.notifications.getAll({ page: 0, size: 50 });
         console.log("[DEBUG] Raw API response:", response);
         const notificationsList = response.content || [];
-        console.log("[DEBUG] Notifications list:", notificationsList);
-        console.log("[DEBUG] Notifications count:", notificationsList.length);
+
+        // CRITICAL: Parse metadata from JSON string to object
+        const parsedNotifications = notificationsList.map((notif) => {
+          try {
+            return {
+              ...notif,
+              metadata:
+                typeof notif.metadata === "string"
+                  ? JSON.parse(notif.metadata)
+                  : notif.metadata,
+            };
+          } catch (e) {
+            console.warn(
+              "[DEBUG] Failed to parse metadata for notification:",
+              notif.id,
+              e
+            );
+            return notif;
+          }
+        });
+
+        console.log(
+          "[DEBUG] Notifications list (parsed):",
+          parsedNotifications
+        );
+        console.log("[DEBUG] Notifications count:", parsedNotifications.length);
 
         if (isMounted) {
-          setNotificationsList(notificationsList);
+          setNotificationsList(parsedNotifications);
         }
 
         const countResponse = await api.notifications.getUnreadCount();

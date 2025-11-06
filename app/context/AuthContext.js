@@ -69,9 +69,29 @@ export const AuthProvider = ({ children }) => {
             return;
           }
 
+          // Extract userId from JWT token if not present in stored user
+          if (!basicUserData.userId) {
+            try {
+              const payload = JSON.parse(atob(storedToken.split(".")[1]));
+              basicUserData.userId = payload.userId || payload.sub;
+              console.log(
+                "[AuthContext] Extracted userId from token:",
+                basicUserData.userId
+              );
+            } catch (e) {
+              console.error("[AuthContext] Failed to decode JWT:", e);
+              basicUserData.userId = basicUserData.id; // Fallback to profile ID
+            }
+          }
+
           const fullProfileData = await fetchFullProfileData(basicUserData);
 
-          setUser({ ...basicUserData, ...fullProfileData });
+          const completeUserData = { ...basicUserData, ...fullProfileData };
+
+          // Update localStorage with userId if it was missing
+          localStorage.setItem("user", JSON.stringify(completeUserData));
+
+          setUser(completeUserData);
           setIsAuthenticated(true);
         }
       } catch (error) {
@@ -92,9 +112,20 @@ export const AuthProvider = ({ children }) => {
 
       setAuthToken(token);
 
+      // Extract userId from JWT token
+      let userIdFromToken = null;
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        userIdFromToken = payload.userId || payload.sub;
+        console.log("[AuthContext] JWT Payload userId:", userIdFromToken);
+      } catch (e) {
+        console.error("[AuthContext] Failed to decode JWT:", e);
+      }
+
       const userBasicDataWithIdAndType = {
         ...restOfResponse,
         id: profileId,
+        userId: userIdFromToken || profileId, // Snowflake ID from JWT
         userType: role.toUpperCase(),
       };
 

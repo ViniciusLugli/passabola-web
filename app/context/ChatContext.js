@@ -223,19 +223,33 @@ export function ChatProvider({ children }) {
         userId: user?.userId,
       });
 
+      // Normalize IDs for comparison (handle both string and number types)
+      const normalizeId = (id) => {
+        if (id === null || id === undefined) return null;
+        return String(id);
+      };
+
       // Determinar o otherUserId baseado em quem enviou/recebeu
       // Se eu enviei, otherUserId é recipientId
       // Se eu recebi, otherUserId é senderId
       // IMPORTANTE: Usar userId (Snowflake ID), não id (incremental)
-      const isSentByMe = message.senderId === user?.userId;
-      const otherUserId = isSentByMe ? message.recipientId : message.senderId;
+      // CRÍTICO: Normalizar TODOS os IDs para string para evitar perda de precisão
+      const messageSenderId = normalizeId(message.senderId);
+      const messageRecipientId = normalizeId(message.recipientId);
+      const currentUserId = normalizeId(user?.userId || user?.id);
+      const isSentByMe = messageSenderId === currentUserId;
+      const otherUserId = isSentByMe ? messageRecipientId : messageSenderId;
 
       console.log("[ChatContext] Message comparison:", {
-        messageSenderId: message.senderId,
-        userUserId: user?.userId,
+        messageSenderId,
+        messageSenderIdRaw: message.senderId,
+        messageRecipientId,
+        messageRecipientIdRaw: message.recipientId,
+        currentUserId,
+        userUserIdRaw: user?.userId,
+        userIdRaw: user?.id,
         isSentByMe,
         otherUserId,
-        recipientId: message.recipientId,
       });
 
       // Armazenar mensagens por otherUserId (não por chatId)
@@ -260,7 +274,9 @@ export function ChatProvider({ children }) {
 
         setConversations((prev) => {
           console.log("[ChatContext] Current conversations:", prev);
-          const existingConv = prev.find((c) => c.otherUserId === otherUserId);
+          const existingConv = prev.find(
+            (c) => String(c.otherUserId) === String(otherUserId)
+          );
           console.log(
             "[ChatContext] Existing conversation found:",
             existingConv
@@ -268,7 +284,7 @@ export function ChatProvider({ children }) {
 
           if (existingConv) {
             const updated = prev.map((conv) =>
-              conv.otherUserId === otherUserId
+              String(conv.otherUserId) === String(otherUserId)
                 ? {
                     ...conv,
                     lastMessage: message.content,
@@ -332,7 +348,9 @@ export function ChatProvider({ children }) {
       }
 
       try {
-        const payload = { recipientId, content };
+        // CRITICAL: Ensure recipientId is sent as string to preserve Snowflake ID precision
+        const normalizedRecipientId = String(recipientId);
+        const payload = { recipientId: normalizedRecipientId, content };
         console.log("[Chat WebSocket] 📤 Enviando mensagem:", payload);
         clientRef.current.publish({
           destination: `/app/chat.send`,

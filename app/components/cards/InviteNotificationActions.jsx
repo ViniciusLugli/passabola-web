@@ -42,8 +42,23 @@ export default function InviteNotificationActions({
     setLoading(true);
     logAction("accept_game_invite:start");
     try {
+      // 1. Mark notification as read first (before accepting)
+      try {
+        await api.notifications.markAsRead(notification.id);
+      } catch (markError) {
+        // Log but don't fail - marking as read is not critical
+        console.warn(
+          "[InviteActions] Failed to mark notification as read:",
+          markError
+        );
+      }
+
+      // 2. Accept the invite
       await api.gameInvites.accept(notification.metadata.inviteId);
+
+      // 3. Remove from local state after successful acceptance
       removeNotificationLocally(notification.id);
+
       logAction("accept_game_invite:success");
       if (onComplete) {
         onComplete("success", "Convite de jogo aceito!");
@@ -67,8 +82,23 @@ export default function InviteNotificationActions({
     setLoading(true);
     logAction("reject_game_invite:start");
     try {
+      // 1. Mark notification as read first (before rejecting)
+      try {
+        await api.notifications.markAsRead(notification.id);
+      } catch (markError) {
+        // Log but don't fail - marking as read is not critical
+        console.warn(
+          "[InviteActions] Failed to mark notification as read:",
+          markError
+        );
+      }
+
+      // 2. Reject the invite
       await api.gameInvites.reject(notification.metadata.inviteId);
+
+      // 3. Remove from local state after successful rejection
       removeNotificationLocally(notification.id);
+
       logAction("reject_game_invite:success");
       if (onComplete) {
         onComplete("success", "Convite de jogo rejeitado.");
@@ -92,8 +122,23 @@ export default function InviteNotificationActions({
     setLoading(true);
     logAction("accept_team_invite:start");
     try {
+      // 1. Mark notification as read first (before accepting)
+      try {
+        await api.notifications.markAsRead(notification.id);
+      } catch (markError) {
+        // Log but don't fail - marking as read is not critical
+        console.warn(
+          "[InviteActions] Failed to mark notification as read:",
+          markError
+        );
+      }
+
+      // 2. Accept the invite
       await api.teams.acceptInvite(notification.metadata.inviteId);
+
+      // 3. Remove from local state after successful acceptance
       removeNotificationLocally(notification.id);
+
       logAction("accept_team_invite:success");
       if (onComplete) {
         onComplete("success", "Convite de time aceito!");
@@ -117,8 +162,23 @@ export default function InviteNotificationActions({
     setLoading(true);
     logAction("reject_team_invite:start");
     try {
+      // 1. Mark notification as read first (before rejecting)
+      try {
+        await api.notifications.markAsRead(notification.id);
+      } catch (markError) {
+        // Log but don't fail - marking as read is not critical
+        console.warn(
+          "[InviteActions] Failed to mark notification as read:",
+          markError
+        );
+      }
+
+      // 2. Reject the invite
       await api.teams.rejectInvite(notification.metadata.inviteId);
+
+      // 3. Remove from local state after successful rejection
       removeNotificationLocally(notification.id);
+
       logAction("reject_team_invite:success");
       if (onComplete) {
         onComplete("success", "Convite de time rejeitado.");

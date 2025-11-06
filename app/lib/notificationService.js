@@ -286,6 +286,17 @@ class NotificationService {
    * @returns {Object} Formatted notification
    */
   formatNotification(notification) {
+    // CRITICAL: Parse metadata from JSON string to object if needed
+    let parsedMetadata = notification.metadata;
+    if (typeof notification.metadata === "string") {
+      try {
+        parsedMetadata = JSON.parse(notification.metadata);
+      } catch (e) {
+        console.warn("[NotificationService] Failed to parse metadata:", e);
+        parsedMetadata = {};
+      }
+    }
+
     const typeMessages = {
       NEW_FOLLOWER: (n) => ({
         title: "Novo Seguidor",
@@ -353,6 +364,7 @@ class NotificationService {
 
     return {
       ...notification,
+      metadata: parsedMetadata, // Always return parsed metadata
       ...formatted,
     };
   }
