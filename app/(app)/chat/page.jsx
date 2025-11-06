@@ -55,7 +55,9 @@ export default function ChatPage() {
       return;
     }
 
+    console.log("[ChatPage] useEffect triggered - fetching conversations");
     fetchConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, router]);
 
   useEffect(() => {
@@ -73,8 +75,13 @@ export default function ChatPage() {
     setLoading(true);
     try {
       // GET /api/chat/conversations - Retorna array direto
-      const conversations = await api.chats.getConversations();
-      setConversations(Array.isArray(conversations) ? conversations : []);
+      const fetchedConversations = await api.chats.getConversations();
+      console.log("[ChatPage] Fetched conversations:", fetchedConversations);
+      const conversationArray = Array.isArray(fetchedConversations)
+        ? fetchedConversations
+        : [];
+      console.log("[ChatPage] Setting conversations:", conversationArray);
+      setConversations(conversationArray);
     } catch (err) {
       console.error("Erro ao buscar conversas:", err);
       showToast(err.message || "Erro ao carregar conversas.", "error");
@@ -141,11 +148,10 @@ export default function ChatPage() {
 
     setSending(true);
 
-    // Envio otimista
     const optimisticMessage = {
       id: `temp-${Date.now()}`,
       content,
-      senderId: user.id,
+      senderId: user.userId,
       senderName: user.name,
       senderUsername: user.username,
       recipientId: activeConversation.otherUserId,
@@ -156,6 +162,52 @@ export default function ChatPage() {
     };
 
     addMessageLocally(activeConversation.otherUserId, optimisticMessage);
+
+    // 🔄 Atualizar lista de conversas otimisticamente
+    console.log(
+      "[ChatPage] Updating conversations optimistically for:",
+      activeConversation.otherUserId
+    );
+    setConversations((prevConversations) => {
+      console.log("[ChatPage] Previous conversations:", prevConversations);
+      const existingConvIndex = prevConversations.findIndex(
+        (c) => c.otherUserId === activeConversation.otherUserId
+      );
+
+      if (existingConvIndex !== -1) {
+        console.log(
+          "[ChatPage] Found existing conversation at index:",
+          existingConvIndex
+        );
+        const updatedConversations = [...prevConversations];
+        updatedConversations[existingConvIndex] = {
+          ...updatedConversations[existingConvIndex],
+          lastMessage: content,
+          lastMessageTime: optimisticMessage.createdAt,
+        };
+
+        const [updated] = updatedConversations.splice(existingConvIndex, 1);
+        const newList = [updated, ...updatedConversations];
+        console.log("[ChatPage] Updated conversations:", newList);
+        return newList;
+      }
+
+      console.log("[ChatPage] Creating new conversation entry");
+      const newList = [
+        {
+          otherUserId: activeConversation.otherUserId,
+          otherUsername: activeConversation.otherUsername,
+          otherName: activeConversation.otherName,
+          otherProfilePhotoUrl: activeConversation.otherProfilePhotoUrl || null,
+          lastMessage: content,
+          lastMessageTime: optimisticMessage.createdAt,
+          unreadCount: 0,
+        },
+        ...prevConversations,
+      ];
+      console.log("[ChatPage] New conversations list:", newList);
+      return newList;
+    });
 
     try {
       // Tentar via WebSocket primeiro
@@ -239,19 +291,33 @@ export default function ChatPage() {
                   <p className="text-sm mt-2 text-tertiary">
                     Inicie uma conversa visitando o perfil de um usuário
                   </p>
+                  {/* Debug info */}
+                  <p className="text-xs mt-4 text-tertiary">
+                    Debug:{" "}
+                    {JSON.stringify({
+                      conversationsLength: conversations.length,
+                      loading,
+                    })}
+                  </p>
                 </div>
               ) : (
-                conversations.map((conversation) => (
-                  <ConversationItem
-                    key={conversation.otherUserId}
-                    conversation={conversation}
-                    isActive={
-                      activeConversation?.otherUserId ===
-                      conversation.otherUserId
-                    }
-                    onClick={() => handleSelectConversation(conversation)}
-                  />
-                ))
+                <>
+                  {console.log(
+                    "[ChatPage] Rendering conversations:",
+                    conversations
+                  )}
+                  {conversations.map((conversation) => (
+                    <ConversationItem
+                      key={conversation.otherUserId}
+                      conversation={conversation}
+                      isActive={
+                        activeConversation?.otherUserId ===
+                        conversation.otherUserId
+                      }
+                      onClick={() => handleSelectConversation(conversation)}
+                    />
+                  ))}
+                </>
               )}
             </div>
           </div>
