@@ -34,6 +34,21 @@ const createGameRoutes = (fetchApi) => ({
       `/games/${id}/score?homeGoals=${homeGoals}&awayGoals=${awayGoals}`,
       { method: "PATCH" }
     ),
+  finishGame: (id, data) =>
+    fetchApi(`/games/${id}/finish`, {
+      method: "POST",
+      body: data,
+    }),
+  finishGamePatch: (id, data) =>
+    fetchApi(`/games/${id}/finish`, {
+      method: "PATCH",
+      body: data,
+    }),
+  finishGamePut: (id, data) =>
+    fetchApi(`/games/${id}/finish`, {
+      method: "PUT",
+      body: data,
+    }),
   // Spectator endpoints
   spectate: (gameId) =>
     fetchApi(`/games/${gameId}/spectate`, { method: "POST" }),

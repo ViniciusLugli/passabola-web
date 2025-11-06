@@ -42,4 +42,8 @@ API_README.md
 next-env.d.ts
 
 .github
-api/
+logs/
+docs/
+*.log
+test-run.log
+test-reports/
