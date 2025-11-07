@@ -19,6 +19,14 @@ function PostCard({ post }) {
   useEffect(() => {
     setHasLiked(post.isLikedByCurrentUser || false);
     setCurrentLikes(post.totalLikes || post.likes || 0);
+
+    // Debug: Log post data to check imageUrl
+    console.log("PostCard received post:", {
+      id: post.id,
+      content: post.content?.substring(0, 50) + "...",
+      imageUrl: post.imageUrl,
+      hasImage: !!post.imageUrl,
+    });
   }, [post]);
 
   const handleLikeToggle = async () => {
@@ -80,6 +88,10 @@ function PostCard({ post }) {
             fill
             className="object-cover"
             sizes="100vw"
+            onError={(e) => {
+              console.warn("Falha ao carregar imagem do post:", post.imageUrl);
+              e.target.closest(".relative").style.display = "none";
+            }}
           />
         </div>
       )}

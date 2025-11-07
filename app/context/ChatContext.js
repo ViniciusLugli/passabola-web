@@ -252,7 +252,7 @@ export function ChatProvider({ children }) {
         otherUserId,
       });
 
-      // Armazenar mensagens por otherUserId (não por chatId)
+      // Store messages by otherUserId - SIMPLIFIED: just add new messages
       setMessages((prev) => ({
         ...prev,
         [otherUserId]: [...(prev[otherUserId] || []), message],
@@ -370,10 +370,21 @@ export function ChatProvider({ children }) {
   );
 
   const addMessageLocally = useCallback((otherUserId, message) => {
-    setMessages((prev) => ({
-      ...prev,
-      [otherUserId]: [...(prev[otherUserId] || []), message],
-    }));
+    console.log(
+      "[ChatContext] Adding message locally:",
+      message.id,
+      message.content?.substring(0, 50)
+    );
+
+    setMessages((prev) => {
+      const currentMessages = prev[otherUserId] || [];
+
+      // Simply add the message from the server
+      return {
+        ...prev,
+        [otherUserId]: [...currentMessages, message],
+      };
+    });
   }, []);
 
   const setConversationMessages = useCallback((otherUserId, messageList) => {

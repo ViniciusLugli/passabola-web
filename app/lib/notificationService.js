@@ -4,21 +4,16 @@
  * Serviço centralizado para gerenciar notificações push em tempo real.
  * Integra com o backend via WebSocket (STOMP) e fornece métodos para
  * gerenciar notificações localmente.
- *
- * Tipos de notificação suportados:
- * - NEW_FOLLOWER: Novo seguidor
- * - POST_LIKE: Curtida em post
- * - TEAM_INVITE: Convite para equipe
- * - GAME_INVITE: Convite para jogo
- * - SYSTEM: Avisos gerais do sistema
- * - NEW_POST: Novo post de seguido
- * - GAME_UPDATE: Atualização em jogo
- * - COMMENT: Comentário em post
- * - TEAM_JOIN: Jogadora entrou no time
- * - GAME_RESULT: Resultado de jogo
  */
 
 import { api } from "./api";
+import {
+  generateNotificationMessage,
+  generateNotificationActionUrl,
+  getNotificationConfig,
+  sortNotificationsByPriority,
+  NOTIFICATION_TYPES,
+} from "./notificationTypes";
 
 class NotificationService {
   constructor() {
@@ -287,7 +282,7 @@ class NotificationService {
    */
   formatNotification(notification) {
     // CRITICAL: Parse metadata from JSON string to object if needed
-    let parsedMetadata = notification.metadata;
+    let parsedMetadata = notification.metadata || {};
     if (typeof notification.metadata === "string") {
       try {
         parsedMetadata = JSON.parse(notification.metadata);
@@ -297,76 +292,116 @@ class NotificationService {
       }
     }
 
-    const typeMessages = {
-      NEW_FOLLOWER: (n) => ({
-        title: "Novo Seguidor",
-        message: n.message || `${n.senderName || "Alguém"} começou a te seguir`,
-        icon: "👤",
-      }),
-      POST_LIKE: (n) => ({
-        title: "Curtida no Post",
-        message: n.message || `${n.senderName || "Alguém"} curtiu seu post`,
-        icon: "❤️",
-      }),
-      TEAM_INVITE: (n) => ({
-        title: "Convite para Equipe",
-        message:
-          n.message || `${n.senderName || "Alguém"} te convidou para um time`,
-        icon: "👥",
-      }),
-      GAME_INVITE: (n) => ({
-        title: "Convite para Jogo",
-        message: n.message || `Você foi convidado para participar de um jogo`,
-        icon: "⚽",
-      }),
-      SYSTEM: (n) => ({
-        title: "Aviso do Sistema",
-        message: n.message || "Nova mensagem do sistema",
-        icon: "🔔",
-      }),
-      NEW_POST: (n) => ({
-        title: "Novo Post",
-        message:
-          n.message || `${n.senderName || "Alguém"} publicou um novo post`,
-        icon: "📝",
-      }),
-      GAME_UPDATE: (n) => ({
-        title: "Atualização de Jogo",
-        message: n.message || "Um jogo foi atualizado",
-        icon: "🔄",
-      }),
-      COMMENT: (n) => ({
-        title: "Novo Comentário",
-        message:
-          n.message || `${n.senderName || "Alguém"} comentou em seu post`,
-        icon: "💬",
-      }),
-      TEAM_JOIN: (n) => ({
-        title: "Nova Integrante",
-        message: n.message || `${n.senderName || "Alguém"} entrou no time`,
-        icon: "✅",
-      }),
-      GAME_RESULT: (n) => ({
-        title: "Resultado do Jogo",
-        message: n.message || "Um jogo foi finalizado",
-        icon: "🏆",
-      }),
-    };
+    const config = getNotificationConfig(notification.type);
 
-    const formatter = typeMessages[notification.type];
-    const formatted = formatter
-      ? formatter(notification)
-      : {
-          title: notification.title || "Nova Notificação",
-          message: notification.message || "",
-          icon: "🔔",
-        };
+    // Generate message using the new system
+    const message =
+      notification.message ||
+      generateNotificationMessage(
+        notification.type,
+        parsedMetadata,
+        notification.senderName
+      );
 
+    // Generate action URL using the new system
+    const actionUrl =
+      notification.actionUrl ||
+      generateNotificationActionUrl(notification.type, parsedMetadata);
+
+    // Return formatted notification with enhanced data
     return {
       ...notification,
-      metadata: parsedMetadata, // Always return parsed metadata
-      ...formatted,
+      metadata: parsedMetadata,
+      message,
+      actionUrl,
+      config,
+      icon: config.icon,
+      colors: config.colors,
+      priority: config.priority,
+      formattedDate: this.formatNotificationDate(notification.createdAt),
+      isActionable: this.requiresUserAction(notification.type),
+      shouldShowToast: this.shouldShowAsToast(
+        notification.type,
+        config.priority
+      ),
+      // Ensure these fields are always present
+      id: notification.id,
+      senderId: notification.senderId,
+      senderType: notification.senderType,
+      senderUsername: notification.senderUsername,
+      senderName: notification.senderName,
+      type: notification.type,
+      isRead: notification.isRead || notification.read || false,
+      read: notification.isRead || notification.read || false, // Support both field names
+      createdAt: notification.createdAt,
+      readAt: notification.readAt || null,
     };
+  }
+
+  /**
+   * Check if notification requires user action
+   * @param {string} type - Notification type
+   * @returns {boolean}
+   */
+  requiresUserAction(type) {
+    const actionableTypes = [
+      NOTIFICATION_TYPES.TEAM_INVITE_RECEIVED,
+      NOTIFICATION_TYPES.GAME_INVITATION,
+    ];
+    return actionableTypes.includes(type);
+  }
+
+  /**
+   * Check if notification should show as toast
+   * @param {string} type - Notification type
+   * @param {string} priority - Notification priority
+   * @returns {boolean}
+   */
+  shouldShowAsToast(type, priority = "low") {
+    const toastTypes = [
+      NOTIFICATION_TYPES.TEAM_INVITE_RECEIVED,
+      NOTIFICATION_TYPES.GAME_INVITATION,
+      NOTIFICATION_TYPES.GAME_REMINDER,
+      NOTIFICATION_TYPES.ACHIEVEMENT_UNLOCKED,
+    ];
+    return toastTypes.includes(type) || priority === "high";
+  }
+
+  /**
+   * Format notification date to human-readable format
+   * @param {string} dateString - ISO date string
+   * @returns {string} Formatted date
+   */
+  formatNotificationDate(dateString) {
+    if (!dateString) return "";
+
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "agora";
+    if (diffMins < 60) return `${diffMins}min atrás`;
+    if (diffHours < 24) return `${diffHours}h atrás`;
+    if (diffDays < 7) return `${diffDays}d atrás`;
+
+    // For older dates, show formatted date
+    return date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "short",
+      year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+    });
+  }
+
+  /**
+   * Sort notifications by priority and timestamp
+   * @param {Array} notifications - Notifications array
+   * @returns {Array} Sorted notifications
+   */
+  sortNotificationsByPriority(notifications) {
+    return sortNotificationsByPriority(notifications);
   }
 
   /**
@@ -382,5 +417,5 @@ class NotificationService {
 // Export singleton instance
 export const notificationService = new NotificationService();
 
-// Export class for testing
+// Export class
 export { NotificationService };

@@ -16,6 +16,12 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
   const [followersCount, setFollowersCount] = useState(user.followers || 0);
   const [followingCount, setFollowingCount] = useState(user.following || 0);
 
+  // Debug: Log user data
+  useEffect(() => {
+    console.log("[ProfileHeader] User data received:", user);
+    console.log("[ProfileHeader] User profilePhotoUrl:", user?.profilePhotoUrl);
+  }, [user?.profilePhotoUrl]);
+
   const isPlayer = user instanceof Player;
   const isOrganization = user instanceof Organization;
 
@@ -140,6 +146,20 @@ export default function ProfileHeader({ user, loggedInUser, onFollowChange }) {
               height={144}
               className="w-full h-full object-cover"
               style={{ objectFit: "cover" }}
+              onLoad={() =>
+                console.log(
+                  "[ProfileHeader] Avatar loaded:",
+                  user.profilePhotoUrl
+                )
+              }
+              onError={(e) =>
+                console.error(
+                  "[ProfileHeader] Avatar failed to load:",
+                  e,
+                  "URL:",
+                  user.profilePhotoUrl
+                )
+              }
             />
           </div>
           {loggedInUser &&

@@ -1,13 +1,18 @@
 "use client";
 
+import Image from "next/image";
 import Input from "@/app/components/ui/Input";
 import Button from "@/app/components/ui/Button";
+import ImageUpload from "@/app/components/ui/ImageUpload";
 import { useCreateTeamForm } from "@/app/(app)/teams/newTeam/useCreateTeamForm";
 
 export default function CreateTeamForm() {
   const {
     teamName,
     setTeamName,
+    teamLogo,
+    handleLogoUpload,
+    handleLogoRemove,
     loading,
     error,
     success,
@@ -37,6 +42,21 @@ export default function CreateTeamForm() {
             : undefined
         }
       />
+
+      {/* Logo Upload Section */}
+      <div className="space-y-3">
+        <ImageUpload
+          type="temp"
+          currentImageUrl={teamLogo}
+          onUploadSuccess={handleLogoUpload}
+          onImageRemove={handleLogoRemove}
+          size="medium"
+          shape="circle"
+          label="Logo do Time"
+          placeholder="Adicionar logo do time"
+          disabled={loading}
+        />
+      </div>
 
       <div className="border border-default rounded-xl p-4 bg-surface-muted">
         <div className="flex items-center justify-between mb-2">
@@ -78,10 +98,12 @@ export default function CreateTeamForm() {
               }
             >
               <div className="flex items-center gap-3">
-                {p.profilePhoto ? (
-                  <img
-                    src={p.profilePhoto}
+                {p.profilePhotoUrl ? (
+                  <Image
+                    src={p.profilePhotoUrl}
                     alt={p.username}
+                    width={32}
+                    height={32}
                     className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (

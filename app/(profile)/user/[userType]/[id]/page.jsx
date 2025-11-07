@@ -89,10 +89,24 @@ export default function ProfilePage() {
         loggedInUserId === fetchedUser.userId &&
         loggedInUserType?.toLowerCase() === lowerCaseUserType;
 
-      const updatedProfileUser = {
-        ...fetchedUser,
-        userType: lowerCaseUserType.toUpperCase(),
-      };
+      let updatedProfileUser;
+      if (isOwnProfile && loggedInUser) {
+        // For own profile, use updated data from AuthContext
+        console.log(
+          "[ProfilePage] Using loggedInUser data for own profile:",
+          loggedInUser
+        );
+        updatedProfileUser = {
+          ...loggedInUser,
+          userType: lowerCaseUserType.toUpperCase(),
+        };
+      } else {
+        // For other profiles, use fetched data
+        updatedProfileUser = {
+          ...fetchedUser,
+          userType: lowerCaseUserType.toUpperCase(),
+        };
+      }
 
       // Buscar listas de seguidores e seguindo com tratamento de erro
       let followersListResponse = { content: [], totalElements: 0 };
@@ -155,7 +169,38 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  }, [id, userType, loggedInUserId, loggedInUserType, fetchAllTabsData]);
+  }, [
+    id,
+    userType,
+    loggedInUserId,
+    loggedInUserType,
+    loggedInUser,
+    fetchAllTabsData,
+  ]);
+
+  // Effect to update profile when logged user data changes (e.g., after avatar upload)
+  useEffect(() => {
+    if (
+      profileUser &&
+      loggedInUser &&
+      loggedInUser.userId === profileUser.userId &&
+      loggedInUser.userType?.toLowerCase() === userType?.toLowerCase()
+    ) {
+      console.log(
+        "[ProfilePage] Syncing profileUser with updated loggedInUser data"
+      );
+      setProfileUser((prev) => ({
+        ...prev,
+        ...loggedInUser,
+        userType: userType.toUpperCase(),
+      }));
+    }
+  }, [
+    loggedInUser?.profilePhotoUrl,
+    loggedInUser?.bannerUrl,
+    profileUser?.userId,
+    userType,
+  ]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {

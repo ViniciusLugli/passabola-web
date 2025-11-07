@@ -9,6 +9,7 @@ export const useCreateTeamForm = () => {
   const { user } = useAuth();
   const router = useRouter();
   const [teamName, setTeamName] = useState("");
+  const [teamLogo, setTeamLogo] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -143,9 +144,24 @@ export const useCreateTeamForm = () => {
     }
   };
 
+  // Handle logo upload
+  const handleLogoUpload = (result) => {
+    if (result?.url) {
+      setTeamLogo(result.url);
+    }
+  };
+
+  const handleLogoRemove = () => {
+    setTeamLogo("");
+  };
+
   return {
     teamName,
     setTeamName,
+    teamLogo,
+    setTeamLogo,
+    handleLogoUpload,
+    handleLogoRemove,
     loading,
     error,
     success,

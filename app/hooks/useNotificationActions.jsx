@@ -9,6 +9,7 @@ import { useCallback } from "react";
 import { useNotifications } from "@/app/context/NotificationContext";
 import { useToast } from "@/app/context/ToastContext";
 import { notificationService } from "@/app/lib/notificationService";
+import { useNotificationsCache } from "./useNotificationsCache";
 
 export function useNotificationActions() {
   const {
@@ -19,6 +20,7 @@ export function useNotificationActions() {
   } = useNotifications();
 
   const { showToast } = useToast();
+  const { invalidateCache } = useNotificationsCache();
 
   /**
    * Mark notification as read
@@ -28,6 +30,7 @@ export function useNotificationActions() {
       try {
         await notificationService.markAsRead(notificationId);
         markAsReadLocally(notificationId);
+        invalidateCache(); // Invalidate cache after change
         return true;
       } catch (error) {
         console.error("[useNotificationActions] Error marking as read:", error);
@@ -35,7 +38,7 @@ export function useNotificationActions() {
         return false;
       }
     },
-    [markAsReadLocally, showToast]
+    [markAsReadLocally, showToast, invalidateCache]
   );
 
   /**
@@ -45,6 +48,7 @@ export function useNotificationActions() {
     try {
       await notificationService.markAllAsRead();
       markAllAsReadLocally();
+      invalidateCache(); // Invalidate cache after change
       showToast("Todas as notificações foram marcadas como lidas", "success");
       return true;
     } catch (error) {
@@ -55,7 +59,7 @@ export function useNotificationActions() {
       showToast("Erro ao marcar todas como lidas", "error");
       return false;
     }
-  }, [markAllAsReadLocally, showToast]);
+  }, [markAllAsReadLocally, showToast, invalidateCache]);
 
   /**
    * Delete notification
@@ -65,6 +69,7 @@ export function useNotificationActions() {
       try {
         await notificationService.deleteNotification(notificationId);
         removeNotificationLocally(notificationId);
+        invalidateCache(); // Invalidate cache after change
         showToast("Notificação deletada", "success");
         return true;
       } catch (error) {
@@ -76,7 +81,7 @@ export function useNotificationActions() {
         return false;
       }
     },
-    [removeNotificationLocally, showToast]
+    [removeNotificationLocally, showToast, invalidateCache]
   );
 
   /**
@@ -92,6 +97,7 @@ export function useNotificationActions() {
         );
 
         notificationIds.forEach((id) => removeNotificationLocally(id));
+        invalidateCache(); // Invalidate cache after change
         showToast(
           `${notificationIds.length} notificações deletadas`,
           "success"
@@ -106,7 +112,7 @@ export function useNotificationActions() {
         return false;
       }
     },
-    [removeNotificationLocally, showToast]
+    [removeNotificationLocally, showToast, invalidateCache]
   );
 
   /**
@@ -120,6 +126,7 @@ export function useNotificationActions() {
         );
 
         notificationIds.forEach((id) => markAsReadLocally(id));
+        invalidateCache(); // Invalidate cache after change
         showToast(
           `${notificationIds.length} notificações marcadas como lidas`,
           "success"
@@ -134,7 +141,7 @@ export function useNotificationActions() {
         return false;
       }
     },
-    [markAsReadLocally, showToast]
+    [markAsReadLocally, showToast, invalidateCache]
   );
 
   /**
@@ -150,6 +157,7 @@ export function useNotificationActions() {
         );
 
         clearReadNotificationsLocally();
+        invalidateCache(); // Invalidate cache after change
         showToast(
           `${readNotifications.length} notificações lidas foram deletadas`,
           "success"
@@ -164,7 +172,7 @@ export function useNotificationActions() {
         return false;
       }
     },
-    [clearReadNotificationsLocally, showToast]
+    [clearReadNotificationsLocally, showToast, invalidateCache]
   );
 
   return {

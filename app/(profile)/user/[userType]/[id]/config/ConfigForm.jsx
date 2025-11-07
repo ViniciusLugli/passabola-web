@@ -1,6 +1,7 @@
 "use client";
 
 import Input from "@/app/components/ui/Input";
+import ImageUpload from "@/app/components/ui/ImageUpload";
 import ConfirmSaveModal from "./ConfirmSaveModal";
 import AccordionSection from "@/app/components/AccordionSection";
 import { useConfigForm } from "./useConfigForm";
@@ -99,6 +100,91 @@ export default function ConfigForm({ userId, userType }) {
                   value={formData.bio}
                   onChange={handleInputChange}
                   rows={4}
+                />
+              </div>
+            </div>
+          </AccordionSection>
+
+          {/* Imagens do Perfil */}
+          <AccordionSection
+            id="profile-images"
+            title="Imagens do Perfil"
+            defaultOpen={true}
+          >
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-primary mb-3">
+                  Foto de Perfil
+                </h3>
+                <p className="text-sm text-secondary mb-4">
+                  Escolha uma imagem que represente você. Recomendamos formato
+                  quadrado.
+                </p>
+                <ImageUpload
+                  type="avatar"
+                  userId={userId}
+                  userType={userType}
+                  currentImageUrl={formData.profilePhotoUrl}
+                  onUploadSuccess={(result) => {
+                    if (result?.url) {
+                      handleInputChange({
+                        target: {
+                          name: "profilePhotoUrl",
+                          value: result.url,
+                        },
+                      });
+                    }
+                  }}
+                  onImageRemove={() => {
+                    handleInputChange({
+                      target: {
+                        name: "profilePhotoUrl",
+                        value: "",
+                      },
+                    });
+                  }}
+                  size="large"
+                  shape="circle"
+                  showLabel={true}
+                  placeholder="Clique para enviar sua foto"
+                />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-primary mb-3">
+                  Banner do Perfil
+                </h3>
+                <p className="text-sm text-secondary mb-4">
+                  Uma imagem de capa para personalizar seu perfil. Formato
+                  retangular recomendado.
+                </p>
+                <ImageUpload
+                  type="banner"
+                  userId={userId}
+                  userType={userType}
+                  currentImageUrl={formData.bannerPhotoUrl}
+                  onUploadSuccess={(result) => {
+                    if (result?.url) {
+                      handleInputChange({
+                        target: {
+                          name: "bannerPhotoUrl",
+                          value: result.url,
+                        },
+                      });
+                    }
+                  }}
+                  onImageRemove={() => {
+                    handleInputChange({
+                      target: {
+                        name: "bannerPhotoUrl",
+                        value: "",
+                      },
+                    });
+                  }}
+                  size="large"
+                  shape="rectangle"
+                  showLabel={true}
+                  placeholder="Clique para enviar seu banner"
                 />
               </div>
             </div>
