@@ -17,11 +17,10 @@ export default function ChatPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
-  const { updatePreferences } = useChatPreferences();
+  const { preferences, updatePreferences, isLoaded } = useChatPreferences();
 
-  // Simple state for mobile navigation
+  // Simple boolean state for mobile view
   const [showMobileChat, setShowMobileChat] = useState(false);
-
   const {
     setConversations,
     activeConversation,
@@ -113,28 +112,70 @@ export default function ChatPage() {
     unsubscribeFromChat,
   ]);
 
-  // Handle conversation selection - CLEAN AND SIMPLE
+  // Memoize handleSelectConversation to prevent recreation on every render
   const handleSelectConversation = useCallback(
     (conversation) => {
-      console.log(
-        "[ChatPage] Selecting conversation:",
-        conversation.otherUserId
-      );
+      // Prevent rapid clicking
+      if (isTransitioning) return;
 
+      setIsTransitioning(true);
+
+      // Set conversation in ChatContext immediately
       setActiveConversation(conversation);
+
+      // Fetch messages
       fetchMessages(conversation.otherUserId);
+
+      // Update preferences
       updatePreferences({ lastActiveConversation: conversation.otherUserId });
-      setShowMobileChat(true);
+
+      // Switch to chat view
+      setMobileView(MOBILE_VIEWS.CHAT);
+
+      // Reset transition state
+      setTimeout(() => setIsTransitioning(false), 300);
     },
-    [setActiveConversation, fetchMessages, updatePreferences]
+    [fetchMessages, setActiveConversation, updatePreferences, isTransitioning]
   );
 
-  // Handle back button - CLEAN AND SIMPLE
+  // Restore last active conversation from preferences
+  useEffect(() => {
+    if (
+      isLoaded &&
+      preferences.lastActiveConversation &&
+      conversations.length > 0 &&
+      !activeConversation
+    ) {
+      const lastConversation = conversations.find(
+        (c) =>
+          String(c.otherUserId) === String(preferences.lastActiveConversation)
+      );
+
+      if (lastConversation) {
+        handleSelectConversation(lastConversation);
+      }
+    }
+  }, [
+    isLoaded,
+    conversations,
+    preferences.lastActiveConversation,
+    activeConversation,
+    handleSelectConversation,
+  ]);
+
   const handleBackToConversations = useCallback(() => {
-    console.log("[ChatPage] Going back to conversations");
-    setShowMobileChat(false);
+    // Prevent rapid clicking
+    if (isTransitioning) return;
+
+    setIsTransitioning(true);
+
+    // Clear active conversation and return to list
     setActiveConversation(null);
-  }, [setActiveConversation]);
+    setMobileView(MOBILE_VIEWS.CONVERSATIONS);
+
+    // Reset transition state
+    setTimeout(() => setIsTransitioning(false), 300);
+  }, [setActiveConversation, isTransitioning]);
 
   if (loading) {
     return (
@@ -148,22 +189,23 @@ export default function ChatPage() {
 
   return (
     <div className="fixed inset-0 top-[72px] bg-background">
-      {/* Full-screen chat layout */}
+      {/* Full-screen chat layout - WhatsApp Web style */}
       <div className="h-full w-full bg-surface flex">
-        {/* Conversation List */}
+        {/* Conversation List - Mobile: show/hide based on view, Desktop: always visible sidebar */}
         <div
           className={`
-            ${showMobileChat ? "hidden" : "flex"} 
+            ${mobileView === MOBILE_VIEWS.CONVERSATIONS ? "flex" : "hidden"} 
             md:flex 
-            w-full
+            ${mobileView === MOBILE_VIEWS.CONVERSATIONS ? "w-full" : "w-0"} 
             md:w-[380px]
             border-r 
             border-default 
+            transition-all 
+            duration-300 
+            ease-in-out 
             shrink-0 
             bg-surface-muted
-            transition-all
-            duration-300
-            ease-in-out
+            ${isTransitioning ? "pointer-events-none opacity-50" : ""}
           `}
         >
           <ConversationList
@@ -175,18 +217,20 @@ export default function ChatPage() {
           />
         </div>
 
-        {/* Chat Window */}
+        {/* Chat Window - Mobile: show/hide based on view, Desktop: always visible main area */}
         <div
           className={`
-            ${showMobileChat ? "flex" : "hidden"} 
+            ${mobileView === MOBILE_VIEWS.CHAT ? "flex" : "hidden"} 
             md:flex 
             flex-col 
-            w-full
+            ${mobileView === MOBILE_VIEWS.CHAT ? "w-full" : "w-0"} 
+            md:w-full
+            transition-all 
+            duration-300 
+            ease-in-out 
             h-full 
             min-w-0
-            transition-all
-            duration-300
-            ease-in-out
+            ${isTransitioning ? "pointer-events-none opacity-50" : ""}
           `}
         >
           {activeConversation ? (

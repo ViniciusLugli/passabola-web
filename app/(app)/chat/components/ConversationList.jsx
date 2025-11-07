@@ -12,39 +12,41 @@ export default function ConversationList({
   className = "",
 }) {
   return (
-    <div className={`flex flex-col bg-surface-muted ${className}`}>
-      {/* Header */}
-      <div className="p-4 border-b border-default">
+    <div className={`flex flex-col h-full min-h-0 ${className}`}>
+      {/* Fixed Header - doesn't scroll */}
+      <div className="shrink-0 p-4 border-b border-default bg-surface-muted">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-primary">Conversas</h2>
           {isConnected && (
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full" />
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               <span className="text-xs text-secondary">Online</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto">
-        {conversations.length === 0 ? (
-          <EmptyConversations />
-        ) : (
-          <>
-            {conversations.map((conversation) => (
-              <ConversationItem
-                key={conversation.otherUserId}
-                conversation={conversation}
-                isActive={
-                  String(activeConversation?.otherUserId) ===
-                  String(conversation.otherUserId)
-                }
-                onClick={() => onSelectConversation(conversation)}
-              />
-            ))}
-          </>
-        )}
+      {/* Scrollable Conversations List - independent scroll */}
+      <div className="flex-1 overflow-y-auto min-h-0 chat-scroll">
+        <div className="divide-y divide-default/50">
+          {conversations.length === 0 ? (
+            <EmptyConversations />
+          ) : (
+            <div>
+              {conversations.map((conversation) => (
+                <ConversationItem
+                  key={conversation.otherUserId}
+                  conversation={conversation}
+                  isActive={
+                    String(activeConversation?.otherUserId) ===
+                    String(conversation.otherUserId)
+                  }
+                  onClick={() => onSelectConversation(conversation)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

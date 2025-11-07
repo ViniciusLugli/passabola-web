@@ -6,12 +6,14 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
 } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { error as logError } from "@/app/lib/logger";
 import { useAuth } from "./AuthContext";
 import { notificationService } from "@/app/lib/notificationService";
+import { api } from "@/app/lib/api";
 
 const NotificationContext = createContext();
 
@@ -33,6 +35,88 @@ export function NotificationProvider({ children }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const [client, setClient] = useState(null);
+  const [lastSyncTimestamp, setLastSyncTimestamp] = useState(null);
+
+  // Use refs to store latest functions and avoid dependency issues
+  const syncNotificationRef = useRef();
+  const syncAfterReconnectionRef = useRef();
+  const clientRef = useRef();
+
+  // Sync notifications and avoid duplicates
+  const syncNotification = useCallback(
+    (newNotification, isFromWebSocket = false) => {
+      const formatted = notificationService.formatNotification(newNotification);
+
+      setNotifications((prev) => {
+        // Check if notification already exists
+        const existingIndex = prev.findIndex((n) => n.id === formatted.id);
+
+        if (existingIndex >= 0) {
+          // Update existing notification
+          const updated = [...prev];
+          updated[existingIndex] = { ...updated[existingIndex], ...formatted };
+          return updated;
+        } else {
+          // Add new notification at the beginning
+          return [formatted, ...prev];
+        }
+      });
+
+      // Update unread count only for new unread notifications
+      if (!formatted.read) {
+        setUnreadCount((prev) => {
+          // For new notifications from WebSocket, don't increment here
+          // since we'll get the count update separately
+          // For manual additions, increment
+          return isFromWebSocket ? prev : prev + 1;
+        });
+      }
+
+      // Delegate to notification service for browser notifications
+      if (isFromWebSocket) {
+        notificationService.handleIncomingNotification(formatted);
+      }
+    },
+    [] // Remove notifications dependency to break infinite loop
+  );
+
+  // Store latest function in ref
+  syncNotificationRef.current = syncNotification;
+
+  // Sync state after reconnection
+  const syncAfterReconnection = useCallback(async () => {
+    if (!user || !isAuthenticated) return;
+
+    try {
+      console.log("[WebSocket] Syncing state after reconnection...");
+
+      // Get latest notifications
+      const response = await api.notifications.getAll({ page: 0, size: 50 });
+      const notificationsList = response.content || [];
+
+      // Format all notifications
+      const formatted = notificationsList.map((notif) =>
+        notificationService.formatNotification(notif)
+      );
+
+      setNotifications(formatted);
+
+      // Get updated unread count
+      const countResponse = await api.notifications.getUnreadCount();
+      setUnreadCount(countResponse.unreadCount || 0);
+
+      setLastSyncTimestamp(Date.now());
+      console.log("[WebSocket] State synced successfully");
+    } catch (error) {
+      console.error(
+        "[WebSocket] Error syncing state after reconnection:",
+        error
+      );
+    }
+  }, [user, isAuthenticated]); // Only depend on user and auth status
+
+  // Store latest function in ref
+  syncAfterReconnectionRef.current = syncAfterReconnection;
 
   useEffect(() => {
     if (!ENABLE_WEBSOCKET) {
@@ -42,9 +126,10 @@ export function NotificationProvider({ children }) {
 
     if (!isAuthenticated || !user) {
       setIsConnected(false);
-      if (client) {
-        client.deactivate();
+      if (clientRef.current) {
+        clientRef.current.deactivate();
         setClient(null);
+        clientRef.current = null;
       }
       return;
     }
@@ -70,7 +155,13 @@ export function NotificationProvider({ children }) {
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: () => {
+        console.log("[WebSocket] Connected successfully");
         setIsConnected(true);
+
+        // Sync state after reconnection
+        if (syncAfterReconnectionRef.current) {
+          syncAfterReconnectionRef.current();
+        }
 
         const userType = user.userType.toLowerCase(); // player, organization, spectator
 
@@ -80,16 +171,15 @@ export function NotificationProvider({ children }) {
           (message) => {
             try {
               const rawNotification = JSON.parse(message.body);
+              console.log(
+                "[WebSocket] Received notification:",
+                rawNotification
+              );
 
-              // Format notification with user-friendly messages
-              const notification =
-                notificationService.formatNotification(rawNotification);
-
-              setNotifications((prev) => [notification, ...prev]);
-              setUnreadCount((prev) => prev + 1);
-
-              // Delegate to notification service for browser notifications
-              notificationService.handleIncomingNotification(notification);
+              // Use sync function to handle the notification
+              if (syncNotificationRef.current) {
+                syncNotificationRef.current(rawNotification, true);
+              }
             } catch (error) {
               console.error("Erro ao processar notificação:", error);
             }
@@ -107,6 +197,7 @@ export function NotificationProvider({ children }) {
                 payload && typeof payload === "object"
                   ? payload.unreadCount ?? payload.count ?? 0
                   : Number(payload) || 0;
+              console.log("[WebSocket] Received unread count update:", count);
               setUnreadCount(count);
             } catch (err) {
               // try parse as raw number
@@ -125,6 +216,7 @@ export function NotificationProvider({ children }) {
         );
       },
       onDisconnect: () => {
+        console.log("[WebSocket] Disconnected");
         setIsConnected(false);
       },
       onStompError: (frame) => {
@@ -189,38 +281,43 @@ export function NotificationProvider({ children }) {
 
     stompClient.activate();
     setClient(stompClient);
+    clientRef.current = stompClient;
 
     // Initialize notification service and request permission
     notificationService.initialize();
     notificationService.requestPermission();
 
     return () => {
-      if (stompClient) {
-        stompClient.deactivate();
+      if (clientRef.current) {
+        clientRef.current.deactivate();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Only depend on authentication and user, not on callback functions
   }, [isAuthenticated, user]);
 
-  // Adicionar notificação manualmente (útil para testes)
-  const addNotification = useCallback((notification) => {
-    setNotifications((prev) => [notification, ...prev]);
-    if (!notification.read) {
-      setUnreadCount((prev) => prev + 1);
-    }
-  }, []);
+  // Adicionar notificação manualmente
+  const addNotification = useCallback(
+    (notification) => {
+      syncNotification(notification, false);
+    },
+    [syncNotification]
+  );
 
   const markAsReadLocally = useCallback((notificationId) => {
     setNotifications((prev) =>
       prev.map((notif) =>
-        notif.id === notificationId ? { ...notif, read: true } : notif
+        notif.id === notificationId
+          ? { ...notif, read: true, isRead: true }
+          : notif
       )
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
   }, []);
 
   const markAllAsReadLocally = useCallback(() => {
-    setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
+    setNotifications((prev) =>
+      prev.map((notif) => ({ ...notif, read: true, isRead: true }))
+    );
     setUnreadCount(0);
   }, []);
 
@@ -243,8 +340,12 @@ export function NotificationProvider({ children }) {
   }, []);
 
   const setNotificationsList = useCallback((notifList) => {
-    setNotifications(notifList);
-    const unread = notifList.filter((n) => !n.read).length;
+    // Format all notifications consistently
+    const formatted = notifList.map((notif) =>
+      notificationService.formatNotification(notif)
+    );
+    setNotifications(formatted);
+    const unread = formatted.filter((n) => !n.read).length;
     setUnreadCount(unread);
   }, []);
 
@@ -252,6 +353,7 @@ export function NotificationProvider({ children }) {
     notifications,
     unreadCount,
     isConnected,
+    lastSyncTimestamp,
     addNotification,
     markAsReadLocally,
     markAllAsReadLocally,
@@ -259,6 +361,7 @@ export function NotificationProvider({ children }) {
     clearReadNotificationsLocally,
     updateUnreadCount,
     setNotificationsList,
+    syncNotification,
   };
 
   return (

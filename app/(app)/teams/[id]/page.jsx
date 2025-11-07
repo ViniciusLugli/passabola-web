@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { api } from "@/app/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
 import InviteMemberModal from "../components/InviteMemberModal";
@@ -129,29 +130,48 @@ export default function TeamDetailsPage({ params }) {
         {team && (
           <div className="space-y-6">
             <div className="bg-surface border border-default p-6 rounded-lg shadow-elevated">
-              <div>
-                <h1 className="text-2xl font-bold text-primary">
-                  {team?.name ?? team?.nameTeam ?? "Equipe"}
-                </h1>
-                {team?.bio && <p className="text-secondary mt-2">{team.bio}</p>}
-                <div className="text-sm text-tertiary mt-3">
-                  Criado em:{" "}
-                  {team?.createdAt
-                    ? new Date(team.createdAt).toLocaleString()
-                    : "-"}
-                </div>
-
-                {((team.players && team.players.length > 0) ||
-                  (team.invites && team.invites.length > 0)) && (
-                  <MembersAvatars
-                    players={team.players}
-                    invites={team.invites}
-                    playersCount={team.players?.length ?? 0}
-                    currentUser={currentUser}
-                    leaderId={team?.leader?.id}
-                  />
+              <div className="flex items-start gap-4">
+                {/* Team Logo */}
+                {(team?.logoUrl || team?.logo) && (
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden bg-surface-muted border border-default flex-shrink-0">
+                    <img
+                      src={team?.logoUrl || team?.logo}
+                      alt={`Logo do ${team?.name || team?.nameTeam}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  </div>
                 )}
+
+                <div className="flex-1">
+                  <h1 className="text-2xl font-bold text-primary">
+                    {team?.name ?? team?.nameTeam ?? "Equipe"}
+                  </h1>
+                  {team?.bio && (
+                    <p className="text-secondary mt-2">{team.bio}</p>
+                  )}
+                  <div className="text-sm text-tertiary mt-3">
+                    Criado em:{" "}
+                    {team?.createdAt
+                      ? new Date(team.createdAt).toLocaleString()
+                      : "-"}
+                  </div>
+                </div>
               </div>
+
+              {((team.players && team.players.length > 0) ||
+                (team.invites && team.invites.length > 0)) && (
+                <MembersAvatars
+                  players={team.players}
+                  invites={team.invites}
+                  playersCount={team.players?.length ?? 0}
+                  currentUser={currentUser}
+                  leaderId={team?.leader?.id}
+                />
+              )}
+
               <div className="mt-4 flex gap-2">
                 {currentUser?.id && currentUser.id !== team?.leader?.id && (
                   <button

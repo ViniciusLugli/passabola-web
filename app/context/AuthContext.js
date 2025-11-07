@@ -181,6 +181,46 @@ export const AuthProvider = ({ children }) => {
     setLoginErrorMessage(null);
   }, []);
 
+  // Update user profile data in context and localStorage
+  const updateUserProfile = useCallback(
+    async (updatedData) => {
+      try {
+        // Merge updated data with existing user data
+        const updatedUser = { ...user, ...updatedData };
+
+        // Update state
+        setUser(updatedUser);
+
+        // Update localStorage
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+
+        return updatedUser;
+      } catch (error) {
+        console.error("Failed to update user profile:", error);
+        throw error;
+      }
+    },
+    [user]
+  );
+
+  // Refresh user data from server
+  const refreshUserProfile = useCallback(async () => {
+    if (!user?.id || !user?.userType) return;
+
+    try {
+      const freshProfileData = await fetchFullProfileData(user);
+      const updatedUser = { ...user, ...freshProfileData };
+
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      return updatedUser;
+    } catch (error) {
+      console.error("Failed to refresh user profile:", error);
+      throw error;
+    }
+  }, [user, fetchFullProfileData]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -192,6 +232,8 @@ export const AuthProvider = ({ children }) => {
         register,
         loginErrorMessage,
         clearLoginError,
+        updateUserProfile,
+        refreshUserProfile,
       }}
     >
       {children}

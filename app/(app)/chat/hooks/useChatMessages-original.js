@@ -3,7 +3,7 @@ import { api } from "@/app/lib/api";
 
 /**
  * Custom hook for managing chat messages and sending logic
- * IMPROVED: Prevents duplicate API calls with proper guards
+ * Handles message fetching, optimistic updates, and WebSocket fallback
  */
 export function useChatMessages({
   activeConversation,
@@ -19,10 +19,6 @@ export function useChatMessages({
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
   const hasScrolledRef = useRef(false);
-
-  // Track the last conversation we fetched messages for
-  const lastFetchedConversationRef = useRef(null);
-  const isFetchingRef = useRef(false);
 
   const scrollToBottom = useCallback(() => {
     if (!hasScrolledRef.current) {
@@ -47,20 +43,6 @@ export function useChatMessages({
 
   const fetchMessages = useCallback(
     async (otherUserId) => {
-      // Prevent duplicate fetches for the same conversation
-      if (
-        isFetchingRef.current ||
-        lastFetchedConversationRef.current === String(otherUserId)
-      ) {
-        console.log(
-          "[useChatMessages] Skipping duplicate fetch for:",
-          otherUserId
-        );
-        return;
-      }
-
-      console.log("[useChatMessages] Fetching messages for:", otherUserId);
-      isFetchingRef.current = true;
       setLoadingMessages(true);
 
       try {
@@ -72,29 +54,15 @@ export function useChatMessages({
 
         // Mark messages as read
         await api.chats.markAsRead(otherUserId);
-
-        // Mark this conversation as fetched
-        lastFetchedConversationRef.current = String(otherUserId);
       } catch (err) {
         console.error("[useChatMessages] Error fetching messages:", err);
         onError?.("Erro ao carregar mensagens.");
       } finally {
         setLoadingMessages(false);
-        isFetchingRef.current = false;
       }
     },
     [setConversationMessages, onError]
   );
-
-  // Reset fetch guard when active conversation changes
-  useEffect(() => {
-    if (activeConversation?.otherUserId) {
-      const currentUserId = String(activeConversation.otherUserId);
-      if (lastFetchedConversationRef.current !== currentUserId) {
-        lastFetchedConversationRef.current = null; // Reset guard for new conversation
-      }
-    }
-  }, [activeConversation?.otherUserId]);
 
   const sendMessage = useCallback(
     async (content) => {
@@ -102,29 +70,42 @@ export function useChatMessages({
 
       setSending(true);
 
+      const optimisticMessage = {
+        id: `temp-${Date.now()}`,
+        content,
+        senderId: user.userId,
+        senderName: user.name,
+        senderUsername: user.username,
+        recipientId: activeConversation.otherUserId,
+        recipientName: activeConversation.otherName,
+        recipientUsername: activeConversation.otherUsername,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Optimistic UI updates
+      addMessageLocally(activeConversation.otherUserId, optimisticMessage);
+      onUpdateConversation?.(
+        activeConversation.otherUserId,
+        content,
+        optimisticMessage.createdAt
+      );
+
       try {
-        // Send message directly without optimistic updates
+        // Try WebSocket first, fallback to HTTP
         const sentViaWS = sendMessageViaWebSocket(
           activeConversation.otherUserId,
           content
         );
 
         if (!sentViaWS) {
-          console.log("[useChatMessages] Sending via HTTP fallback");
           await api.chats.sendMessage(activeConversation.otherUserId, content);
-        } else {
-          console.log("[useChatMessages] Sent via WebSocket");
         }
-
-        // Update conversation timestamp only (no optimistic message)
-        onUpdateConversation?.(
-          activeConversation.otherUserId,
-          content,
-          new Date().toISOString()
-        );
       } catch (err) {
         console.error("[useChatMessages] Error sending message:", err);
         onError?.("Erro ao enviar mensagem.");
+
+        // TODO: Implement retry logic or mark message as failed
       } finally {
         setSending(false);
       }
@@ -132,6 +113,7 @@ export function useChatMessages({
     [
       activeConversation,
       user,
+      addMessageLocally,
       sendMessageViaWebSocket,
       onUpdateConversation,
       onError,

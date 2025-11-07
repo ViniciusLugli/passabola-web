@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/app/lib/api";
+import { useNotificationsCache } from "@/app/hooks/useNotificationsCache";
 
 /**
  * Hook para gerenciar o carregamento inicial de notificações
@@ -13,6 +13,7 @@ export function useNotificationsData(
 ) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const cache = useNotificationsCache(user);
 
   useEffect(() => {
     if (!user) {
@@ -25,41 +26,22 @@ export function useNotificationsData(
     const loadNotifications = async () => {
       setLoading(true);
       try {
-        const response = await api.notifications.getAll({ page: 0, size: 50 });
-        console.log("[DEBUG] Raw API response:", response);
-        const notificationsList = response.content || [];
-
-        // CRITICAL: Parse metadata from JSON string to object
-        const parsedNotifications = notificationsList.map((notif) => {
-          try {
-            return {
-              ...notif,
-              metadata:
-                typeof notif.metadata === "string"
-                  ? JSON.parse(notif.metadata)
-                  : notif.metadata,
-            };
-          } catch (e) {
-            console.warn(
-              "[DEBUG] Failed to parse metadata for notification:",
-              notif.id,
-              e
-            );
-            return notif;
-          }
-        });
-
-        console.log(
-          "[DEBUG] Notifications list (parsed):",
-          parsedNotifications
+        // Use cached version with background refresh
+        const response = await cache.getNotifications(
+          { page: 0, size: 50 },
+          { backgroundRefresh: true }
         );
-        console.log("[DEBUG] Notifications count:", parsedNotifications.length);
+
+        const notificationsList = response.content || [];
+        console.log("[DEBUG] Cached notifications list:", notificationsList);
+        console.log("[DEBUG] Notifications count:", notificationsList.length);
 
         if (isMounted) {
-          setNotificationsList(parsedNotifications);
+          setNotificationsList(notificationsList);
         }
 
-        const countResponse = await api.notifications.getUnreadCount();
+        // Get cached unread count
+        const countResponse = await cache.getUnreadCount({ backgroundRefresh: true });
         if (isMounted) {
           updateUnreadCount(countResponse.unreadCount || 0);
         }
@@ -80,7 +62,14 @@ export function useNotificationsData(
     return () => {
       isMounted = false;
     };
-  }, [user, router, setNotificationsList, updateUnreadCount, showToast]);
+    // FIX: Removido 'cache' das dependências para evitar loop infinito
+    // O objeto cache muda a cada render devido aos callbacks internos
+    // Dependemos apenas do user?.id que é estável
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
-  return { loading };
+  return {
+    loading,
+    cache, // Expose cache for other operations
+  };
 }

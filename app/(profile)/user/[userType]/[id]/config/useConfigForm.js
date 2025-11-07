@@ -20,6 +20,8 @@ export const useConfigForm = (userId, userType) => {
     email: "",
     phone: "",
     bio: "",
+    profilePhotoUrl: "",
+    bannerPhotoUrl: "",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -65,6 +67,12 @@ export const useConfigForm = (userId, userType) => {
           email: fullProfileData.email || "",
           phone: fullProfileData.phone || "",
           bio: fullProfileData.bio || "",
+          profilePhotoUrl:
+            fullProfileData.profilePhotoUrl ||
+            fullProfileData.profilePhoto ||
+            "",
+          bannerPhotoUrl:
+            fullProfileData.bannerPhotoUrl || fullProfileData.bannerPhoto || "",
         });
       } catch (err) {
         console.error("Error fetching user data for config:", err);
@@ -103,11 +111,15 @@ export const useConfigForm = (userId, userType) => {
     try {
       const dataToUpdate = { ...formData };
 
+      console.log("Saving config data:", dataToUpdate);
+
       dataToUpdate.password = newPassword || passwordConfirm;
 
       switch (userType.toLowerCase()) {
         case "player":
-          await api.players.update(userId, dataToUpdate);
+          console.log("Updating player with ID:", userId);
+          const result = await api.players.update(userId, dataToUpdate);
+          console.log("Player update result:", result);
           break;
         case "organization":
           await api.organizations.update(userId, dataToUpdate);

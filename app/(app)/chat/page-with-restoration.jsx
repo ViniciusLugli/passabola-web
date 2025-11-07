@@ -17,11 +17,10 @@ export default function ChatPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
-  const { updatePreferences } = useChatPreferences();
+  const { preferences, updatePreferences } = useChatPreferences();
 
   // Simple state for mobile navigation
   const [showMobileChat, setShowMobileChat] = useState(false);
-
   const {
     setConversations,
     activeConversation,
@@ -113,7 +112,7 @@ export default function ChatPage() {
     unsubscribeFromChat,
   ]);
 
-  // Handle conversation selection - CLEAN AND SIMPLE
+  // Handle conversation selection - SIMPLIFIED
   const handleSelectConversation = useCallback(
     (conversation) => {
       console.log(
@@ -129,11 +128,52 @@ export default function ChatPage() {
     [setActiveConversation, fetchMessages, updatePreferences]
   );
 
-  // Handle back button - CLEAN AND SIMPLE
+  // Restore last active conversation from preferences - RUN ONLY ONCE
+  useEffect(() => {
+    if (
+      isLoaded &&
+      preferences.lastActiveConversation &&
+      conversations.length > 0 &&
+      !activeConversation &&
+      !hasRestoredConversation
+    ) {
+      const lastConversation = conversations.find(
+        (c) =>
+          String(c.otherUserId) === String(preferences.lastActiveConversation)
+      );
+
+      if (lastConversation) {
+        console.log(
+          "[ChatPage] Restoring last conversation:",
+          lastConversation.otherUserId
+        );
+        setHasRestoredConversation(true);
+
+        // Set conversation state first
+        handleSelectConversation(lastConversation, true);
+
+        // Then fetch messages in a separate call to prevent double-fetch
+        setTimeout(() => {
+          fetchMessages(lastConversation.otherUserId);
+        }, 100);
+      }
+    }
+  }, [
+    isLoaded,
+    preferences.lastActiveConversation,
+    conversations.length, // Only depend on length, not the array itself
+    activeConversation,
+    hasRestoredConversation,
+    handleSelectConversation,
+    fetchMessages,
+  ]);
+
+  // Handle back button - clear restoration flag
   const handleBackToConversations = useCallback(() => {
     console.log("[ChatPage] Going back to conversations");
     setShowMobileChat(false);
     setActiveConversation(null);
+    setHasRestoredConversation(false); // Reset flag so restoration can work again
   }, [setActiveConversation]);
 
   if (loading) {

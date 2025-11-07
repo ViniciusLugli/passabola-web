@@ -75,10 +75,16 @@ const Input = ({
   if (error) describedByIds.push(`${inputId}-error`);
   if (!error && success) describedByIds.push(`${inputId}-success`);
 
+  // Adiciona classes para remover controles nativos de senha do navegador
+  const passwordFieldClasses = isPasswordField
+    ? "[&::-ms-reveal]:hidden [&::-ms-clear]:hidden [&::-webkit-credentials-auto-fill-button]:hidden [&::-webkit-textfield-decoration-container]:hidden"
+    : "";
+
   const mergedClassName = `
     ${baseClasses}
     ${stateClasses}
     ${className}
+    ${passwordFieldClasses}
     ${props.disabled ? "opacity-70 cursor-not-allowed" : ""}
   `;
 

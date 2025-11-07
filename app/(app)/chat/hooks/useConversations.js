@@ -17,10 +17,9 @@ export function useConversations({ onError, onSessionExpired }) {
     // Prevent multiple simultaneous fetches
     if (hasFetchedRef.current && loading) {
       console.log("[useConversations] Fetch already in progress, skipping...");
-      return [];
+      return conversations; // Return current conversations instead of []
     }
 
-    hasFetchedRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -43,6 +42,7 @@ export function useConversations({ onError, onSessionExpired }) {
       });
 
       setConversations(normalizedConversations);
+      hasFetchedRef.current = true; // Mark as fetched AFTER successful fetch
       return normalizedConversations;
     } catch (err) {
       console.error("[useConversations] Error fetching conversations:", err);
@@ -54,12 +54,12 @@ export function useConversations({ onError, onSessionExpired }) {
         onError?.(err.message || "Erro ao carregar conversas.");
       }
 
-      return [];
+      return conversations; // Return current conversations on error
     } finally {
       setLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onError, onSessionExpired]); // Intentionally omitting loading to prevent recreation
+  }, [onError, onSessionExpired, conversations]); // Add conversations to deps
 
   const updateConversationOptimistically = useCallback(
     (otherUserId, lastMessage, timestamp) => {
