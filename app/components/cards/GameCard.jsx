@@ -9,6 +9,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useToast } from "@/app/context/ToastContext";
 import { getGameTypeLabel } from "@/app/lib/gameUtils";
 import JoinGameModal from "@/app/components/ui/JoinGameModal";
+import GameVideos from "@/app/components/games/GameVideos";
 
 export default function GameCard({ game, onGameUpdate }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -84,6 +85,8 @@ export default function GameCard({ game, onGameUpdate }) {
       fetchParticipants();
     }
   }, [isExpanded, game.id]);
+
+  const [activeTab, setActiveTab] = useState("details");
 
   const fetchParticipants = async () => {
     try {
@@ -182,7 +185,6 @@ export default function GameCard({ game, onGameUpdate }) {
 
   return (
     <div
-      onClick={() => setIsExpanded(!isExpanded)}
       className={`
         relative
         w-full
@@ -193,7 +195,7 @@ export default function GameCard({ game, onGameUpdate }) {
         p-4 sm:p-5 md:p-6
         flex
         flex-col
-        cursor-pointer
+        
         overflow-hidden
         transition-all
         duration-300
@@ -250,12 +252,20 @@ export default function GameCard({ game, onGameUpdate }) {
         )}
       </div>
 
-      <div className="flex justify-between items-start gap-3 sm:gap-4 z-10 pr-16 sm:pr-20">
-        <div className="flex-grow min-w-0">
+      <div
+        className="flex justify-between items-start gap-3 sm:gap-4 z-10 pr-16 sm:pr-20 cursor-pointer"
+        role="button"
+        tabIndex={0}
+        onClick={() => setIsExpanded(!isExpanded)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") setIsExpanded(!isExpanded);
+        }}
+      >
+        <div className="grow min-w-0">
           <h3 className="font-bold text-base sm:text-lg md:text-xl text-primary leading-tight truncate sm:whitespace-normal">
             {gameTitle}
           </h3>
-          <p className="text-xs sm:text-sm text-secondary mt-1 break-words">
+          <p className="text-xs sm:text-sm text-secondary mt-1 wrap-break-word">
             <span className="inline-block mr-1">📍</span>
             {gameAddress}
           </p>
@@ -274,206 +284,116 @@ export default function GameCard({ game, onGameUpdate }) {
 
       {isExpanded && (
         <div className="mt-3 sm:mt-4 border-t border-default pt-3 sm:pt-4 z-10 animate-in fade-in slide-in-from-top-2 duration-300">
-          <p className="text-sm sm:text-base text-secondary leading-relaxed mb-4 sm:mb-5">
-            {game.description || "Nenhuma descrição disponível."}
-          </p>
+          <div className="flex items-center gap-2 mb-4">
+            <button
+              onClick={() => setActiveTab("details")}
+              className={`px-3 py-1 rounded-md text-sm font-medium ${
+                activeTab === "details" ? "bg-accent text-on-brand" : "bg-surface text-primary border border-default"
+              }`}
+            >
+              Detalhes
+            </button>
+            <button
+              onClick={() => setActiveTab("videos")}
+              className={`px-3 py-1 rounded-md text-sm font-medium ${
+                activeTab === "videos" ? "bg-accent text-on-brand" : "bg-surface text-primary border border-default"
+              }`}
+            >
+              Vídeos
+            </button>
+          </div>
 
-          {(game.gameType === "FRIENDLY" ||
-            game.gameType === "CHAMPIONSHIP") && (
-            <div className="mb-5 sm:mb-6 p-3 sm:p-4 md:p-5 bg-surface-muted rounded-xl border border-default shadow-elevated">
-              <h4 className="text-sm sm:text-base md:text-lg font-bold text-primary mb-3 sm:mb-4 flex items-center gap-2">
-                <span className="text-accent">ℹ️</span>
-                Informações da Partida
-              </h4>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 text-xs sm:text-sm">
-                <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
-                  <div className="text-secondary text-[10px] sm:text-xs mb-1">
-                    Jogadoras
-                  </div>
-                  <div className="font-bold text-base sm:text-lg text-primary">
-                    {game.currentPlayerCount ||
-                      participants.team1.length + participants.team2.length}
-                    <span className="text-xs sm:text-sm text-secondary font-normal">
-                      {" "}
-                      / {game.maxPlayers || "∞"}
-                    </span>
-                  </div>
-                  <div className="text-[10px] sm:text-xs text-tertiary mt-0.5 sm:mt-1">
-                    Mínimo: {game.minPlayers || "N/A"}
-                  </div>
-                </div>
+          {activeTab === "details" && (
+            <>
+              <p className="text-sm sm:text-base text-secondary leading-relaxed mb-4 sm:mb-5">
+                {game.description || "Nenhuma descrição disponível."}
+              </p>
 
-                <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
-                  <div className="text-secondary text-[10px] sm:text-xs mb-1">
-                    Distribuição
-                  </div>
-                  <div className="font-bold text-base sm:text-lg text-primary">
-                    {game.team1Count || participants.team1.length} vs{" "}
-                    {game.team2Count || participants.team2.length}
-                  </div>
-                  <div className="text-[10px] sm:text-xs mt-0.5 sm:mt-1">
-                    {(game.team1Count || participants.team1.length) === 0 &&
-                    (game.team2Count || participants.team2.length) === 0 ? (
-                      <span className="text-tertiary">Sem jogadores</span>
-                    ) : game.isTeamsBalanced ||
-                      participants.team1.length ===
-                        participants.team2.length ? (
-                      <span className="text-green-600 font-semibold">
-                        ✓ Balanceado
-                      </span>
-                    ) : (
-                      <span className="text-orange-500 font-semibold">
-                        ⚠ Desbalanceado
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
-                  <div className="text-secondary text-[10px] sm:text-xs mb-1">
-                    Pode Iniciar?
-                  </div>
-                  <div className="font-bold text-base sm:text-lg">
-                    {game.canStart ? (
-                      <span className="text-green-600">✓ Sim</span>
-                    ) : (
-                      <span className="text-red-500">✗ Não</span>
-                    )}
-                  </div>
-                  {!game.canStart && (
-                    <div className="text-[10px] sm:text-xs text-tertiary mt-0.5 sm:mt-1 line-clamp-2">
-                      {game.currentPlayerCount < game.minPlayers
-                        ? `Faltam ${
-                            game.minPlayers - game.currentPlayerCount
-                          } jogadoras`
-                        : "Times desbalanceados"}
-                    </div>
-                  )}
-                </div>
-
-                {/* Espectadores: card com mesmo design do card de Jogadoras */}
-                <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
-                  <div className="text-secondary text-[10px] sm:text-xs mb-1">
-                    Espectadores
-                  </div>
-
-                  {game.hasSpectators ? (
-                    <>
+              {(game.gameType === "FRIENDLY" ||
+                game.gameType === "CHAMPIONSHIP") && (
+                <div className="mb-5 sm:mb-6 p-3 sm:p-4 md:p-5 bg-surface-muted rounded-xl border border-default shadow-elevated">
+                  <h4 className="text-sm sm:text-base md:text-lg font-bold text-primary mb-3 sm:mb-4 flex items-center gap-2">
+                    <span className="text-accent">ℹ️</span>
+                    Informações da Partida
+                  </h4>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 text-xs sm:text-sm">
+                    <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
+                      <div className="text-secondary text-[10px] sm:text-xs mb-1">Jogadoras</div>
                       <div className="font-bold text-base sm:text-lg text-primary">
-                        {game.currentSpectatorCount ?? 0}
-                        <span className="text-xs sm:text-sm text-secondary font-normal">
-                          {" "}
-                          / {game.maxSpectators || "∞"}
-                        </span>
+                        {game.currentPlayerCount || participants.team1.length + participants.team2.length}
+                        <span className="text-xs sm:text-sm text-secondary font-normal"> {" / "} {game.maxPlayers || "∞"}</span>
                       </div>
-
-                      <div className="text-[10px] sm:text-xs text-green-600 font-semibold mt-0.5 sm:mt-1">
-                        ✓ Permitido
-                      </div>
-
-                      {game.minSpectators && (
-                        <div className="text-[10px] sm:text-xs text-tertiary mt-0.5 sm:mt-1">
-                          Mínimo: {game.minSpectators}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="font-bold text-base sm:text-lg text-tertiary">
-                      ✗ Não
+                      <div className="text-[10px] sm:text-xs text-tertiary mt-0.5 sm:mt-1">Mínimo: {game.minPlayers || "N/A"}</div>
                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* Lista de Jogadoras */}
-          {(game.gameType === "FRIENDLY" ||
-            game.gameType === "CHAMPIONSHIP") && (
-            <div className="mt-5 sm:mt-6">
-              <h4 className="text-base sm:text-lg font-semibold text-primary mb-3 sm:mb-4 flex items-center gap-2">
-                <span className="text-xl sm:text-2xl">👥</span>
-                Jogadoras Inscritas
-              </h4>
+                    <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
+                      <div className="text-secondary text-[10px] sm:text-xs mb-1">Distribuição</div>
+                      <div className="font-bold text-base sm:text-lg text-primary">{game.team1Count || participants.team1.length} vs {game.team2Count || participants.team2.length}</div>
+                      <div className="text-[10px] sm:text-xs mt-0.5 sm:mt-1">{(game.team1Count || participants.team1.length) === 0 && (game.team2Count || participants.team2.length) === 0 ? <span className="text-tertiary">Sem jogadores</span> : game.isTeamsBalanced || participants.team1.length === participants.team2.length ? <span className="text-green-600 font-semibold">✓ Balanceado</span> : <span className="text-orange-500 font-semibold">⚠ Desbalanceado</span>}</div>
+                    </div>
 
-              {loadingParticipants ? (
-                <div className="flex items-center justify-center py-8 sm:py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-3 border-accent border-t-transparent"></div>
-                  <span className="ml-3 text-secondary font-medium text-sm sm:text-base">
-                    Carregando participantes...
-                  </span>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div className="rounded-xl p-3 sm:p-4 border border-[rgb(59_130_246/0.35)] bg-[rgb(59_130_246/0.08)] shadow-elevated">
-                    <h5 className="font-bold text-blue-700 mb-2 sm:mb-3 text-center text-sm sm:text-base flex items-center justify-center gap-2">
-                      <span className="text-lg sm:text-xl">🔵</span>
-                      Time 1 ({participants.team1.length})
-                    </h5>
-                    {participants.team1.length > 0 ? (
-                      <ul className="space-y-1.5 sm:space-y-2 max-h-60 overflow-y-auto">
-                        {participants.team1.map((participant, index) => (
-                          <li
-                            key={index}
-                            className="bg-surface rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm text-primary border border-[rgb(59_130_246/0.35)] hover:border-[rgb(37_99_235/0.6)] transition-colors shadow-elevated"
-                          >
-                            <div className="font-semibold truncate">
-                              {participant.player?.name ||
-                                participant.player?.username ||
-                                "Jogadora"}
-                            </div>
-                            {participant.participationType === "WITH_TEAM" && (
-                              <div className="text-[10px] sm:text-xs text-secondary italic mt-0.5">
-                                (Com equipe)
-                              </div>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div className="text-center py-6 sm:py-8">
-                        <p className="text-secondary text-xs sm:text-sm">
-                          Nenhuma jogadora
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                    <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
+                      <div className="text-secondary text-[10px] sm:text-xs mb-1">Pode Iniciar?</div>
+                      <div className="font-bold text-base sm:text-lg">{game.canStart ? <span className="text-green-600">✓ Sim</span> : <span className="text-red-500">✗ Não</span>}</div>
+                      {!game.canStart && (<div className="text-[10px] sm:text-xs text-tertiary mt-0.5 sm:mt-1 line-clamp-2">{game.currentPlayerCount < game.minPlayers ? `Faltam ${game.minPlayers - game.currentPlayerCount} jogadoras` : "Times desbalanceados"}</div>)}
+                    </div>
 
-                  <div className="rounded-xl p-3 sm:p-4 border border-[rgb(244_63_94/0.35)] bg-[rgb(244_63_94/0.08)] shadow-elevated">
-                    <h5 className="font-bold text-rose-700 mb-2 sm:mb-3 text-center text-sm sm:text-base flex items-center justify-center gap-2">
-                      <span className="text-lg sm:text-xl">🔴</span>
-                      Time 2 ({participants.team2.length})
-                    </h5>
-                    {participants.team2.length > 0 ? (
-                      <ul className="space-y-1.5 sm:space-y-2 max-h-60 overflow-y-auto">
-                        {participants.team2.map((participant, index) => (
-                          <li
-                            key={index}
-                            className="bg-surface rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm text-primary border border-[rgb(244_63_94/0.35)] hover:border-[rgb(225_29_72/0.6)] transition-colors shadow-elevated"
-                          >
-                            <div className="font-semibold truncate">
-                              {participant.player?.name ||
-                                participant.player?.username ||
-                                "Jogadora"}
-                            </div>
-                            {participant.participationType === "WITH_TEAM" && (
-                              <div className="text-[10px] sm:text-xs text-secondary italic mt-0.5">
-                                (Com equipe)
-                              </div>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div className="text-center py-6 sm:py-8">
-                        <p className="text-secondary text-xs sm:text-sm">
-                          Nenhuma jogadora
-                        </p>
-                      </div>
-                    )}
+                    <div className="bg-surface p-2.5 sm:p-3 rounded-lg shadow-elevated border border-default hover:border-accent transition-colors">
+                      <div className="text-secondary text-[10px] sm:text-xs mb-1">Espectadores</div>
+
+                      {game.hasSpectators ? (
+                        <>
+                          <div className="font-bold text-base sm:text-lg text-primary">{game.currentSpectatorCount ?? 0}<span className="text-xs sm:text-sm text-secondary font-normal"> {" / "} {game.maxSpectators || "∞"}</span></div>
+                          <div className="text-[10px] sm:text-xs text-green-600 font-semibold mt-0.5 sm:mt-1">✓ Permitido</div>
+                          {game.minSpectators && (<div className="text-[10px] sm:text-xs text-tertiary mt-0.5 sm:mt-1">Mínimo: {game.minSpectators}</div>)}
+                        </>
+                      ) : (
+                        <div className="font-bold text-base sm:text-lg text-tertiary">✗ Não</div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
+
+              {/* Lista de Jogadoras */}
+              {(game.gameType === "FRIENDLY" || game.gameType === "CHAMPIONSHIP") && (
+                <div className="mt-5 sm:mt-6">
+                  <h4 className="text-base sm:text-lg font-semibold text-primary mb-3 sm:mb-4 flex items-center gap-2"><span className="text-xl sm:text-2xl">👥</span>Jogadoras Inscritas</h4>
+
+                  {loadingParticipants ? (
+                    <div className="flex items-center justify-center py-8 sm:py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-3 border-accent border-t-transparent"></div>
+                      <span className="ml-3 text-secondary font-medium text-sm sm:text-base">Carregando participantes...</span>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div className="rounded-xl p-3 sm:p-4 border border-[rgb(59_130_246/0.35)] bg-[rgb(59_130_246/0.08)] shadow-elevated">
+                        <h5 className="font-bold text-blue-700 mb-2 sm:mb-3 text-center text-sm sm:text-base flex items-center justify-center gap-2"><span className="text-lg sm:text-xl">🔵</span>Time 1 ({participants.team1.length})</h5>
+                        {participants.team1.length > 0 ? (
+                          <ul className="space-y-1.5 sm:space-y-2 max-h-60 overflow-y-auto">{participants.team1.map((participant, index) => (<li key={index} className="bg-surface rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm text-primary border border-[rgb(59_130_246/0.35)] hover:border-[rgb(37_99_235/0.6)] transition-colors shadow-elevated"><div className="font-semibold truncate">{participant.player?.name || participant.player?.username || "Jogadora"}</div>{participant.participationType === "WITH_TEAM" && (<div className="text-[10px] sm:text-xs text-secondary italic mt-0.5">(Com equipe)</div>)}</li>))}</ul>
+                        ) : (
+                          <div className="text-center py-6 sm:py-8"><p className="text-secondary text-xs sm:text-sm">Nenhuma jogadora</p></div>
+                        )}
+                      </div>
+
+                      <div className="rounded-xl p-3 sm:p-4 border border-[rgb(244_63_94/0.35)] bg-[rgb(244_63_94/0.08)] shadow-elevated">
+                        <h5 className="font-bold text-rose-700 mb-2 sm:mb-3 text-center text-sm sm:text-base flex items-center justify-center gap-2"><span className="text-lg sm:text-xl">🔴</span>Time 2 ({participants.team2.length})</h5>
+                        {participants.team2.length > 0 ? (
+                          <ul className="space-y-1.5 sm:space-y-2 max-h-60 overflow-y-auto">{participants.team2.map((participant, index) => (<li key={index} className="bg-surface rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm text-primary border border-[rgb(244_63_94/0.35)] hover:border-[rgb(225_29_72/0.6)] transition-colors shadow-elevated"><div className="font-semibold truncate">{participant.player?.name || participant.player?.username || "Jogadora"}</div>{participant.participationType === "WITH_TEAM" && (<div className="text-[10px] sm:text-xs text-secondary italic mt-0.5">(Com equipe)</div>)}</li>))}</ul>
+                        ) : (
+                          <div className="text-center py-6 sm:py-8"><p className="text-secondary text-xs sm:text-sm">Nenhuma jogadora</p></div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === "videos" && (
+            <div className="mt-2">
+              <GameVideos gameId={game.id} />
             </div>
           )}
         </div>
