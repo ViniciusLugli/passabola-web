@@ -374,6 +374,30 @@ export const isDocumentFile = (file) => {
   );
 };
 
+/**
+ * Normalize image/file URL coming from the API.
+ * - If url is absolute (http/https) returns as-is.
+ * - If url is protocol-relative (//...) prefixes with https:
+ * - If url is root-relative (/files/...), prefix with API base (NEXT_PUBLIC_API_URL without /api)
+ */
+export const normalizeRemoteUrl = (url) => {
+  if (!url) return url;
+  try {
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    if (url.startsWith("//")) return `https:${url}`;
+
+    // If it's a relative path, prefix with API base (without /api)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+    const apiBase = apiUrl.replace(/\/api\/?$/, "");
+    if (url.startsWith("/")) return `${apiBase}${url}`;
+
+    // Fallback: return as-is
+    return url;
+  } catch (e) {
+    return url;
+  }
+};
+
 const fileUtils = {
   FILE_SIZE_LIMITS,
   ACCEPTED_FILE_TYPES,

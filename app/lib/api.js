@@ -251,6 +251,7 @@ import createGameRoutes from "./routes/gameRoutes";
 import createGameParticipantsRoutes from "./routes/gameParticipantsRoutes";
 import createGameInvitesRoutes from "./routes/gameInvitesRoutes";
 import createPostRoutes from "./routes/postRoutes";
+import createPostCommentsRoutes from "./routes/postCommentsRoutes";
 import createTeamRoutes from "./routes/teamRoutes";
 import createNotificationRoutes from "./routes/notificationRoutes";
 import createChatRoutes from "./routes/chatRoutes";
@@ -266,6 +267,7 @@ export const api = {
   gameParticipants: createGameParticipantsRoutes(fetchApi),
   gameInvites: createGameInvitesRoutes(fetchApi),
   posts: createPostRoutes(fetchApi),
+  postComments: createPostCommentsRoutes(fetchApi),
   teams: createTeamRoutes(fetchApi),
   notifications: createNotificationRoutes(fetchApi),
   chats: createChatRoutes(fetchApi),

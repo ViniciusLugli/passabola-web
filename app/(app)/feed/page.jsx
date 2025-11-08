@@ -145,7 +145,9 @@ function Feed() {
               </div>
             )}
             {posts.length > 0 ? (
-              posts.map((post) => <PostCard key={post.id} post={post} />)
+              posts.map((post) => (
+                <PostCard key={post.id} post={post} showComments={false} />
+              ))
             ) : (
               <EmptyState
                 icon={<MessageCircle />}

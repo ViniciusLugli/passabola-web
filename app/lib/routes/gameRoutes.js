@@ -61,6 +61,7 @@ const createGameRoutes = (fetchApi) => ({
     fetchApi(`/games/${gameId}/spectators/is-subscribed`),
   mySpectatorSubscriptions: ({ page = 0, size = 20 } = {}) =>
     fetchApi(`/games/spectators/my-subscriptions?page=${page}&size=${size}`),
+  getVideos: (gameId) => fetchApi(`/games/${gameId}/videos`),
 });
 
 export default createGameRoutes;
